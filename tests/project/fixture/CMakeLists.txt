@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+project(cycle_report LANGUAGES CXX)
+add_executable(cycle_report app.cpp phases.cpp tags.cpp classes.cpp)
+target_compile_features(cycle_report PRIVATE cxx_std_17)
+target_compile_definitions(cycle_report PRIVATE CYCLE_REPORT_BUILD=1)

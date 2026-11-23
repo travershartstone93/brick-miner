@@ -1,0 +1,30 @@
+#include <duckdb.h>
+#include "duckdb/main/connection.hpp"
+#include "duckdb/main/client_context.hpp"
+#include "duckdb/catalog/catalog.hpp"
+#include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
+#include <dlfcn.h>
+#include <stdexcept>
+@HEADERS@
+
+namespace {
+void install(duckdb::ClientContext &context, const char *name, duckdb::AggregateFunctionSet set) {
+    set.SetName(name);
+    for (auto &function : set.functions) function.name = name;
+    duckdb::CreateAggregateFunctionInfo info(set);
+    duckdb::Catalog::GetSystemCatalog(context).CreateFunction(context, info);
+}
+}
+
+extern "C" void brick_register_row_kernels(duckdb_connection connection) {
+    // Reject a link order that would resolve the key-partitioning implementation to another DSO.
+    Dl_info self{}, owner{};
+    void *partition = dlsym(RTLD_DEFAULT, "@PARTITION@");
+    if (!partition || !dladdr(partition, &owner) ||
+        !dladdr(reinterpret_cast<void *>(&brick_register_row_kernels), &self) || owner.dli_fbase != self.dli_fbase)
+        throw std::runtime_error("link libbrick_row_kernels before libduckdb");
+    auto &context = *reinterpret_cast<duckdb::Connection *>(connection)->context;
+    context.RunFunctionInTransaction([&]() {
+@INSTALL@
+    });
+}

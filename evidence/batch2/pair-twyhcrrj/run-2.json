@@ -1,0 +1,1169 @@
+{
+  "base": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/boilerplate-B32-FObAiR/release-101",
+  "base_catalog_sha256": "56a7e600204d94dd3d8a7c0c3bdc29ad09762cbb37a50b5516f579a904870c78",
+  "base_tree_sha256": "8fc92f33a5e1a44318ee2922c8dd710f5372541ba74ed379d715631c158f794c",
+  "base_verification_sha256": "8a681bd7b9a598873ce4c9cc46b9549ea4c9a1ed706e0b96b869dc88daeb2202",
+  "counts": {
+    "base_cards": 101,
+    "distinct_accepted": 3,
+    "duplicates": 0,
+    "examined_capabilities": 3,
+    "newly_passing": 3,
+    "rejected": 0,
+    "staged_cards": 104
+  },
+  "header_sha256": {
+    "line_http_date_epoch": "187875a1c29a03737f307b785951bc4eb3c503aaf60b3bc15b0bf34b61179090",
+    "line_ipv6_canonical": "3bd26cb07f2ea6784209217865efc48d9a8792e2652affca94cc4628da30ce52",
+    "line_uri_component_encode": "9af22d7e41f13ac6a35be95dfcb1d9036970238bc6fa152befbd43f6b9663454"
+  },
+  "manifest_sha256": "c277ef2590f1918966defc4ce2eba059ea912bc739b34e30d36f7de5838bc200",
+  "mode": "fixture",
+  "provenance": {
+    "line_http_date_epoch": {
+      "archive": "libsoup3-3.8.0-1-x86_64.pkg.tar.zst",
+      "archive_sha256": "1ea3e800b9a18a67e18d29b6f4e2ef9054b7ecb10dc9143d197734c96d5f6dc2",
+      "bindings": {
+        "format": {
+          "line": 32,
+          "name": "soup_date_time_to_string",
+          "return_ownership": "full",
+          "signature": "char *(GDateTime *, SoupDateFormat)"
+        },
+        "parse": {
+          "line": 36,
+          "name": "soup_date_time_new_from_http_string",
+          "return_ownership": "full",
+          "signature": "GDateTime *(const char *)"
+        }
+      },
+      "cxx_standard": "c++17",
+      "family": "soup_date_time_",
+      "flags": [
+        "-I/usr/include/libsoup-3.0",
+        "-I/usr/include/glib-2.0",
+        "-I/usr/lib/glib-2.0/include",
+        "-I/usr/include/libmount",
+        "-I/usr/include/blkid",
+        "-I/usr/include/sysprof-6",
+        "-pthread",
+        "-DWITH_GZFILEOP",
+        "-lsoup-3.0",
+        "-lgio-2.0",
+        "-lgobject-2.0",
+        "-lgmodule-2.0",
+        "-pthread",
+        "-lglib-2.0"
+      ],
+      "header": "/usr/include/libsoup-3.0/libsoup/soup-date-utils.h",
+      "include": "libsoup/soup.h",
+      "library": "/usr/lib/libsoup-3.0.so.0.8.0",
+      "license": "LGPL-2.0-or-later",
+      "license_path": "/usr/share/licenses/spdx/LGPL-2.0-or-later.txt",
+      "license_sha256": "86dc99d7e5060915ab1dfc1378b7dd351c62088bfa74067e8aa1868c6fdba7d8",
+      "package": "libsoup3",
+      "package_files": {
+        "/usr/include/libsoup-3.0/libsoup/soup-date-utils.h": "57d8896ee883be7549e463c86c255de4dd92160d33baba299a6deb50547d9fc5",
+        "/usr/include/libsoup-3.0/libsoup/soup.h": "6230422e84ae12b139ff438714d67d4019cefbe97611f1cdcd0ac5d8b52d6c5b",
+        "/usr/lib/libsoup-3.0.so.0.8.0": "795c5e83d57231a1253b2039c7219689b541bdb7f49ed0297a52b9244718febd",
+        "/usr/lib/pkgconfig/libsoup-3.0.pc": "455a19d3f1ea84843ddcf2afe6582cbe0310faf45a097548347e73535d6c63ec",
+        "/usr/share/gir-1.0/Soup-3.0.gir": "3877226c6e5ec200062dbcd05fd3b4ed224bc212aa333ae9cc333f8fb9df1f9e"
+      },
+      "package_version": "3.8.0-1",
+      "packager": "Jan Alexander Steffens (heftig) <heftig@archlinux.org>",
+      "pkg_config_version": "3.8.0",
+      "pkgbuild_sha256": "ade637d9a44341f9dbdc7df732042e84d29a9baee286952ec1ce9d6930875d2f",
+      "repo": "extra",
+      "signatures": {
+        "format": "char *(GDateTime *, SoupDateFormat)",
+        "parse": "GDateTime *(const char *)"
+      },
+      "signing_key": "83BC8889351B5DEBBB68416EB8AC08600F108CDF",
+      "template_sha256": "b26667e20e639a2705ce07d9370a0c2a3103f0793d0e14a1b1ba43d043023a57",
+      "upstream_release": "3.8.0"
+    },
+    "line_ipv6_canonical": {
+      "archive": "libuv-1.52.1-2-x86_64.pkg.tar.zst",
+      "archive_sha256": "1ea1d3e1a8c09c5803a34b34d4f5636405d81b8635a0d5d5a1340e905752dc9a",
+      "bindings": {
+        "format": {
+          "line": 1787,
+          "name": "uv_inet_ntop",
+          "signature": "int (int, const void *, char *, size_t)"
+        },
+        "parse": {
+          "line": 1788,
+          "name": "uv_inet_pton",
+          "signature": "int (int, const char *, void *)"
+        }
+      },
+      "cxx_standard": "c++17",
+      "family": "uv_inet_",
+      "flags": [
+        "-luv"
+      ],
+      "header": "/usr/include/uv.h",
+      "include": "uv.h",
+      "library": "/usr/lib/libuv.so.1.0.0",
+      "license": "MIT",
+      "license_path": "/usr/share/licenses/libuv/LICENSE",
+      "license_sha256": "16de0c32b265cb7d46a6d3bd614f259dd4d693a5e26b3407b04aae8d73041f0c",
+      "package": "libuv",
+      "package_files": {
+        "/usr/include/uv.h": "bb9ed99b80cd22c58361bffdfbb2aa7029ce0391cde616745c0072a6f3c03219",
+        "/usr/include/uv/version.h": "a859f2c21f7887d45b0372109ebc91759a6f8c408c7cbf2a12f9bbe579be403b",
+        "/usr/lib/libuv.so.1.0.0": "407e3422efb45bb97856fc517c34656ad1292debdb7bc29c5f3e06195aed1c6a",
+        "/usr/lib/pkgconfig/libuv.pc": "1e2e4dffb5edf3285f38ba26abcc3aada9405bb101a3e0099bcd9e086005d70a"
+      },
+      "package_version": "1.52.1-2",
+      "packager": "Felix Yan <felixonmars@archlinux.org>",
+      "pkg_config_version": "1.52.1",
+      "pkgbuild_sha256": "73e674d68393c6bba9fec3ba5527ed1b6c5f6bd075d673ac186e4ee998313d67",
+      "repo": "extra",
+      "signatures": {
+        "format": "int (int, const void *, char *, size_t)",
+        "parse": "int (int, const char *, void *)"
+      },
+      "signing_key": "B5971F2C5C10A9A08C60030F786C63F330D7CB92",
+      "template_sha256": "9be24745d0d2d5258ff114a70cfc11101cb5e618eb5df84f6d75481bd129bf3a",
+      "upstream_release": "v1.52.1"
+    },
+    "line_uri_component_encode": {
+      "archive": "curl-8.23.0-1-x86_64.pkg.tar.zst",
+      "archive_sha256": "ed3e4e252073137ee6b1267f3476a13680ff6b3dbdc7ddc6a8d1497fa60cd6d0",
+      "bindings": {
+        "encode": {
+          "line": 2728,
+          "name": "curl_easy_escape",
+          "signature": "char *(CURL *, const char *, int)"
+        }
+      },
+      "cxx_standard": "c++17",
+      "family": "curl_easy_",
+      "flags": [
+        "-DWITH_GZFILEOP",
+        "-lcurl"
+      ],
+      "header": "/usr/include/curl/curl.h",
+      "include": "curl/curl.h",
+      "library": "/usr/lib/libcurl.so.4.8.0",
+      "license": "curl",
+      "license_path": "/usr/share/licenses/curl/COPYING",
+      "license_sha256": "82f2f4427d6545ee5aaac4f0b80428da6cc8ba41c2cf5da3a03680ec327b9681",
+      "package": "curl",
+      "package_files": {
+        "/usr/include/curl/curl.h": "ad8989a81e79b407355e14d673410d51420bfec48287f4b890d0b211d9235ec3",
+        "/usr/include/curl/curlver.h": "fed299993c517a6a1785f44b19893d4ae65061a7d7b5ca43036b35bf998065b4",
+        "/usr/lib/libcurl.so.4.8.0": "d53ce30e973b9120643dfb53b9c99986330f28d2db245189e6bda6bc1aa55bdd",
+        "/usr/lib/pkgconfig/libcurl.pc": "9eb8bdea2fef22d8c0e455133e021465eaa34c2daa77168ebd00c6e0869a2674",
+        "/usr/share/man/man3/curl_easy_escape.3.gz": "6b0b0c9fe3b43cca6b3c839324f75ad2733f3eb94317192e3594c8ec38c4b40e"
+      },
+      "package_version": "8.23.0-1",
+      "packager": "Leonidas Spyropoulos <artafinde@archlinux.org>",
+      "pkg_config_version": "8.23.0",
+      "pkgbuild_sha256": "8a2c61727c7d55d06f4e5e896f93bca16599b6fb6ddd446ba190d36747d981e4",
+      "repo": "core",
+      "signatures": {
+        "encode": "char *(CURL *, const char *, int)"
+      },
+      "signing_key": "2191B89431BAC0A8B96DE93D244740D17C7FD0EC",
+      "template_sha256": "0bb707fe552cc47bd43dd5278a235946d030a0510aa3268eea84c83bd6b08ad0",
+      "upstream_release": "curl-8_23_0"
+    }
+  },
+  "published_files_checked": 57,
+  "results": {
+    "line_http_date_epoch": {
+      "baseline": {
+        "emission": {
+          "gaps": {
+            "r": "Unknown observable outcome: line_http_date_epoch"
+          },
+          "providers": []
+        },
+        "spec_sha256": "be46d111ef1c9034ed3e26d40dc37fed396dd2f9037a52d0af1e0e1f3cae0909",
+        "status": "no program"
+      },
+      "removed": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_http_date_epoch\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "be46d111ef1c9034ed3e26d40dc37fed396dd2f9037a52d0af1e0e1f3cae0909",
+        "status": "no program"
+      },
+      "staged": {
+        "checks": [
+          {
+            "case": "order-and-repeat",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "pre-epoch-and-wide",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "leap-day",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "wrong-weekday",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "impossible-date",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "trailing-byte",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "empty-record",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "obsolete-format",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "missing-file",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "output-is-directory",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_http_date_epoch",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_http_date_epoch.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_1d50a3bac96d1237382ec09a95645a05afffd34e2717a8d3c02a34851477c96b",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_5a3a75550228bd0ca68f100da086ad6ddab395a72d8eb40908fb33f701a6b9c4",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_5bc65500716b92727d918d0c6ba207ad0063ba3cf41e3840dcbc42bc503327d2",
+                      "ports_6169cd4ea912619cea7f3e48d4c63314a8cc70035b23458ad7bb4c348be8b1da",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_69265919dc2aa6f4b8912df0d5f1c2830f10da57e60f6c20e5415a500e1b01bd",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_a4eaebbbe1ac6a54776512f69a0a17c82289318777bd0907fef84dd023814ce8",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_be8d86597461ae8a2c353350fb3be4d5e1ccc8c8a830ee2e851963b08e4caabd",
+                      "ports_d4e1850666aba6fcc3734a5143a1c41eb71634968fe490efeb63cae6a6b9f6b8"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_http_date_epoch_1",
+                    "value_3": "brick_write_numbers_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_numbers_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_http_date_epoch_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_24dee9148a0630915a5475038939bf17eab5a97132570982efd83ec00c2b87d6",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_2c4e566b39cddcd494e9a9a43a827e9daf5e6bfed72a08b1e91f671dbced1cd2",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_994df255c8596ec1b06c4edd844fdf28fb5ba587183dea57290b6c90f1d9e07a",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_http_date_epoch_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_http_date_epoch_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_http_date_epoch_1",
+                          "integers"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_numbers_2",
+                          "integers"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_http_date_epoch_1",
+                          "brick_write_numbers_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_http_date_epoch_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_numbers_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_http_date_epoch_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_http_date_epoch",
+                    "to": "integers"
+                  },
+                  {
+                    "from": "integers",
+                    "provider": "write_numbers",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_http_date_epoch.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = brick_miner::line_http_date_epoch(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "be46d111ef1c9034ed3e26d40dc37fed396dd2f9037a52d0af1e0e1f3cae0909",
+        "status": "passed"
+      },
+      "vocabulary_only": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_http_date_epoch\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "be46d111ef1c9034ed3e26d40dc37fed396dd2f9037a52d0af1e0e1f3cae0909",
+        "status": "no program"
+      }
+    },
+    "line_ipv6_canonical": {
+      "baseline": {
+        "emission": {
+          "gaps": {
+            "r": "Unknown observable outcome: line_ipv6_canonical"
+          },
+          "providers": []
+        },
+        "spec_sha256": "ca6614969739467f68410ed3d585b846b1a1a9fbd63361656907c3b9cae8e5ee",
+        "status": "no program"
+      },
+      "removed": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_ipv6_canonical\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "ca6614969739467f68410ed3d585b846b1a1a9fbd63361656907c3b9cae8e5ee",
+        "status": "no program"
+      },
+      "staged": {
+        "checks": [
+          {
+            "case": "normal-order",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "ties-and-mapped",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "all-zero",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "wrong-family",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "zone",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "embedded-nul",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "empty-record",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "bad-compression",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "missing-file",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "output-is-directory",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_ipv6_canonical",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_ipv6_canonical.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_0687a314fbb999efd90f43a3fb2f02f54fcc0edfc697f608a3e9e48500200ea7",
+                      "ports_1b48d500f58ec29fea062cfbc964703f63377d6c3a899e935f3d3cf8bdad1f9c",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_2d9c4a2d18c625234fceb783cc48f995991c759b2acf2e4266a4147b6546f8a1",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_5ae273111d28705e6777e32e49ecd4190cd96c5fc2fd35fc1d2232be138e4d6b",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_8ea6509e962c58f5f2970867aaa7ff681982e6456477e906cafcf1ae91a274e3",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_bc692711857a1303fe7ab5651c14da3587704a5d09871954b2485f8ce5fbba45",
+                      "ports_be5bf5a144590a811f5a4947861c35e5d1c020d9704e25aca38f8b88ec2c65f5",
+                      "ports_c50ec108f61a8d0b7bb1af19145a3daaef3af1d237b6f1cda501af1b5d4f1e5e"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_ipv6_canonical_1",
+                    "value_3": "brick_write_texts_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_texts_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_ipv6_canonical_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_075bdfe7574c7fb4cbcea85f63bcb5f42253678974d6fbd8a16ef02dae234467",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_7b8900fe4def40a390cd457672586d9992e98bcf6f5b92d1e5888529348eb65a",
+                      "ports_8d760210e412127e21f4e680dd04c1cb971d53899973f80999e8bd975f3ef79d",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_ipv6_canonical_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_ipv6_canonical_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_ipv6_canonical_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_texts_2",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_ipv6_canonical_1",
+                          "brick_write_texts_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_ipv6_canonical_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_texts_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_ipv6_canonical_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_ipv6_canonical",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "write_texts",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_ipv6_canonical.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = brick_miner::line_ipv6_canonical(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "ca6614969739467f68410ed3d585b846b1a1a9fbd63361656907c3b9cae8e5ee",
+        "status": "passed"
+      },
+      "vocabulary_only": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_ipv6_canonical\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "ca6614969739467f68410ed3d585b846b1a1a9fbd63361656907c3b9cae8e5ee",
+        "status": "no program"
+      }
+    },
+    "line_uri_component_encode": {
+      "baseline": {
+        "emission": {
+          "gaps": {
+            "r": "Unknown observable outcome: line_uri_component_encode"
+          },
+          "providers": []
+        },
+        "spec_sha256": "9309309f7f2889f01705164f829a3b3f5c38b1fabf26807c2bbf6d0ebe524717",
+        "status": "no program"
+      },
+      "removed": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_uri_component_encode\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "9309309f7f2889f01705164f829a3b3f5c38b1fabf26807c2bbf6d0ebe524717",
+        "status": "no program"
+      },
+      "staged": {
+        "checks": [
+          {
+            "case": "syntax-and-order",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "unreserved",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "arbitrary-bytes",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "utf8-and-percent",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-record",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "missing-file",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "output-is-directory",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_uri_component_encode",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_uri_component_encode.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_175062dd666f907ba850531ecd4d835e3ba2b3e7ea6c5eebc84fe04fe97055ed",
+                      "ports_1b48d500f58ec29fea062cfbc964703f63377d6c3a899e935f3d3cf8bdad1f9c",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_5a86ff62ce26bdb039b6a645df9f0d6bb0e232a3de3bd4aa1c7bafde6945f40a",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_5ae273111d28705e6777e32e49ecd4190cd96c5fc2fd35fc1d2232be138e4d6b",
+                      "ports_636c3b9ce26e29a524ace46c53820d2c5d82445479b739ec4c87bf417214380f",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_bc692711857a1303fe7ab5651c14da3587704a5d09871954b2485f8ce5fbba45",
+                      "ports_bd3e913118faa974bff1aa3920617f5692d22acb0d8dad9435c3dc101ae00547",
+                      "ports_c50ec108f61a8d0b7bb1af19145a3daaef3af1d237b6f1cda501af1b5d4f1e5e"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_uri_component_encode_1",
+                    "value_3": "brick_write_texts_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_texts_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_uri_component_encode_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_075bdfe7574c7fb4cbcea85f63bcb5f42253678974d6fbd8a16ef02dae234467",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_43eb9f152c6d867d8571335924bfbbd929f8b70e0551fe3879497a03992545bf",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_bbcac7943ebc5080d79b813bec905041e6058765230cf9942f26635d111f60e8",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_uri_component_encode_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_uri_component_encode_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_uri_component_encode_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_texts_2",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_uri_component_encode_1",
+                          "brick_write_texts_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_uri_component_encode_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_texts_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_uri_component_encode_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_uri_component_encode",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "write_texts",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_uri_component_encode.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = brick_miner::line_uri_component_encode(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "9309309f7f2889f01705164f829a3b3f5c38b1fabf26807c2bbf6d0ebe524717",
+        "status": "passed"
+      },
+      "vocabulary_only": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_uri_component_encode\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "9309309f7f2889f01705164f829a3b3f5c38b1fabf26807c2bbf6d0ebe524717",
+        "status": "no program"
+      }
+    }
+  },
+  "seconds": {
+    "line_http_date_epoch": {
+      "acquisition": 0.569,
+      "qualification": 3.822
+    },
+    "line_ipv6_canonical": {
+      "acquisition": 0.511,
+      "qualification": 3.955
+    },
+    "line_uri_component_encode": {
+      "acquisition": 0.316,
+      "qualification": 3.957
+    }
+  },
+  "tools": {
+    "build/native/brick-provider-plan": "01f5acdabe65884546e7499ae38b44a73fc7120011b290b7a8d369ebafc8c22a",
+    "build/native/libunllm_native_logic.so": "889d6561dacccfe045d3fed0091c1505467281cd798d7e82ffc5b046bdab3df5",
+    "build/native/unllm_logic_worker": "fd4fa25f543f9e425ae85ab6c442ecccc13564328f11527ddab97cbdde8de78c",
+    "experiments/boilerplate/component-trial/expanded/index-formats.py": "f66c55bc6f59b995f7099fa31b4ec593cfd0c6e4a35a92d04cab0b3e766fcc65",
+    "experiments/boilerplate/integrated/cli-guarantees.json": "50256863cbf15ffb302802dfc359784a60d18576075b9963289ab832bb52d23e",
+    "experiments/boilerplate/integrated/provider-stage.sh": "98e0a297f9b9b795995df9b4a38746f659822a999a1aed299a1aef93f44424ed"
+  },
+  "verification_sha256": "d45fb440365958432bd7baa783afda58faa6061f438916b481a2cc7f173dc254"
+}

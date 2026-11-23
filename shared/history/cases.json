@@ -1,0 +1,196 @@
+[
+  {
+    "id": "room-changes",
+    "brick": "previous_field",
+    "args": [
+      "0",
+      1
+    ],
+    "input": "A\told\nB\t\nA\tnew\nB\tz\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "A",
+        "old",
+        "0",
+        ""
+      ],
+      [
+        "B",
+        "",
+        "0",
+        ""
+      ],
+      [
+        "A",
+        "new",
+        "1",
+        "old"
+      ],
+      [
+        "B",
+        "z",
+        "1",
+        ""
+      ]
+    ],
+    "column": 3
+  },
+  {
+    "id": "stock-history",
+    "brick": "previous_field",
+    "args": [
+      "0,1",
+      2
+    ],
+    "input": "1\twest\t4\n1\teast\t5\n1\twest\t6\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "1",
+        "west",
+        "4",
+        "0",
+        ""
+      ],
+      [
+        "1",
+        "east",
+        "5",
+        "0",
+        ""
+      ],
+      [
+        "1",
+        "west",
+        "6",
+        "1",
+        "4"
+      ]
+    ],
+    "column": 3
+  },
+  {
+    "id": "book-balance",
+    "brick": "running_total",
+    "args": [
+      "all",
+      1
+    ],
+    "input": "a\t10\nb\t-3\na\t-12\n",
+    "empty": "",
+    "invalid": "a\t9223372036854775807\na\t1\n",
+    "rows": [
+      [
+        "a",
+        "10",
+        "10"
+      ],
+      [
+        "b",
+        "-3",
+        "7"
+      ],
+      [
+        "a",
+        "-12",
+        "-5"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "meter-balance",
+    "brick": "running_total",
+    "args": [
+      "0",
+      1
+    ],
+    "input": "a\t10\nb\t-3\na\t-12\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "a",
+        "10",
+        "10"
+      ],
+      [
+        "b",
+        "-3",
+        "-3"
+      ],
+      [
+        "a",
+        "-12",
+        "-2"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "price-rank",
+    "brick": "rank_records",
+    "args": [
+      "0",
+      "1:int:asc"
+    ],
+    "input": "Z\t10\nZ\t2\nA\t3\nZ\t2\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "Z",
+        "10",
+        "3"
+      ],
+      [
+        "Z",
+        "2",
+        "1"
+      ],
+      [
+        "A",
+        "3",
+        "1"
+      ],
+      [
+        "Z",
+        "2",
+        "2"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "edge-repeat",
+    "brick": "rank_records",
+    "args": [
+      "0,1",
+      "encounter"
+    ],
+    "input": "core\tapp\nui\tapp\ncore\tapp\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "core",
+        "app",
+        "1"
+      ],
+      [
+        "ui",
+        "app",
+        "1"
+      ],
+      [
+        "core",
+        "app",
+        "2"
+      ]
+    ],
+    "column": 2
+  }
+]

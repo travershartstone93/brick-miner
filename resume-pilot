@@ -1,0 +1,12 @@
+#!/bin/bash
+set -eu
+cd -- "$(dirname -- "$0")"
+volume=/run/media/whisper/UNLLM_CORPUS
+out="$volume/unllm/experiments/brick-miner"
+if ! mountpoint -q "$volume"; then
+    echo "Mount the corpus drive and run this again." >&2
+    exit 1
+fi
+mkdir -p -- "$out"
+exec codex resume --sandbox workspace-write --add-dir "$out" 01a2086c-3923-78e1-b120-ad6e9eb53d3a \
+    'Run ./pilot.py and report the saved bundle path.'

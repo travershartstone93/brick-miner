@@ -1,0 +1,36 @@
+[
+  {
+    "id": "module-dependencies",
+    "brick": "reachable_nodes",
+    "args": [
+      0,
+      1,
+      "core"
+    ],
+    "input": "core\tui\ncore\tapi\napi\tui\nui\tcore\napi\tapp\ncore\tui\nx\ty\n",
+    "empty": "",
+    "invalid": "core\n",
+    "strings": [
+      "api",
+      "app",
+      "ui"
+    ]
+  },
+  {
+    "id": "transit-origins",
+    "brick": "reachable_nodes",
+    "args": [
+      1,
+      0,
+      "airport"
+    ],
+    "input": "harbor\twest\nwest\tairport\nairport\twest\neast\tairport\neast\tairport\n",
+    "empty": "",
+    "invalid": "airport\n",
+    "strings": [
+      "east",
+      "harbor",
+      "west"
+    ]
+  }
+]

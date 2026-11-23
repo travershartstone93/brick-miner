@@ -1,0 +1,24 @@
+#pragma once
+#include <uv.h>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace brick_miner {
+inline std::vector<std::string> line_ipv6_canonical(const std::vector<std::string>& lines) {
+    std::vector<std::string> result;
+    result.reserve(lines.size());
+    for (const auto& line : lines) {
+        // libuv accepts a zone suffix and discards it. A bare address must have none.
+        in6_addr address{};
+        if (line.find('%') != line.npos || line.find('\0') != line.npos ||
+            @parse@(AF_INET6, line.c_str(), &address) != 0)
+            throw std::invalid_argument("expected a bare IPv6 literal");
+        char display[INET6_ADDRSTRLEN];
+        if (@format@(AF_INET6, &address, display, sizeof(display)) != 0)
+            throw std::runtime_error("IPv6 formatting failed");
+        result.emplace_back(display);
+    }
+    return result;
+}
+}

@@ -1,0 +1,16 @@
+{
+  "data": {
+    "stock": "B\twest\t4\nA\teast\t-3\nB\twest\t10\nA\twest\t-3\nC\teast\t0\n",
+    "sensors": "8\t-1\ts2\tA\n2\t7\ts1\tB\n1\t12\ts2\tA\n2\t7\ts1\tB\n6\t-8\ts1\tA\n"
+  },
+  "programs": [
+    {"name":"group-stock", "data":"stock", "group":["0","desc"], "column":2, "expected":["0","4","10","-3","-3"]},
+    {"name":"group-sensors", "data":"sensors", "group":["3,2","encounter"], "column":1, "expected":["-1","12","7","7","-8"]},
+    {"name":"total-stock", "data":"stock", "group":["1","asc"], "aggregate":["sum",2,"value_desc"], "column":1, "expected":["11","-3"]},
+    {"name":"distinct-sensors", "data":"sensors", "group":["3","asc"], "aggregate":["distinct",2,"group"], "column":1, "expected":["2","1"]},
+    {"name":"count-sensors", "data":"sensors", "group":["2","asc"], "aggregate":["count",0,"value_desc"], "column":1, "expected":["3","2"]},
+    {"name":"latest-stock", "data":"stock", "group":["0","encounter"], "select":["last","","source_desc"], "column":2, "expected":["0","-3","10"]},
+    {"name":"peak-sensors", "data":"sensors", "group":["2","asc"], "select":["first","1:num:desc,0:num:asc","group"], "column":0, "expected":["2","1"]},
+    {"name":"H010", "data":"stock", "group":["1","encounter"], "select":["last","","source_desc"], "column":1, "format":"text/plain", "expected":["east","west"]}
+  ]
+}

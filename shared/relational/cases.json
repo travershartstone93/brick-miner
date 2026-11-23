@@ -1,0 +1,244 @@
+[
+  {
+    "id": "stock-filter",
+    "brick": "filter_records",
+    "args": [
+      1,
+      "int",
+      "le",
+      "2"
+    ],
+    "input": "B\t02\nA\t10\nC\t2\n",
+    "empty": "",
+    "invalid": "A\t2.1\n",
+    "rows": [
+      [
+        "B",
+        "02"
+      ],
+      [
+        "C",
+        "2"
+      ]
+    ],
+    "column": 0,
+    "positions": [
+      1,
+      3
+    ]
+  },
+  {
+    "id": "booking-filter",
+    "brick": "filter_records",
+    "args": [
+      1,
+      "text",
+      "eq",
+      "open"
+    ],
+    "input": "hall\tclosed\nroom\topen\nhall\topen\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "room",
+        "open"
+      ],
+      [
+        "hall",
+        "open"
+      ]
+    ],
+    "column": 0,
+    "positions": [
+      2,
+      3
+    ]
+  },
+  {
+    "id": "stock-order",
+    "brick": "order_records",
+    "args": [
+      "1:int:asc,0:text:desc"
+    ],
+    "input": "B\t02\nA\t10\nC\t2\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "C",
+        "2"
+      ],
+      [
+        "B",
+        "02"
+      ],
+      [
+        "A",
+        "10"
+      ]
+    ],
+    "column": 0,
+    "positions": [
+      3,
+      1,
+      2
+    ]
+  },
+  {
+    "id": "booking-order",
+    "brick": "order_records",
+    "args": [
+      "1:text:desc"
+    ],
+    "input": "hall\tclosed\nroom\topen\nhall\topen\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "room",
+        "open"
+      ],
+      [
+        "hall",
+        "open"
+      ],
+      [
+        "hall",
+        "closed"
+      ]
+    ],
+    "column": 0,
+    "positions": [
+      2,
+      3,
+      1
+    ]
+  },
+  {
+    "id": "stock-report",
+    "brick": "report_fields",
+    "args": [
+      "1,pos,0"
+    ],
+    "input": "B\t02\nA\t10\nC\t2\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "strings": [
+      "02\t1\tB",
+      "10\t2\tA",
+      "2\t3\tC"
+    ]
+  },
+  {
+    "id": "booking-report",
+    "brick": "report_fields",
+    "args": [
+      "1,0"
+    ],
+    "input": "hall\tclosed\nroom\topen\nhall\topen\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "strings": [
+      "closed\thall",
+      "open\troom",
+      "open\thall"
+    ]
+  },
+  {
+    "id": "booking-duration",
+    "brick": "derive_integer",
+    "args": [
+      1,
+      "subtract",
+      "col:0"
+    ],
+    "input": "2\t10\n5\t5\n",
+    "empty": "",
+    "invalid": "only-one\n",
+    "rows": [
+      [
+        "2",
+        "10",
+        "8"
+      ],
+      [
+        "5",
+        "5",
+        "0"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "ledger-magnitude",
+    "brick": "derive_integer",
+    "args": [
+      1,
+      "absolute",
+      "self"
+    ],
+    "input": "x\t-18\ny\t0\n",
+    "empty": "",
+    "invalid": "x\t-9223372036854775808\n",
+    "rows": [
+      [
+        "x",
+        "-18",
+        "18"
+      ],
+      [
+        "y",
+        "0",
+        "0"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "brick": "filter_records",
+    "empty": "",
+    "invalid": "one\n",
+    "column": 0,
+    "id": "sensor-field-compare",
+    "args": [
+      1,
+      "int_field",
+      "gt",
+      "0"
+    ],
+    "input": "03\t4\n9\t2\n",
+    "rows": [
+      [
+        "03",
+        "4"
+      ]
+    ],
+    "positions": [
+      1
+    ]
+  },
+  {
+    "brick": "filter_records",
+    "empty": "",
+    "invalid": "one\n",
+    "column": 0,
+    "id": "shipping-field-compare",
+    "args": [
+      0,
+      "text_field",
+      "ne",
+      "1"
+    ],
+    "input": "A\tA\nB\tC\n",
+    "rows": [
+      [
+        "B",
+        "C"
+      ]
+    ],
+    "positions": [
+      2
+    ]
+  }
+]

@@ -1,0 +1,348 @@
+[
+  {
+    "id": "parcel-scans",
+    "brick": "sqlite_records",
+    "args": [
+      "scans",
+      "parcel,depot,seq",
+      "seq:asc"
+    ],
+    "input": {
+      "sqlite": "CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT);INSERT INTO scans VALUES(15,'z','E'),(2,'x','N');"
+    },
+    "empty": {
+      "sqlite": "CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT);"
+    },
+    "invalid": {
+      "sqlite": "CREATE TABLE scans(seq INTEGER);"
+    },
+    "rows": [
+      [
+        "x",
+        "N",
+        "2"
+      ],
+      [
+        "z",
+        "E",
+        "15"
+      ]
+    ],
+    "column": 1
+  },
+  {
+    "id": "bird-counts",
+    "brick": "sqlite_records",
+    "args": [
+      "field log",
+      "site id,species,n",
+      "n:desc,site id:asc"
+    ],
+    "input": {
+      "sqlite": "CREATE TABLE \"field log\"(species TEXT,\"site id\" TEXT,n INTEGER);INSERT INTO \"field log\" VALUES('owl','A',0),('tern','C',2),('wren','B',2);"
+    },
+    "empty": {
+      "sqlite": "CREATE TABLE \"field log\"(species TEXT,\"site id\" TEXT,n INTEGER);"
+    },
+    "invalid": {
+      "sqlite": "CREATE TABLE \"field log\"(species TEXT,\"site id\" TEXT,n INTEGER);INSERT INTO \"field log\" VALUES('wren',NULL,2);"
+    },
+    "rows": [
+      [
+        "B",
+        "wren",
+        "2"
+      ],
+      [
+        "C",
+        "tern",
+        "2"
+      ],
+      [
+        "A",
+        "owl",
+        "0"
+      ]
+    ],
+    "column": 0
+  },
+  {
+    "id": "articles",
+    "brick": "xml_records",
+    "args": [
+      "/feed/article",
+      "@editor,title"
+    ],
+    "input": "<feed><article editor=\"A\"><title>North &amp; East</title></article><article editor=\"B\"><title>\u00c5</title></article></feed>",
+    "empty": "<feed/>",
+    "invalid": "<feed><article editor=\"x\"><title>a</title><title>b</title></article></feed>",
+    "rows": [
+      [
+        "A",
+        "North & East"
+      ],
+      [
+        "B",
+        "\u00c5"
+      ]
+    ],
+    "column": 1
+  },
+  {
+    "id": "weather-stations",
+    "brick": "xml_records",
+    "args": [
+      "/stations/site",
+      "reading,@id"
+    ],
+    "input": "<stations><site id=\"s\"><reading>0</reading></site><site id=\"w\"><reading>-2</reading></site></stations>",
+    "empty": "<stations/>",
+    "invalid": "<stations><site/></stations>",
+    "rows": [
+      [
+        "0",
+        "s"
+      ],
+      [
+        "-2",
+        "w"
+      ]
+    ],
+    "column": 0
+  },
+  {
+    "id": "source-release",
+    "brick": "zip_file_records",
+    "args": [
+      "parent,path,size,ext"
+    ],
+    "input": {
+      "zip": [
+        [
+          "src/",
+          ""
+        ],
+        [
+          "src/X.CPP",
+          "00ff"
+        ],
+        [
+          ".config",
+          ""
+        ]
+      ]
+    },
+    "empty": {
+      "zip": []
+    },
+    "invalid": "bad zip",
+    "rows": [
+      [
+        "src",
+        "src/X.CPP",
+        "2",
+        "cpp"
+      ],
+      [
+        ".",
+        ".config",
+        "0",
+        ""
+      ]
+    ],
+    "column": 1
+  },
+  {
+    "id": "capture-session",
+    "brick": "zip_file_records",
+    "args": [
+      "top,depth,base,payload,payload"
+    ],
+    "input": {
+      "zip": [
+        [
+          "cam/n/a.raw",
+          "0001ff"
+        ],
+        [
+          "cam/b.raw",
+          "0001ff"
+        ],
+        [
+          "readme",
+          ""
+        ]
+      ]
+    },
+    "empty": {
+      "zip": []
+    },
+    "invalid": "bad zip",
+    "rows": [
+      [
+        "cam",
+        "2",
+        "a.raw",
+        "0001ff",
+        "0001ff"
+      ],
+      [
+        "cam",
+        "1",
+        "b.raw",
+        "0001ff",
+        "0001ff"
+      ],
+      [
+        ".",
+        "0",
+        "readme",
+        "",
+        ""
+      ]
+    ],
+    "column": 3
+  },
+  {
+    "id": "project-tree",
+    "brick": "tree_file_records",
+    "args": [
+      "path,size,folded_base,component=build,hidden_parent"
+    ],
+    "input": {
+      "tree": [
+        [
+          "src/Z.CPP",
+          "0002"
+        ],
+        [
+          ".meta/build/KEY",
+          ""
+        ],
+        [
+          "README",
+          "41"
+        ]
+      ],
+      "symlinks": {
+        "alias": "src"
+      }
+    },
+    "empty": {
+      "tree": []
+    },
+    "invalid": "file",
+    "rows": [
+      [
+        ".meta/build/KEY",
+        "0",
+        "key",
+        "1",
+        "1"
+      ],
+      [
+        "README",
+        "1",
+        "readme",
+        "0",
+        "0"
+      ],
+      [
+        "src/Z.CPP",
+        "2",
+        "z.cpp",
+        "0",
+        "0"
+      ]
+    ],
+    "column": 0
+  },
+  {
+    "id": "photo-tree",
+    "brick": "tree_file_records",
+    "args": [
+      "parent,ext,payload,top,hidden_name"
+    ],
+    "input": {
+      "tree": [
+        [
+          "roll/a.JPG",
+          "00ff"
+        ],
+        [
+          ".index",
+          ""
+        ]
+      ]
+    },
+    "empty": {
+      "tree": []
+    },
+    "invalid": "file",
+    "rows": [
+      [
+        ".",
+        "",
+        "",
+        ".",
+        "1"
+      ],
+      [
+        "roll",
+        "jpg",
+        "00ff",
+        "roll",
+        "0"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "web-bookmarks",
+    "brick": "uri_records",
+    "args": [
+      "scheme,host,base,has_fragment"
+    ],
+    "input": "# note\r\nHTTPS://EXAMPLE.org/A%2fb#p\r\nhttps://Example.org/#\n",
+    "empty": "# comment\n",
+    "invalid": "bad URI\n",
+    "rows": [
+      [
+        "https",
+        "example.org",
+        "HTTPS://EXAMPLE.org/A%2fb",
+        "1"
+      ],
+      [
+        "https",
+        "example.org",
+        "https://Example.org/",
+        "1"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "media-resource-list",
+    "brick": "uri_records",
+    "args": [
+      "original,scheme,has_fragment"
+    ],
+    "input": "file:///clips/x.mov\n\nurn:camera:A%23B\n",
+    "empty": "",
+    "invalid": "http://[\n",
+    "rows": [
+      [
+        "file:///clips/x.mov",
+        "file",
+        "0"
+      ],
+      [
+        "urn:camera:A%23B",
+        "urn",
+        "0"
+      ]
+    ],
+    "column": 0
+  }
+]

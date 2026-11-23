@@ -1,0 +1,84 @@
+{
+  "line_uri_component_encode": {
+    "repo": "core",
+    "package": "curl",
+    "package_version": "8.23.0-1",
+    "upstream_release": "curl-8_23_0",
+    "archive": "curl-8.23.0-1-x86_64.pkg.tar.zst",
+    "archive_sha256": "ed3e4e252073137ee6b1267f3476a13680ff6b3dbdc7ddc6a8d1497fa60cd6d0",
+    "packager": "Leonidas Spyropoulos <artafinde@archlinux.org>",
+    "pkgbuild_sha256": "8a2c61727c7d55d06f4e5e896f93bca16599b6fb6ddd446ba190d36747d981e4",
+    "include": "curl/curl.h",
+    "header": "/usr/include/curl/curl.h",
+    "library": "/usr/lib/libcurl.so.4.8.0",
+    "license": "curl",
+    "license_path": "/usr/share/licenses/curl/COPYING",
+    "license_sha256": "82f2f4427d6545ee5aaac4f0b80428da6cc8ba41c2cf5da3a03680ec327b9681",
+    "package_files": {
+      "/usr/include/curl/curl.h": "ad8989a81e79b407355e14d673410d51420bfec48287f4b890d0b211d9235ec3",
+      "/usr/lib/libcurl.so.4.8.0": "d53ce30e973b9120643dfb53b9c99986330f28d2db245189e6bda6bc1aa55bdd",
+      "/usr/lib/pkgconfig/libcurl.pc": "9eb8bdea2fef22d8c0e455133e021465eaa34c2daa77168ebd00c6e0869a2674",
+      "/usr/share/man/man3/curl_easy_escape.3.gz": "6b0b0c9fe3b43cca6b3c839324f75ad2733f3eb94317192e3594c8ec38c4b40e",
+      "/usr/include/curl/curlver.h": "fed299993c517a6a1785f44b19893d4ae65061a7d7b5ca43036b35bf998065b4"
+    },
+    "family": "curl_easy_",
+    "signatures": {
+      "encode": "char *(CURL *, const char *, int)"
+    }
+  },
+  "line_ipv6_canonical": {
+    "repo": "extra",
+    "package": "libuv",
+    "package_version": "1.52.1-2",
+    "upstream_release": "v1.52.1",
+    "archive": "libuv-1.52.1-2-x86_64.pkg.tar.zst",
+    "archive_sha256": "1ea1d3e1a8c09c5803a34b34d4f5636405d81b8635a0d5d5a1340e905752dc9a",
+    "packager": "Felix Yan <felixonmars@archlinux.org>",
+    "pkgbuild_sha256": "73e674d68393c6bba9fec3ba5527ed1b6c5f6bd075d673ac186e4ee998313d67",
+    "include": "uv.h",
+    "header": "/usr/include/uv.h",
+    "library": "/usr/lib/libuv.so.1.0.0",
+    "license": "MIT",
+    "license_path": "/usr/share/licenses/libuv/LICENSE",
+    "license_sha256": "16de0c32b265cb7d46a6d3bd614f259dd4d693a5e26b3407b04aae8d73041f0c",
+    "package_files": {
+      "/usr/include/uv.h": "bb9ed99b80cd22c58361bffdfbb2aa7029ce0391cde616745c0072a6f3c03219",
+      "/usr/lib/libuv.so.1.0.0": "407e3422efb45bb97856fc517c34656ad1292debdb7bc29c5f3e06195aed1c6a",
+      "/usr/lib/pkgconfig/libuv.pc": "1e2e4dffb5edf3285f38ba26abcc3aada9405bb101a3e0099bcd9e086005d70a",
+      "/usr/include/uv/version.h": "a859f2c21f7887d45b0372109ebc91759a6f8c408c7cbf2a12f9bbe579be403b"
+    },
+    "family": "uv_inet_",
+    "signatures": {
+      "parse": "int (int, const char *, void *)",
+      "format": "int (int, const void *, char *, size_t)"
+    }
+  },
+  "line_http_date_epoch": {
+    "repo": "extra",
+    "package": "libsoup3",
+    "package_version": "3.8.0-1",
+    "upstream_release": "3.8.0",
+    "archive": "libsoup3-3.8.0-1-x86_64.pkg.tar.zst",
+    "archive_sha256": "1ea3e800b9a18a67e18d29b6f4e2ef9054b7ecb10dc9143d197734c96d5f6dc2",
+    "packager": "Jan Alexander Steffens (heftig) <heftig@archlinux.org>",
+    "pkgbuild_sha256": "ade637d9a44341f9dbdc7df732042e84d29a9baee286952ec1ce9d6930875d2f",
+    "include": "libsoup/soup.h",
+    "header": "/usr/include/libsoup-3.0/libsoup/soup-date-utils.h",
+    "library": "/usr/lib/libsoup-3.0.so.0.8.0",
+    "license": "LGPL-2.0-or-later",
+    "license_path": "/usr/share/licenses/spdx/LGPL-2.0-or-later.txt",
+    "license_sha256": "86dc99d7e5060915ab1dfc1378b7dd351c62088bfa74067e8aa1868c6fdba7d8",
+    "package_files": {
+      "/usr/include/libsoup-3.0/libsoup/soup-date-utils.h": "57d8896ee883be7549e463c86c255de4dd92160d33baba299a6deb50547d9fc5",
+      "/usr/lib/libsoup-3.0.so.0.8.0": "795c5e83d57231a1253b2039c7219689b541bdb7f49ed0297a52b9244718febd",
+      "/usr/lib/pkgconfig/libsoup-3.0.pc": "455a19d3f1ea84843ddcf2afe6582cbe0310faf45a097548347e73535d6c63ec",
+      "/usr/share/gir-1.0/Soup-3.0.gir": "3877226c6e5ec200062dbcd05fd3b4ed224bc212aa333ae9cc333f8fb9df1f9e",
+      "/usr/include/libsoup-3.0/libsoup/soup.h": "6230422e84ae12b139ff438714d67d4019cefbe97611f1cdcd0ac5d8b52d6c5b"
+    },
+    "family": "soup_date_time_",
+    "signatures": {
+      "parse": "GDateTime *(const char *)",
+      "format": "char *(GDateTime *, SoupDateFormat)"
+    }
+  }
+}

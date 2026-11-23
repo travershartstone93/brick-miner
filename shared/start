@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+import argparse
+from concurrent.futures import ThreadPoolExecutor
+import hashlib
+import shutil
+import json
+from pathlib import Path
+import subprocess
+import tempfile
+from mine import BATCHES
+
+HERE = Path(__file__).resolve().parent
+MOUNT = Path("/run/media/whisper/UNLLM_CORPUS")
+ROOT = MOUNT/"unllm/experiments/brick-miner"
+parser = argparse.ArgumentParser(description="Qualify cumulative batches from the signed package source.")
+parser.add_argument("--cache",type=Path,default=ROOT/"duckdb-input-GHUYik9e")
+parser.add_argument("--through",choices=BATCHES,default="decisions")
+parser.add_argument("--resume",type=Path,help="Pair of clean runs containing independently qualified predecessor bundles")
+parser.add_argument("--after",choices=BATCHES,help="Last completed stage in the predecessor")
+args = parser.parse_args()
+if bool(args.resume)!=bool(args.after):parser.error("--resume and --after must be used together")
+first=BATCHES.index(args.after)+1 if args.after else 0
+if first>BATCHES.index(args.through):parser.error("there are no requested stages after the predecessor")
+results={}
+if args.resume:
+    args.resume=args.resume.resolve()
+    receipts=args.resume/"reproduction.json"
+    if receipts.exists():
+        previous=json.loads(receipts.read_bytes())
+        results.update({name:previous[name] for name in BATCHES[:first] if name in previous})
+    for name in BATCHES[:first]:
+        a,b=[args.resume/f"run-{i}"/name/"bundle/SHA256SUMS" for i in (1,2)]
+        if not a.exists() and name in results: continue
+        if a.read_bytes()!=b.read_bytes():raise RuntimeError("predecessor repeats differ: "+name)
+        results[name]=hashlib.sha256(a.read_bytes()).hexdigest()
+subprocess.run(["mountpoint","-q",MOUNT],check=True)
+pair = Path(tempfile.mkdtemp(prefix="shared-needs-",dir=ROOT))
+print(pair,flush=True)
+snapshot=pair/"miner-inputs"
+shutil.copytree(HERE,snapshot,ignore=shutil.ignore_patterns("__pycache__","*.profraw"))
+def clean_run(i):
+    dest = pair/f"run-{i}"
+    (dest/"runtime/lib").mkdir(parents=True)
+    subprocess.run(["bwrap","--die-with-parent","--unshare-net","--ro-bind","/","/","--dev","/dev","--proc","/proc",
+                    "--ro-bind",snapshot,HERE,"--ro-bind",dest/"runtime/lib","/usr/local/lib","--tmpfs","/tmp","--bind",dest,"/tmp/brick-trial","--chdir","/tmp/brick-trial",
+                    "--setenv","LC_ALL","C","--setenv","PYTHONHASHSEED","0","python3","-B",HERE/"verify.py",
+                    args.through,args.cache.resolve(),*([args.resume/f"run-{i}"/args.after/"bundle",str(first)] if args.resume else [])],check=True)
+with ThreadPoolExecutor(max_workers=2) as pool:
+    list(pool.map(clean_run,(1,2)))
+if args.resume: (pair/"predecessor.json").write_text(json.dumps({"pair":str(args.resume),"last":args.after})+"\n")
+for batch in BATCHES[first:]:
+    a,b = [pair/f"run-{i}"/batch/"bundle/SHA256SUMS" for i in (1,2)]
+    if a.read_bytes()!=b.read_bytes(): raise RuntimeError(f"Different {batch} manifests on clean repeat")
+    results[batch]=hashlib.sha256(a.read_bytes()).hexdigest()
+    if batch==args.through: break
+(pair/"reproduction.json").write_text(json.dumps(results,indent=2)+"\n")
+print("Verified repeat:",a.parent,flush=True)
+if args.through==BATCHES[-1]:
+    subprocess.run(["python3","-B",HERE/"review",pair,"--build-snapshot",snapshot],check=True)

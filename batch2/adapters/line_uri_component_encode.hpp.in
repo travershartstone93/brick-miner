@@ -1,0 +1,24 @@
+#pragma once
+#include <curl/curl.h>
+#include <limits>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace brick_miner {
+inline std::vector<std::string> line_uri_component_encode(const std::vector<std::string>& lines) {
+    std::vector<std::string> result;
+    result.reserve(lines.size());
+    for (const auto& line : lines) {
+        if (line.size() > std::numeric_limits<int>::max())
+            throw std::length_error("line exceeds libcurl's length parameter");
+        // Since libcurl 7.82 the first argument is ignored.
+        std::unique_ptr<char, decltype(&curl_free)> encoded(
+            @encode@(nullptr, line.data(), static_cast<int>(line.size())), curl_free);
+        if (!encoded) throw std::runtime_error("URI component encoding failed");
+        result.emplace_back(encoded.get());
+    }
+    return result;
+}
+}

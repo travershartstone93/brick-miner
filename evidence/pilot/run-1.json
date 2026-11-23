@@ -1,0 +1,1259 @@
+{
+  "base": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/boilerplate-B32-FObAiR/release-101",
+  "base_catalog_sha256": "56a7e600204d94dd3d8a7c0c3bdc29ad09762cbb37a50b5516f579a904870c78",
+  "base_tree_sha256": "8fc92f33a5e1a44318ee2922c8dd710f5372541ba74ed379d715631c158f794c",
+  "base_verification_sha256": "8a681bd7b9a598873ce4c9cc46b9549ea4c9a1ed706e0b96b869dc88daeb2202",
+  "counts": {
+    "distinct_accepted": 2,
+    "duplicate_entry_points": 1,
+    "examined": 4,
+    "newly_passing": 2,
+    "rejected": 1
+  },
+  "duplicate": {
+    "reason": "The public wrapper delegates escaping to this helper. Count the pair once.",
+    "symbol": "xml_escape_text_append"
+  },
+  "header_sha256": {
+    "line_xml_escape": "3679c539fdbfa4f680d0e1153d8f9eaadc9c97eccbb125472c7de1d455548a5b",
+    "line_xxh32": "bfe53a5c41407c918c2403d96c0fd2ad35afa830fc227e76eab4f99d0242c4fd"
+  },
+  "manifest_sha256": "ae1e1714a90e680088cf3da01e5e19c01ab2a7b48d86969bf7b962e01a715e84",
+  "mode": "fixture",
+  "negative_control": "incorrect XXH32 result rejected by the independent client",
+  "provenance": {
+    "line_xml_escape": {
+      "acquired_archive": "cuda-gdb-13.3.73.src.tar.gz",
+      "archive_sha256": "44bd47fab475c83704a9ebaa36d7c849e0783524921176b935ef94319f14537a",
+      "cxx_standard": "c++17",
+      "files": {
+        "xml-utils.cc": "0517ecb5bf26b265581058a0a59e7af6565ae5d82ab1e57c9ce9d388079a71a2",
+        "xml-utils.h": "ed04c8d1f8ab51a2fbf7309a3c0fcee32ebfec297c6df41271e719e0c93e4c0a"
+      },
+      "flags": [],
+      "license": "GPL-3.0-or-later",
+      "package": "extra/cuda 13.3.1-1",
+      "pkg_config": [],
+      "signature": "std::string (const char *)",
+      "symbol": "xml_escape_text",
+      "unit": [
+        "xml-utils.h",
+        "xml-utils.cc"
+      ],
+      "upstream_release": "cuda-gdb-13.3.73"
+    },
+    "line_xxh32": {
+      "acquired_archive": "xxhash-0.8.4-1-x86_64.pkg.tar.zst",
+      "archive_sha256": "ef60bad0552de3eb8a0e1e2a07eb1bcaceaa771a5f36401a2cf0de135ffcc72b",
+      "cxx_standard": "c++17",
+      "files": {
+        "LICENSE": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a",
+        "libxxhash.so.0.8.4": "099a0c0873834e8b05a0037ad88d88ae2b9f43615de711c3e2600765ef15d26d",
+        "xxhash.h": "3dc8d161e867a62d3417f7885b55fdaded8b7b497e2f165d05c94f4fe24f2ca4"
+      },
+      "flags": [
+        "-lxxhash"
+      ],
+      "license": "BSD-2-Clause",
+      "package": "extra/xxhash 0.8.4-1",
+      "pkg_config": [
+        "libxxhash"
+      ],
+      "pkgbuild_sha256": "22d08718706bc9b4994563c8ac84bc5153819a4d250d468b7b33c0d99481dac2",
+      "signature": "XXH32_hash_t (const void *, size_t, XXH32_hash_t)",
+      "symbol": "XXH32",
+      "upstream_release": "v0.8.4"
+    }
+  },
+  "published_files_checked": 50,
+  "rejected": {
+    "mutable_globals": [
+      "startup_with_shell"
+    ],
+    "signature": "std::string (gdb::array_view<char *const>)",
+    "symbol": "construct_inferior_arguments"
+  },
+  "results": {
+    "line_xml_escape": {
+      "baseline": {
+        "emission": {
+          "gaps": {
+            "r": "Unknown observable outcome: line_xml_escape"
+          },
+          "providers": []
+        },
+        "spec_sha256": "4113bcfc24fa8832006e78e50aeddf5734667b3828f76a0b5f0260282327eae2",
+        "status": "no program"
+      },
+      "manual": {
+        "checks": [
+          {
+            "case": "five-entities",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "literal-amp",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-line",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "embedded-nul",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "missing-input",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "unwritable-output",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_xml_escape",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_xml_escape.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_1722781acf1b7f5d69659382df83d635325513f2ae12831abc010dd236211e20",
+                      "ports_1b48d500f58ec29fea062cfbc964703f63377d6c3a899e935f3d3cf8bdad1f9c",
+                      "ports_1c9fade23e9fcbff266c98104f3111332bd5694691d42b4a5a16069b46e4592b",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_4e547397101fe8a0f071ed1a91a76ef56ae19a69171d372bf5ee3bd107718806",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_5ae273111d28705e6777e32e49ecd4190cd96c5fc2fd35fc1d2232be138e4d6b",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_bc692711857a1303fe7ab5651c14da3587704a5d09871954b2485f8ce5fbba45",
+                      "ports_c50ec108f61a8d0b7bb1af19145a3daaef3af1d237b6f1cda501af1b5d4f1e5e",
+                      "ports_c7cb1a9915369cf17654b9b7d11a84760b38cf8756d0a1ee4e58f634efeed4c1"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_xml_escape_1",
+                    "value_3": "brick_write_texts_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_texts_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_xml_escape_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_075bdfe7574c7fb4cbcea85f63bcb5f42253678974d6fbd8a16ef02dae234467",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_a4ee5826939ec0c9c684841f5e394d06b8e7220207355314420ba87be89bc799",
+                      "ports_dcba370e6b8d4f5e87d32b46b77f39ddff04da201f15a55891b53977171d970c",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_xml_escape_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_xml_escape_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_xml_escape_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_texts_2",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_xml_escape_1",
+                          "brick_write_texts_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_xml_escape_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_texts_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_xml_escape_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_xml_escape",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "write_texts",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_xml_escape.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = manual_escape(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "4113bcfc24fa8832006e78e50aeddf5734667b3828f76a0b5f0260282327eae2",
+        "status": "passed"
+      },
+      "removed": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_xml_escape\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "4113bcfc24fa8832006e78e50aeddf5734667b3828f76a0b5f0260282327eae2",
+        "status": "no program"
+      },
+      "staged": {
+        "checks": [
+          {
+            "case": "five-entities",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "literal-amp",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-line",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "embedded-nul",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "missing-input",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "unwritable-output",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_xml_escape",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_xml_escape.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_1722781acf1b7f5d69659382df83d635325513f2ae12831abc010dd236211e20",
+                      "ports_1b48d500f58ec29fea062cfbc964703f63377d6c3a899e935f3d3cf8bdad1f9c",
+                      "ports_1c9fade23e9fcbff266c98104f3111332bd5694691d42b4a5a16069b46e4592b",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_4e547397101fe8a0f071ed1a91a76ef56ae19a69171d372bf5ee3bd107718806",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_5ae273111d28705e6777e32e49ecd4190cd96c5fc2fd35fc1d2232be138e4d6b",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_bc692711857a1303fe7ab5651c14da3587704a5d09871954b2485f8ce5fbba45",
+                      "ports_c50ec108f61a8d0b7bb1af19145a3daaef3af1d237b6f1cda501af1b5d4f1e5e",
+                      "ports_c7cb1a9915369cf17654b9b7d11a84760b38cf8756d0a1ee4e58f634efeed4c1"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_xml_escape_1",
+                    "value_3": "brick_write_texts_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_texts_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_xml_escape_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_075bdfe7574c7fb4cbcea85f63bcb5f42253678974d6fbd8a16ef02dae234467",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_a4ee5826939ec0c9c684841f5e394d06b8e7220207355314420ba87be89bc799",
+                      "ports_dcba370e6b8d4f5e87d32b46b77f39ddff04da201f15a55891b53977171d970c",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_xml_escape_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_xml_escape_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_xml_escape_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_texts_2",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_xml_escape_1",
+                          "brick_write_texts_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_xml_escape_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_texts_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_xml_escape_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_xml_escape",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "write_texts",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_xml_escape.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = brick_miner::line_xml_escape(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "4113bcfc24fa8832006e78e50aeddf5734667b3828f76a0b5f0260282327eae2",
+        "status": "passed"
+      }
+    },
+    "line_xxh32": {
+      "baseline": {
+        "emission": {
+          "gaps": {
+            "r": "Unknown observable outcome: line_xxh32"
+          },
+          "providers": []
+        },
+        "spec_sha256": "7ee47568625227c66e313031e0990f028d146a912e1afcc637c77c5173549edc",
+        "status": "no program"
+      },
+      "manual": {
+        "checks": [
+          {
+            "case": "order-repeat",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-line",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "raw-bytes",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "long-block",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "missing-input",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "unwritable-output",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_xxh32",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_xxh32.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_180cf26fc165ec537e0c44a8056c904b4f1f9889c1cbcdca3d9826a1ad343917",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_69265919dc2aa6f4b8912df0d5f1c2830f10da57e60f6c20e5415a500e1b01bd",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_7a445081de197c88318238bd6fa1bb37d3823347e96ea731adf565e8f273ef8d",
+                      "ports_7b495d111c4cdbe8c4fbfeac5d21eaf79a1e0dca03e0981f693717555ab49157",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_a4eaebbbe1ac6a54776512f69a0a17c82289318777bd0907fef84dd023814ce8",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_bb46095f80b2b211014b633b1e0efd7f64c08301771b99cca28a8c577de9c363",
+                      "ports_be8d86597461ae8a2c353350fb3be4d5e1ccc8c8a830ee2e851963b08e4caabd",
+                      "ports_d4e1850666aba6fcc3734a5143a1c41eb71634968fe490efeb63cae6a6b9f6b8"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_xxh32_1",
+                    "value_3": "brick_write_numbers_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_numbers_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_xxh32_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_24dee9148a0630915a5475038939bf17eab5a97132570982efd83ec00c2b87d6",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_7e4fb02c6e058c620dc3785c4d547b87c10ee5e4e69e84d2d3a40a60ce1d0154",
+                      "ports_b7192b0650771134d00fca1dda06bf9da72fee9c4437193aa370f35cb9a9250f",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_xxh32_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_xxh32_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_xxh32_1",
+                          "integers"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_numbers_2",
+                          "integers"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_xxh32_1",
+                          "brick_write_numbers_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_xxh32_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_numbers_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_xxh32_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_xxh32",
+                    "to": "integers"
+                  },
+                  {
+                    "from": "integers",
+                    "provider": "write_numbers",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_xxh32.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = manual_hash(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "7ee47568625227c66e313031e0990f028d146a912e1afcc637c77c5173549edc",
+        "status": "passed"
+      },
+      "removed": {
+        "emission": {
+          "gaps": {
+            "r": "No provider chain for requested outcomes: [{\"outcome\":\"line_xxh32\",\"parameters\":{},\"uncovered\":[]}]"
+          },
+          "providers": []
+        },
+        "spec_sha256": "7ee47568625227c66e313031e0990f028d146a912e1afcc637c77c5173549edc",
+        "status": "no program"
+      },
+      "staged": {
+        "checks": [
+          {
+            "case": "order-repeat",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-file",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "empty-line",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "raw-bytes",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "long-block",
+            "exit": 0,
+            "passed": true
+          },
+          {
+            "case": "missing-input",
+            "exit": 1,
+            "passed": true
+          },
+          {
+            "case": "unwritable-output",
+            "exit": 1,
+            "passed": true
+          }
+        ],
+        "client": "passed",
+        "emission": {
+          "gaps": {},
+          "providers": [
+            {
+              "bricks": [
+                "j85",
+                "miner_line_xxh32",
+                "x09"
+              ],
+              "function": "component_0",
+              "headers": [
+                "json_sequence.hpp",
+                "miner_line_xxh32.hpp",
+                "text_ops.hpp"
+              ],
+              "plan": {
+                "holes": [],
+                "proof": {
+                  "derivation": {
+                    "claim_ids": [
+                      "ports_180cf26fc165ec537e0c44a8056c904b4f1f9889c1cbcdca3d9826a1ad343917",
+                      "ports_1e81cf1f952f3b38ec0e862ca6942113e2bec179fa57ea1bfe7bb1766ed19466",
+                      "ports_3cde9dd08511df9164fdf4f39ed878c9fe5329a03c693f23defb10236c2afb9d",
+                      "ports_5adc0dac3da5048fbed2fbc1ac313b86355805a13772e26a055a8793ff4ce174",
+                      "ports_66adb37d0344372be88b244edf6d13232a8480be90600ae442afac6d795e323f",
+                      "ports_69265919dc2aa6f4b8912df0d5f1c2830f10da57e60f6c20e5415a500e1b01bd",
+                      "ports_71913d1a9c4cb1b5b59a64c647a2d2f198c93b9624354b5d08e48960d352b480",
+                      "ports_7a445081de197c88318238bd6fa1bb37d3823347e96ea731adf565e8f273ef8d",
+                      "ports_7b495d111c4cdbe8c4fbfeac5d21eaf79a1e0dca03e0981f693717555ab49157",
+                      "ports_97204bbe46dc27644783d8c9ffebad4ecddb645daf500e69ae6f85949a6c4691",
+                      "ports_a4eaebbbe1ac6a54776512f69a0a17c82289318777bd0907fef84dd023814ce8",
+                      "ports_b88c8aa1500db529eb3ed9fbf6ac53f7834daa37aa5d1350975b9e085f5fdd68",
+                      "ports_bb46095f80b2b211014b633b1e0efd7f64c08301771b99cca28a8c577de9c363",
+                      "ports_be8d86597461ae8a2c353350fb3be4d5e1ccc8c8a830ee2e851963b08e4caabd",
+                      "ports_d4e1850666aba6fcc3734a5143a1c41eb71634968fe490efeb63cae6a6b9f6b8"
+                    ],
+                    "steps": [],
+                    "valid": true
+                  },
+                  "order": [
+                    "value_0",
+                    "value_1",
+                    "value_2",
+                    "value_3"
+                  ],
+                  "providers": {
+                    "value_0": "source",
+                    "value_1": "brick_read_lines_0",
+                    "value_2": "brick_line_xxh32_1",
+                    "value_3": "brick_write_numbers_2"
+                  },
+                  "requirements": [
+                    "value_3"
+                  ],
+                  "trees": [
+                    {
+                      "args": [
+                        "value_3",
+                        "brick_write_numbers_2",
+                        [
+                          {
+                            "args": [
+                              "value_2",
+                              "brick_line_xxh32_1",
+                              [
+                                {
+                                  "args": [
+                                    "value_1",
+                                    "brick_read_lines_0",
+                                    [
+                                      {
+                                        "args": [
+                                          "value_0",
+                                          "source",
+                                          []
+                                        ],
+                                        "functor": "node"
+                                      }
+                                    ]
+                                  ],
+                                  "functor": "node"
+                                }
+                              ]
+                            ],
+                            "functor": "node"
+                          }
+                        ]
+                      ],
+                      "functor": "node"
+                    }
+                  ],
+                  "wire_derivation": {
+                    "claim_ids": [
+                      "ports_24dee9148a0630915a5475038939bf17eab5a97132570982efd83ec00c2b87d6",
+                      "ports_28207af43f077e60c3d6548cd071aa86ff1c06057b150c806de16e2f07444a94",
+                      "ports_5202a6b0e033efd105377ad8cee62aba56ff5b43b06a54c8cc83666bc9a6dda8",
+                      "ports_7e4fb02c6e058c620dc3785c4d547b87c10ee5e4e69e84d2d3a40a60ce1d0154",
+                      "ports_b7192b0650771134d00fca1dda06bf9da72fee9c4437193aa370f35cb9a9250f",
+                      "ports_fb981e1bf7e9f710ebc296625b0990820be969a591e6be7f0dca17543ec70355"
+                    ],
+                    "steps": [
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "source",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_read_lines_0",
+                          "in:text/plain"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "source",
+                          "brick_read_lines_0"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_read_lines_0",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_line_xxh32_1",
+                          "strings"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_read_lines_0",
+                          "brick_line_xxh32_1"
+                        ],
+                        "rule": "(R6)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "produces",
+                          "brick_line_xxh32_1",
+                          "integers"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "accepts",
+                          "brick_write_numbers_2",
+                          "integers"
+                        ],
+                        "rule": "(R1)"
+                      },
+                      {
+                        "engine": "souffle",
+                        "goal": [
+                          "compatible",
+                          "brick_line_xxh32_1",
+                          "brick_write_numbers_2"
+                        ],
+                        "rule": "(R6)"
+                      }
+                    ],
+                    "valid": true
+                  },
+                  "wires": [
+                    {
+                      "negative": false,
+                      "object": "brick_read_lines_0",
+                      "predicate": "compatible",
+                      "subject": "source"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_line_xxh32_1",
+                      "predicate": "compatible",
+                      "subject": "brick_read_lines_0"
+                    },
+                    {
+                      "negative": false,
+                      "object": "brick_write_numbers_2",
+                      "predicate": "compatible",
+                      "subject": "brick_line_xxh32_1"
+                    }
+                  ]
+                },
+                "status": "complete",
+                "steps": [
+                  {
+                    "from": "in:text/plain",
+                    "provider": "read_lines",
+                    "to": "strings"
+                  },
+                  {
+                    "from": "strings",
+                    "provider": "line_xxh32",
+                    "to": "integers"
+                  },
+                  {
+                    "from": "integers",
+                    "provider": "write_numbers",
+                    "to": "out:application/json"
+                  }
+                ]
+              },
+              "runtime": [],
+              "slot": 0,
+              "source": "#pragma once\n#include \"provider_types.hpp\"\n#include \"json_sequence.hpp\"\n#include \"miner_line_xxh32.hpp\"\n#include \"text_ops.hpp\"\ninline void component_0(const char* input_path, const char* output_path) {\n    auto value_1 = bricks::lines(input_path);\n    auto value_2 = brick_miner::line_xxh32(value_1);\n    unllm::write_json_sequence(output_path, value_2);\n}\n",
+              "status": "complete",
+              "typed_gaps": [],
+              "uncovered": []
+            }
+          ]
+        },
+        "spec_sha256": "7ee47568625227c66e313031e0990f028d146a912e1afcc637c77c5173549edc",
+        "status": "passed"
+      }
+    }
+  },
+  "seconds": {
+    "application.match_extract": 1.789,
+    "application.prepare_project": 39.193,
+    "library.match_extract": 0.023,
+    "line_xml_escape.adapter": 0.0,
+    "line_xml_escape.manual": 2.412,
+    "line_xml_escape.removed": 0.077,
+    "line_xml_escape.staged": 3.135,
+    "line_xxh32.adapter": 0.002,
+    "line_xxh32.manual": 2.896,
+    "line_xxh32.removed": 0.023,
+    "line_xxh32.staged": 2.992,
+    "register": 0.04,
+    "verify_inputs": 0.073
+  },
+  "selected_source_hashes": {
+    "manual_xml": "ee83232d3fc6bd7a90900c8f7b3dc825aff20f848b211589542c7e650a1ff83e",
+    "manual_xxh32": "96c8474b47ad575a081cb8c4226073c5b75b367473d43991444e37c94c6c3b5a"
+  },
+  "tool_versions": {
+    "c++": "c++ (GCC) 16.2.1 20260810",
+    "clang++": "clang version 23.1.1",
+    "make": "GNU Make 4.4.1"
+  },
+  "tools": {
+    "build/native/brick-provider-plan": "01f5acdabe65884546e7499ae38b44a73fc7120011b290b7a8d369ebafc8c22a",
+    "build/native/libunllm_native_logic.so": "889d6561dacccfe045d3fed0091c1505467281cd798d7e82ffc5b046bdab3df5",
+    "build/native/unllm_logic_worker": "fd4fa25f543f9e425ae85ab6c442ecccc13564328f11527ddab97cbdde8de78c",
+    "experiments/boilerplate/component-trial/expanded/index-formats.py": "f66c55bc6f59b995f7099fa31b4ec593cfd0c6e4a35a92d04cab0b3e766fcc65",
+    "experiments/boilerplate/integrated/cli-guarantees.json": "50256863cbf15ffb302802dfc359784a60d18576075b9963289ab832bb52d23e",
+    "experiments/boilerplate/integrated/provider-stage.sh": "98e0a297f9b9b795995df9b4a38746f659822a999a1aed299a1aef93f44424ed"
+  },
+  "verification_sha256": "daa01feb86bfdf699a43e4e7b94f7ed29e9388d0a9fca67165e743b48d39b57f"
+}

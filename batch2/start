@@ -1,0 +1,11 @@
+#!/bin/bash
+set -eu
+cd -- "$(dirname -- "$0")/.."
+volume=/run/media/whisper/UNLLM_CORPUS
+staging="$volume/unllm/experiments/brick-miner"
+if ! mountpoint -q "$volume" || [[ ! -d "$staging" ]]; then
+    echo "Mount the corpus drive before starting the batch." >&2
+    exit 1
+fi
+exec codex --sandbox workspace-write --add-dir "$staging" \
+    'Run ./batch2/run and report the saved bundle path and manifest hash.'

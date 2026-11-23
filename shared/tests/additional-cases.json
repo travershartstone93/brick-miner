@@ -1,0 +1,11 @@
+[
+  {
+    "id": "submeter-energy",
+    "brick": "running_total",
+    "batch": "history",
+    "args": ["1", 2],
+    "input": "09:00\troom-A\t7\n09:01\troom-B\t4\n09:03\troom-A\t-2\n09:07\troom-B\t8\n",
+    "rows": [["09:00","room-A","7","7"],["09:01","room-B","4","4"],["09:03","room-A","-2","5"],["09:07","room-B","8","12"]],
+    "invalid": "09:08\troom-A\t0.5\n"
+  }
+]

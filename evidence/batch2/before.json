@@ -1,0 +1,80 @@
+{
+  "base": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/boilerplate-B32-FObAiR/release-101",
+  "baseline": {
+    "line_http_date_epoch": {
+      "emission": {
+        "gaps": {
+          "r": "Unknown observable outcome: line_http_date_epoch"
+        },
+        "providers": []
+      },
+      "interpretation": {
+        "input_type": "text/plain",
+        "roles": [
+          {
+            "content": "whole",
+            "id": "r",
+            "multiple": false,
+            "output_type": "application/json",
+            "requirement": {
+              "outcome": "line_http_date_epoch",
+              "parameters": {},
+              "uncovered": []
+            }
+          }
+        ]
+      }
+    },
+    "line_ipv6_canonical": {
+      "emission": {
+        "gaps": {
+          "r": "Unknown observable outcome: line_ipv6_canonical"
+        },
+        "providers": []
+      },
+      "interpretation": {
+        "input_type": "text/plain",
+        "roles": [
+          {
+            "content": "whole",
+            "id": "r",
+            "multiple": false,
+            "output_type": "application/json",
+            "requirement": {
+              "outcome": "line_ipv6_canonical",
+              "parameters": {},
+              "uncovered": []
+            }
+          }
+        ]
+      }
+    },
+    "line_uri_component_encode": {
+      "emission": {
+        "gaps": {
+          "r": "Unknown observable outcome: line_uri_component_encode"
+        },
+        "providers": []
+      },
+      "interpretation": {
+        "input_type": "text/plain",
+        "roles": [
+          {
+            "content": "whole",
+            "id": "r",
+            "multiple": false,
+            "output_type": "application/json",
+            "requirement": {
+              "outcome": "line_uri_component_encode",
+              "parameters": {},
+              "uncovered": []
+            }
+          }
+        ]
+      }
+    }
+  },
+  "catalog_sha256": "56a7e600204d94dd3d8a7c0c3bdc29ad09762cbb37a50b5516f579a904870c78",
+  "tasks_sha256": "5cd98d92eaa8abfd2448154dfebb241bce1276d3ae3f6af6268ed593980b86b3",
+  "verification_sha256": "8a681bd7b9a598873ce4c9cc46b9549ea4c9a1ed706e0b96b869dc88daeb2202"
+}

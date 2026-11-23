@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""Discover reusable functions in a C++ application described by a compilation database."""
+import argparse
+from pathlib import Path
+import os
+import sys
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(Path(__file__).resolve().parent/"src"))
+
+if __name__ == "__main__":
+    root = Path(__file__).resolve().parent
+    if sys.argv[1:2] in (["rows"], ["shared"]):
+        runners = {"rows": root / "row-ops/mined/run", "shared": root / "shared/start"}
+        runner = runners[sys.argv[1]]
+        options = sys.argv[2:]
+        if sys.argv[1] == "shared" and options[:1] == ["review"]:
+            runner, options = root / "shared/review", options[1:]
+        os.execv(sys.executable, [sys.executable, "-B", str(runner), *options])
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     epilog="Use 'mine-project rows --help' for the first batch or 'mine-project shared --help' for the cumulative request suite.")
+    parser.add_argument("--source", required=True, type=Path, help="application source root")
+    parser.add_argument("--database", required=True, type=Path, help="directory containing compile_commands.json")
+    parser.add_argument("--output", required=True, type=Path, help="a new run directory")
+    parser.add_argument("--contracts", type=Path, help="typed behavioral examples for planner admission")
+    parser.add_argument("--provenance", type=Path, help="package and source evidence for planner admission")
+    args = parser.parse_args()
+    from project_mine import mine
+    mine(args.source.resolve(strict=True),args.database.resolve(strict=True),args.output.resolve(),
+         args.contracts.resolve(strict=True) if args.contracts else None, args.provenance)

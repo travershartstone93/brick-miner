@@ -1,0 +1,4 @@
+{
+  "read_csv_records": {"from":"in:text/csv","to":"rows","args":{"header":"text"},"meaning":"Read strict UTF-8 comma-separated records in file order, honoring quoted commas, doubled quotes and quoted line breaks. Choose present or absent for the header. Preserve textual fields and number data rows from one.","symbols":["StringValueScanner::Flush"]},
+  "read_json_records": {"from":"in:application/json","to":"rows","args":{"fields":"text"},"meaning":"Read an ordered JSON array of objects. Project the caller's JSON array of field names in the requested order. Decode strings, preserve numeric token spelling, and return true or false for booleans. Reject missing, null, repeated selected keys and nested values.","symbols":["yyjson_read_file"]}
+}

@@ -1,0 +1,6 @@
+[
+ {"id":"finance","brick":"read_csv_records","args":["present"],"input":"side,ref,cents\r\nbook,\"Smith, Jane\",05\r\nbank,\"He said \"\"yes\"\"\",\r\n","rows":[["book","Smith, Jane","05"],["bank","He said \"yes\"",""]],"column":1,"empty":"side,ref,cents\n","invalid":"x,y\nq,\"unterminated"},
+ {"id":"survey","brick":"read_csv_records","args":["absent"],"input":"\"cold\nroom\",001\nlab,002\n","rows":[["cold\nroom","001"],["lab","002"]],"column":0,"empty":"","invalid":"a,b\n1,2\n3,4,5\n"},
+ {"id":"telemetry","brick":"read_json_records","args":["[\"sensor\",\"temp\"]"],"input":"[{\"temp\":-2,\"sensor\":\"N\\u00f8rth\"},{\"sensor\":\"a\\u0000b\",\"temp\":3.50e+2}]","rows":[["Nørth","-2"],["a\u0000b","3.50e+2"]],"column":0,"empty":"[]","invalid":"[{\"sensor\":\"A\",\"temp\":null}]"},
+ {"id":"bookings","brick":"read_json_records","args":["[\"active\",\"room,name\"]"],"input":"[{\"room,name\":\"East\",\"active\":false},{\"active\":true,\"room,name\":\"Hall\"}]","rows":[["false","East"],["true","Hall"]],"column":1,"empty":"[]","invalid":"[{\"active\":true,\"active\":false,\"room,name\":\"Hall\"}]"}
+]

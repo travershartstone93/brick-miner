@@ -1,0 +1,21 @@
+{
+  "base": "boilerplate-B32-FObAiR/release-101",
+  "catalog.json": "56a7e600204d94dd3d8a7c0c3bdc29ad09762cbb37a50b5516f579a904870c78",
+  "verification.json": "8a681bd7b9a598873ce4c9cc46b9549ea4c9a1ed706e0b96b869dc88daeb2202",
+  "xxhash_package": "/var/cache/pacman/pkg/xxhash-0.8.4-1-x86_64.pkg.tar.zst",
+  "xxhash_package_sha256": "ef60bad0552de3eb8a0e1e2a07eb1bcaceaa771a5f36401a2cf0de135ffcc72b",
+  "xxhash_header_sha256": "3dc8d161e867a62d3417f7885b55fdaded8b7b497e2f165d05c94f4fe24f2ca4",
+  "xxhash_lib_sha256": "099a0c0873834e8b05a0037ad88d88ae2b9f43615de711c3e2600765ef15d26d",
+  "xxhash_license_sha256": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a",
+  "tasks_sha256": "4e396a2e0640b21c67f7c9afc620c8308f47dc2b14948dd718cd41f8d85b394b",
+  "client_sha256": "44aa677470d1dee4d39b03def74086fb7e78ccefd98fbae1d8b190a5b65ebd3d",
+  "base_tree_sha256": "8fc92f33a5e1a44318ee2922c8dd710f5372541ba74ed379d715631c158f794c",
+  "planner_files": {
+    "build/native/brick-provider-plan": "01f5acdabe65884546e7499ae38b44a73fc7120011b290b7a8d369ebafc8c22a",
+    "build/native/unllm_logic_worker": "fd4fa25f543f9e425ae85ab6c442ecccc13564328f11527ddab97cbdde8de78c",
+    "build/native/libunllm_native_logic.so": "889d6561dacccfe045d3fed0091c1505467281cd798d7e82ffc5b046bdab3df5",
+    "experiments/boilerplate/integrated/cli-guarantees.json": "50256863cbf15ffb302802dfc359784a60d18576075b9963289ab832bb52d23e",
+    "experiments/boilerplate/integrated/provider-stage.sh": "98e0a297f9b9b795995df9b4a38746f659822a999a1aed299a1aef93f44424ed",
+    "experiments/boilerplate/component-trial/expanded/index-formats.py": "f66c55bc6f59b995f7099fa31b4ec593cfd0c6e4a35a92d04cab0b3e766fcc65"
+  }
+}

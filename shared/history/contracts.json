@@ -1,0 +1,5 @@
+{
+ "previous_field":{"from":"rows","to":"rows","args":{"keys":"text","column":"column"},"meaning":"Append a prior-value flag (1 or 0) and the previous chosen field inside each exact key tuple, preserving encounter order. Use comma-separated key indices or all. First entries receive 0 and an empty value.","symbols":["WindowLeadLagExecutor::EvaluateInternal"]},
+ "running_total":{"from":"rows","to":"rows","args":{"keys":"text","column":"column"},"meaning":"Append the signed 64-bit running sum of a chosen integer field within each key tuple in encounter order. Use all or comma-separated zero-based key indices.","symbols":["WindowAggregateExecutor::EvaluateInternal"]},
+ "rank_records":{"from":"rows","to":"rows","args":{"keys":"text","order_by":"text"},"meaning":"Append a one-based row number within each caller-selected key tuple under stable caller-selected ordering. Return rows in input order; use all or comma-separated key indices and encounter or column:type:direction keys.","symbols":["WindowRowNumberExecutor::EvaluateInternal"]}
+}

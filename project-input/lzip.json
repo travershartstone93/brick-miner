@@ -1,0 +1,16 @@
+{
+  "package": "extra/lzip",
+  "version": "1.26-1",
+  "upstream_version": "1.26",
+  "archive": "lzip-1.26.tar.gz",
+  "archive_sha256": "641cf30961525cbe3b340cc883436c8854e9f5032f459f444de4782b621e6572",
+  "archive_url": "https://download.savannah.gnu.org/releases/lzip/lzip-1.26.tar.gz",
+  "archive_mirror": "https://mirror.csclub.uwaterloo.ca/nongnu/lzip/lzip-1.26.tar.gz",
+  "pkgbuild_url": "https://gitlab.archlinux.org/archlinux/packaging/packages/lzip/-/raw/1.26-1/PKGBUILD",
+  "pkgbuild_sha256": "4fbd81e86da9c9fc12c82ccd5151f754e096294df921de3d77caefa9b0d04e4e",
+  "binary_archive": "lzip-1.26-1-x86_64.pkg.tar.zst",
+  "binary_sha256": "2696118621c7b4c0eb93918f86467986bec9a8e5020d75ca1167cdae5b8b195d",
+  "signature_sha256": "e5f1ade43ee3c4bf00a40f8ccc030f71c7e1b3fe42a71b8fd3be365d0fa47467",
+  "package_signer": "38100C24376CD5F6ED4FF4B46918400C2703040C",
+  "license_files": ["COPYING"]
+}

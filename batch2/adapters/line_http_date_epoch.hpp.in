@@ -1,0 +1,37 @@
+#pragma once
+#include <libsoup/soup.h>
+#include <charconv>
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+namespace brick_miner {
+inline std::vector<std::int64_t> line_http_date_epoch(const std::vector<std::string>& lines) {
+    std::vector<std::int64_t> result;
+    result.reserve(lines.size());
+    for (const auto& line : lines) {
+        if (line.size() != 29) throw std::invalid_argument("expected an IMF-fixdate");
+        int year = 0;
+        const char* digits = line.data() + 12;
+        auto parsed = std::from_chars(digits, digits + 4, year);
+        if (parsed.ec != std::errc{} || parsed.ptr != digits + 4 || year < 1)
+            throw std::invalid_argument("invalid four-digit year");
+
+        // libsoup prints early years unpadded and rejects 9999. A Gregorian cycle has
+        // exactly 146097 days and repeats weekdays and leap days.
+        const int reference = 2000 + year % 400;
+        std::string text = line;
+        text.replace(12, 4, std::to_string(reference));
+        std::unique_ptr<GDateTime, decltype(&g_date_time_unref)> date(
+            @parse@(text.c_str()), g_date_time_unref);
+        if (!date) throw std::invalid_argument("invalid HTTP date");
+        std::unique_ptr<char, decltype(&g_free)> canonical(@format@(date.get(), SOUP_DATE_HTTP), g_free);
+        if (!canonical || text != canonical.get()) throw std::invalid_argument("noncanonical HTTP date");
+        const std::int64_t cycles = (year - reference) / 400;
+        result.push_back(g_date_time_to_unix(date.get()) + cycles * 146097 * 86400);
+    }
+    return result;
+}
+}

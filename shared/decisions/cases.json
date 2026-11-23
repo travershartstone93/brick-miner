@@ -1,0 +1,207 @@
+[
+  {
+    "id": "ledger-branch",
+    "brick": "conditional_field",
+    "args": [
+      0,
+      "text",
+      "eq",
+      "book",
+      "field:2",
+      "field:1"
+    ],
+    "input": "book\t5\t-9\nbank\t4\t2\n",
+    "rows": [
+      [
+        "book",
+        "5",
+        "-9",
+        "-9"
+      ],
+      [
+        "bank",
+        "4",
+        "2",
+        "4"
+      ]
+    ],
+    "column": 3,
+    "invalid": "one\n",
+    "empty": ""
+  },
+  {
+    "id": "temperature-branch",
+    "brick": "conditional_field",
+    "args": [
+      1,
+      "int",
+      "gt",
+      "5",
+      "text:warm",
+      "text:cold"
+    ],
+    "input": "cool\t4\nhot\t6\n",
+    "rows": [
+      [
+        "cool",
+        "4",
+        "cold"
+      ],
+      [
+        "hot",
+        "6",
+        "warm"
+      ]
+    ],
+    "column": 2,
+    "invalid": "one\n",
+    "empty": ""
+  },
+  {
+    "id": "title-length",
+    "brick": "field_text_length",
+    "args": [
+      1
+    ],
+    "input": "article\té\ndraft\tá\nlive\t\n",
+    "rows": [
+      [
+        "article",
+        "é",
+        "1"
+      ],
+      [
+        "draft",
+        "á",
+        "2"
+      ],
+      [
+        "live",
+        "",
+        "0"
+      ]
+    ],
+    "column": 2,
+    "invalid": "one\n",
+    "empty": ""
+  },
+  {
+    "id": "station-length",
+    "brick": "field_text_length",
+    "args": [
+      1
+    ],
+    "input": "s\t🚀A\nt\t入口\n",
+    "rows": [
+      [
+        "s",
+        "🚀A",
+        "2"
+      ],
+      [
+        "t",
+        "入口",
+        "2"
+      ]
+    ],
+    "column": 2,
+    "invalid": "one\n",
+    "empty": ""
+  },
+  {
+    "id": "dependency-witness",
+    "brick": "graph_witnesses",
+    "args": [
+      0,
+      1,
+      "2"
+    ],
+    "input": "A\tB\nB\tC\nA\tC\nB\tA\nA\tB\n",
+    "rows": [
+      [
+        "A",
+        "B",
+        "A",
+        "0"
+      ],
+      [
+        "A",
+        "B",
+        "C",
+        "1"
+      ],
+      [
+        "B",
+        "A",
+        "B",
+        "0"
+      ],
+      [
+        "B",
+        "A",
+        "C",
+        "1"
+      ]
+    ],
+    "column": 2,
+    "invalid": "one\n",
+    "empty": ""
+  },
+  {
+    "id": "oneway-travel",
+    "brick": "graph_witnesses",
+    "args": [
+      1,
+      0,
+      "closure"
+    ],
+    "input": "south\tnorth\nnorth\tsouth\neast\tnorth\n",
+    "rows": [
+      [
+        "north",
+        "east",
+        "east",
+        "1"
+      ],
+      [
+        "north",
+        "south",
+        "east",
+        "1"
+      ],
+      [
+        "north",
+        "south",
+        "north",
+        "0"
+      ],
+      [
+        "north",
+        "south",
+        "south",
+        "1"
+      ],
+      [
+        "south",
+        "north",
+        "east",
+        "0"
+      ],
+      [
+        "south",
+        "north",
+        "north",
+        "1"
+      ],
+      [
+        "south",
+        "north",
+        "south",
+        "0"
+      ]
+    ],
+    "column": 1,
+    "invalid": "one\n",
+    "empty": ""
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "package": "extra/ocrad",
+  "version": "0.29-3",
+  "upstream_version": "0.29",
+  "archive": "ocrad-0.29.tar.lz",
+  "archive_sha256": "11200cc6b0b7ba16884a72dccb58ef694f7aa26cd2b2041e555580f064d2d9e9",
+  "archive_blake2b": "b5acb8fa3b3f02b7a0e5697b3ab4aa4ecc115c9d668192d6a4f533b787092c91449366df3603c73b926be61e5cb6b4e2d5406896ec79f931eb42dce104a424c5",
+  "archive_url": "https://ftp.gnu.org/gnu/ocrad/ocrad-0.29.tar.lz",
+  "archive_mirror": "https://ftpmirror.gnu.org/ocrad/ocrad-0.29.tar.lz",
+  "pkgbuild_url": "https://gitlab.archlinux.org/archlinux/packaging/packages/ocrad/-/raw/0.29-3/PKGBUILD",
+  "pkgbuild_sha256": "1bbe2f170514bd10315aef21ab022a37697f0998173d8f5c453b6963f1328206",
+  "binary_archive": "ocrad-0.29-3-x86_64.pkg.tar.zst",
+  "binary_sha256": "7f735fdaf38396426ebece891a22f4eb6c1434c7730314d17d7134c957724245",
+  "signature_sha256": "83880699af8369dcf86d9885df090757d27b6c470718d894bde60b47162dbc83",
+  "package_signer": "14E46FE5FD69F2E287E244DB632C3CC0D1C9CAF6",
+  "license_files": ["COPYING"]
+}

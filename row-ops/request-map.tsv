@@ -1,0 +1,101 @@
+request	bricks	How the caller can use the operation
+H001	GP	Last stock row per SKU, then filter quantity.
+H002	-	Existing keyed threshold alert on TSV.
+H003	G	Compare consecutive quantities inside each SKU history.
+H004	GA	Group by aisle and count distinct SKUs; compute minimum quantity too.
+H005	GA	Count distinct aisles per SKU, then filter.
+H006	GP	Last row per SKU before splitting the output.
+H007	G	Check previous row in each SKU history; restore reading order.
+H008	G	Rank distinct quantities within each aisle.
+H009	G	Scan each SKU history for zero followed by recovery.
+H010	GP	Last row per aisle, ordered by decreasing source position.
+H011	-	Existing opposite-side matcher needs a CSV row reader.
+H012	GA	Sum cents by reference and side, then subtract the two totals.
+H013	GP	First bank row per reference and amount identifies rows to exclude.
+H014	GA	Count distinct sides per reference, then retain the sole side.
+H015	-	Filtered running balance, not a final grouped total.
+H016	GA	Sum bank entries per reference for the second output.
+H017	GP	Choose the first transaction by decreasing derived magnitude for each side.
+H018	-	Filtered running balance and its first crossing.
+H019	GA	Count and sum each reference and side; compare the paired results.
+H020	GA	Count distinct sides for each reference and amount.
+H021	GP	Last scan by seq per parcel, then filter state.
+H022	G	Find state transitions within each parcel history.
+H023	GP	Select first pickup, then first eligible delivery per parcel.
+H024	GA	Count distinct parcels per depot.
+H025	G	Compare adjacent depots within each parcel history.
+H026	G	Scan each parcel history for a non-delivery after delivery.
+H027	GP	Last scan by seq per parcel retains its depot and state.
+H028	G	Compare adjacent scan times per parcel.
+H029	GP	Order depots by their last scan, then take three.
+H030	GA	Count out and delivered scans by depot and state, including absent categories.
+H031	-	Existing keyed threshold alert after JSON records become rows.
+H032	GP	First full row by decreasing numeric temperature per sensor.
+H033	G	Compare adjacent timestamps per sensor.
+H034	G	Track warm streak length within each sensor history.
+H035	G	Use room and a computed day as the key; compute the temperature range.
+H036	G	Compare successive rooms per sensor.
+H037	G	Check temperature predicates across each sensor history.
+H038	G	Rank each sensor's temperatures to choose the lower median.
+H039	GA	Count distinct temperatures per sensor and minute; report extrema separately.
+H040	GP	Last encounter per sensor, then rank selected rows by temperature.
+H041	-	Filter live titles, then use existing stable unique.
+H042	GA	Count rows by editor and state; fill missing categories with zero.
+H043	GA	Count distinct states per title after decoding XML.
+H044	GP	Order sections by decreasing source position of their last article.
+H045	GP	Last live row per section.
+H046	GP	Identify first mention for each editor and title, then output later mentions.
+H047	GA	Count or compare states per section, then classify.
+H048	GP	Select first maximum by computed character length within each section.
+H049	GA	Count distinct live editors per title.
+H050	-	Filter, stable unique and take first three.
+H051	-	Existing filenames and stable unique.
+H052	GA	Count distinct parents per basename.
+H053	-	Rank one ungrouped sequence.
+H054	GA	Sum uncompressed bytes by derived top-level folder.
+H055	-	Filter and sort one sequence.
+H056	GP	First path in lexical order per exact payload; pair other paths with it.
+H057	-	Classify archive paths into two sequences.
+H058	-	Filter, project parents, deduplicate and sort.
+H059	GA	Sum sizes by normalized extension.
+H060	GP	First nonempty file per parent by size then path.
+H061	GA	Count distinct parents per filename and filter collisions.
+H062	-	Filter paths and sizes.
+H063	GA	Count descendant files by first directory component.
+H064	GAP	Group by exact bytes, count members and select the smallest full path.
+H065	-	Filter and sort paths.
+H066	GP	Choose by decreasing size then path per first-level directory.
+H067	-	Apply two path predicates.
+H068	GA	Count distinct original spellings per folded basename.
+H069	-	Global maximum depth with all ties.
+H070	GA	Group qualifying files by parent and count distinct projected kinds.
+H071	-	Existing URI reader and reversal.
+H072	-	Filter, stable unique and take first three.
+H073	GA	Count distinct original URIs per normalized host.
+H074	-	Existing adjacent unique.
+H075	-	Filter URIs by scheme.
+H076	GA	Count distinct original URIs per fragment-free base.
+H077	GA	Count occurrences per URI; a caller also needs its second position.
+H078	GP	Keep the last row per exact URI and restore surviving source order.
+H079	GA	Count rows per normalized scheme in first-encounter order.
+H080	-	Filter, stable unique and sort.
+H081	-	Set difference over dependency endpoints.
+H082	-	Set difference over dependency endpoints.
+H083	GP	First declaration per edge identifies later duplicates.
+H084	GA	Count distinct prerequisite values per target.
+H085	-	Transitive graph reachability.
+H086	-	Transitive graph reachability.
+H087	-	Detect graph cycles.
+H088	-	Match reverse edges and self-edges.
+H089	-	Test a two-hop path in a graph.
+H090	GP	Keep the last source row per edge, then restore survivor order.
+H091	G	Check active intervals for overlap inside each room.
+H092	GP	First active row per room by start then ID.
+H093	-	Filter intervals at a fixed minute.
+H094	GA	Merge active intervals per room, then sum the derived disjoint durations.
+H095	GP	Select by computed duration then booking ID per room.
+H096	GA	Count states per room to distinguish canceled-only and mixed rooms.
+H097	G	Match stop and start times among each room's active bookings.
+H098	G	Test interval containment within each room.
+H099	GA	Sum computed canceled durations per room.
+H100	G	Sweep room-specific endpoint events to find peak concurrency.

@@ -1,0 +1,60 @@
+{
+  "sqlite_records": {
+    "from": "in:application/vnd.sqlite3",
+    "to": "rows",
+    "args": {
+      "table": "text",
+      "fields": "text",
+      "order_by": "text"
+    },
+    "meaning": "Read selected comma-separated column names from a read-only SQLite table. Choose a comma-separated list of name:asc or name:desc order keys. Selected fields break remaining ties. Return text and numbers as strings; reject null and blob values.",
+    "symbols": [
+      "__wrap_sqlite3_step"
+    ]
+  },
+  "xml_records": {
+    "from": "in:application/xml",
+    "to": "rows",
+    "args": {
+      "records": "text",
+      "fields": "text"
+    },
+    "meaning": "Select XML records by XPath in document order and read exactly one node or attribute per comma-separated relative XPath. Return decoded attribute values or direct element text.",
+    "symbols": [
+      "xpath_query::evaluate_node_set"
+    ]
+  },
+  "zip_file_records": {
+    "from": "in:application/zip",
+    "to": "rows",
+    "args": {
+      "fields": "text"
+    },
+    "meaning": "Read regular ZIP members in archive order. Choose comma-separated path, size, parent, base, top, depth, ext or payload fields. Payload is exact hexadecimal bytes. Top and parent use a dot for root; ext is the ASCII-lowercase final suffix without its dot. Also accepts folded_base, hidden_name, hidden_parent and component=NAME.",
+    "symbols": [
+      "__wrap_archive_read_next_header"
+    ]
+  },
+  "tree_file_records": {
+    "from": "in:inode/directory",
+    "to": "rows",
+    "args": {
+      "fields": "text"
+    },
+    "meaning": "Walk regular files recursively without following symbolic links. Return rows sorted by relative path. Choose path, base, folded_base, size, parent, top, ext, depth, payload (exact hex), hidden_name, hidden_parent or component=NAME (parent component test).",
+    "symbols": [
+      "__wrap_archive_read_next_header"
+    ]
+  },
+  "uri_records": {
+    "from": "in:text/uri-list",
+    "to": "rows",
+    "args": {
+      "fields": "text"
+    },
+    "meaning": "Ignore comments and blank lines using the catalog URI reader. Parse absolute URIs preserving encounter order. Choose original, ASCII-lowercase host or scheme, exact fragment-free base and has_fragment (0 or 1).",
+    "symbols": [
+      "__wrap_uriParseSingleUriA"
+    ]
+  }
+}

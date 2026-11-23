@@ -1,0 +1,19 @@
+{
+  "cache": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/input-bridges-4GR40Go3",
+  "files": {
+    "libarchive-3.8.9-1-x86_64.pkg.tar.zst": "07b7aaec008cc4892cb2da0c599a16438d2e70869a01b90c4e20bf153f58c3b3",
+    "libarchive-3.8.9-1-x86_64.pkg.tar.zst.sig": "961917aed3a74274caa64108ac35d63d7ea3629a6bbfaeb229a9880cdeb9175e",
+    "libarchive.PKGBUILD": "d1c9a0b606f018e43ab456227ef4941193c2efd79d60b0e913c7e13792482e0f",
+    "pugixml-1.16-1-x86_64.pkg.tar.zst": "3e74de55bf751afcba7d9bc90a912165dea704cbc2e8f6cb24fa5f8bfa009c67",
+    "pugixml-1.16-1-x86_64.pkg.tar.zst.sig": "89e26707d08f16afea52cb174941ee29a42bcf3db17bd427449ba9b3484d0c1c",
+    "pugixml-debug-1.16-1-x86_64.pkg.tar.zst": "4f1461e2cfce58b142a3c69fa791ce8ea65d487a36863944db575a3a377ce5a4",
+    "pugixml-debug-1.16-1-x86_64.pkg.tar.zst.sig": "91cbea127931a75c69cc403b47ad5b53ed0f301ac1cf38f1691a4988371171cd",
+    "pugixml.PKGBUILD": "c33bd5c1393674475836f4836f6b3676ea946700faf4605f077ec66213f46eb7",
+    "sqlite-3.53.3-1-x86_64.pkg.tar.zst": "455409b65f8f1a549694b52572c77a33e74e74f426c43daffefe506287e302d1",
+    "sqlite-3.53.3-1-x86_64.pkg.tar.zst.sig": "fe5e54e3aeae9c9bf7e07f8eb1ac6995ebe90dc585c9bbfb26315575ccfc4877",
+    "sqlite.PKGBUILD": "c5ebabcb0d7dc3179f4369db273cac294b1025aecebbbe1fbf195289913a7232",
+    "uriparser-1.0.2-1-x86_64.pkg.tar.zst": "e2cffaf4ba24f93a6733cf4fb2dc555a67c2f4fe8b18936ea490f454018e3c47",
+    "uriparser-1.0.2-1-x86_64.pkg.tar.zst.sig": "96fdd9ee9b049d2dae11e430cab6e167b0080f954f5ba181ce622407036701f8",
+    "uriparser.PKGBUILD": "cd04ab1770348b882e6488709411901b0ee755e3025ef740b6be23f2943aa620"
+  }
+}

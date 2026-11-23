@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Mine and qualify DuckDB row operations twice from the same signed inputs."""
+import argparse
+import json
+import os
+from pathlib import Path
+import shlex
+import shutil
+import subprocess
+import tempfile
+from time import monotonic
+
+HERE = Path(__file__).resolve().parent
+VOLUME = Path("/run/media/whisper/UNLLM_CORPUS")
+RUNS = VOLUME / "unllm/experiments/brick-miner"
+VERSION = "1.5.6-1"
+BINARY = f"duckdb-{VERSION}-x86_64.pkg.tar.zst"
+DEBUG = f"duckdb-debug-{VERSION}-x86_64.pkg.tar.zst"
+RECIPE = f"https://gitlab.archlinux.org/archlinux/packaging/packages/duckdb/-/raw/{VERSION}/PKGBUILD"
+
+
+def fetch_inputs(directory):
+    directory.mkdir()
+    for name,repo in ((BINARY,"extra"),(DEBUG,"extra-debug")):
+        for suffix in ("",".sig"):
+            url = f"https://geo.mirror.pkgbuild.com/{repo}/os/x86_64/{name}{suffix}"
+            subprocess.run(["curl","--proto","=https","--proto-redir","=https","-fsSL",
+                            "--retry","2","--output",directory/(name+suffix),url],check=True)
+    subprocess.run(["curl","--proto","=https","--proto-redir","=https","-fsSL",
+                    "--output",directory/"PKGBUILD",RECIPE],check=True)
+    return directory
+
+
+def runtime_for(work):
+    native = work/"native"
+    runtime = work/"runtime"
+    files = {
+        native/"libbrick_row_kernels.so":runtime/"lib/libbrick_row_kernels.so",
+        native/"libduckdb.so":runtime/"lib/libduckdb.so",
+        native/"duckdb.h":runtime/"include/duckdb.h",
+        HERE/"brick-row-kernels.pc":runtime/"lib/pkgconfig/brick-row-kernels.pc",
+    }
+    for source,destination in files.items():
+        destination.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(source,destination)
+    return runtime
+
+
+def sandbox(work):
+    return ["bwrap","--die-with-parent","--unshare-net","--ro-bind","/","/","--dev","/dev","--proc","/proc",
+            "--tmpfs","/tmp","--bind",work,"/tmp/brick-trial","--chdir","/tmp/brick-trial",
+            "--setenv","PYTHONHASHSEED","0","--setenv","LC_ALL","C"]
+
+
+def check_saved_bundle(work):
+    bundle = work/"bundle"
+    runtime = bundle/"runtime/duckdb"
+    env = {**os.environ,"PKG_CONFIG_PATH":str(runtime/"lib/pkgconfig")}
+    flags = shlex.split(subprocess.check_output(
+        ["pkg-config","--cflags","--libs","brick-row-kernels"],env=env,text=True))
+    dest = work/"saved-bundle-client"
+    dest.mkdir()
+    binary = dest/"client"
+    subprocess.run(["g++-15","-std=c++17","-O1","-I",bundle/"headers","-I",bundle/"providers",
+                    bundle/"qualifications/row-operations/tests/client.cpp","-o",binary,*flags],check=True)
+    env.pop("LD_LIBRARY_PATH",None)
+    shared = subprocess.check_output(["ldd",binary],env=env,text=True)
+    for name in ("libduckdb.so","libbrick_row_kernels.so"):
+        line, = [v for v in shared.splitlines() if v.lstrip().startswith(name+" => ")]
+        found = Path(line.split(" => ",1)[1].rsplit(" (",1)[0])
+        if found.resolve(strict=True) != (runtime/"lib"/name).resolve(strict=True):
+            raise ValueError("Saved client loaded a different library: "+name)
+    subprocess.run([binary],cwd=dest,env=env,check=True,timeout=15)
+
+
+def run(cache):
+    subprocess.run(["mountpoint","-q",VOLUME],check=True)
+    RUNS.mkdir(parents=True,exist_ok=True)
+    pair = Path(tempfile.mkdtemp(prefix="mined-rows-",dir=RUNS))
+    print(f"Saving the two clean runs in {pair}",flush=True)
+    if cache is None:
+        cache = fetch_inputs(pair/"downloads")
+    else:
+        cache = cache.resolve(strict=True)
+    reports = []
+    for n in (1,2):
+        work = pair/f"run-{n}"
+        work.mkdir()
+        start = monotonic()
+        # The native build sees a stable source path. Each bind is backed by a
+        # different, initially empty directory on the mounted corpus.
+        subprocess.run([*sandbox(work),"--ro-bind",cache,"/tmp/inputs","--bind",work,RUNS,
+                        "python3","-B",HERE/"source/mine.py","--cache","/tmp/inputs",
+                        "--output",RUNS/"native"],check=True)
+        native_seconds = round(monotonic()-start,3)
+        runtime = runtime_for(work)
+        subprocess.run([*sandbox(work),"--ro-bind",runtime,"/usr/local","--setenv","PKG_CONFIG_PATH",
+                        "/usr/local/lib/pkgconfig","python3","-B",HERE/"verify.py"],check=True)
+        report = json.loads((work/"report.json").read_bytes())
+        report["seconds"]["native_build_and_probe"] = native_seconds
+        (work/"report.json").write_text(json.dumps(report,sort_keys=True,indent=2)+"\n")
+        reports.append({k:v for k,v in report.items() if k!="seconds"})
+    if reports[0]!=reports[1]:
+        raise RuntimeError(f"Independent qualification results or bundle manifest differ. See {pair}")
+    check_saved_bundle(pair/"run-1")
+    print(f"Identical qualified bundle {pair/'run-1/bundle'}",flush=True)
+    print(reports[0]["manifest_sha256"],flush=True)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--cache",type=Path,help="offline directory of both signed Arch archives and PKGBUILD")
+    run(parser.parse_args().cache)

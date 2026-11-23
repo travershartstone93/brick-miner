@@ -1,0 +1,14 @@
+{
+  "package": "extra/gcc15",
+  "release": "15.3.0+r0.g4db0e8df15be-2",
+  "upstream_revision": "4db0e8df15be",
+  "archive": "gcc15-15.3.0+r0.g4db0e8df15be-2-x86_64.pkg.tar.zst",
+  "sha256": "827ea95be9ef8be6b6f866723a3bff495b6733ab750bed1710b8a7bc18cf8565",
+  "pkgbuild_sha256": "4a70b761f50affffefc983164d931e7ebbe8494514aff0714d08a4f17f33cf37",
+  "include_dir": "/usr/lib/gcc/x86_64-pc-linux-gnu/15.3.0/include/c++/bits",
+  "operations": {
+    "group_rows": {"stl_map.h":["try_emplace"], "stl_algo.h":["sort"]},
+    "aggregate_groups": {"stl_numeric.h":["accumulate"], "stl_set.h":["insert"], "stl_algo.h":["stable_sort"]},
+    "select_group_row": {"stl_algo.h":["min_element","max_element","stable_sort"]}
+  }
+}

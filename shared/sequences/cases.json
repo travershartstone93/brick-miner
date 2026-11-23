@@ -1,0 +1,250 @@
+[
+  {
+    "id": "build-endpoints",
+    "brick": "filter_membership",
+    "args": [
+      0,
+      "column",
+      "1",
+      "exclude"
+    ],
+    "input": "a\tb\nb\tc\na\td\nz\tb\n",
+    "rows": [
+      [
+        "a",
+        "b"
+      ],
+      [
+        "a",
+        "d"
+      ],
+      [
+        "z",
+        "b"
+      ]
+    ],
+    "positions": [
+      1,
+      3,
+      4
+    ],
+    "column": 0,
+    "invalid": "x\n",
+    "empty": ""
+  },
+  {
+    "id": "file-kind-list",
+    "brick": "filter_membership",
+    "args": [
+      1,
+      "list",
+      "[\"cpp\",\"hpp\"]",
+      "keep"
+    ],
+    "input": "a\tcpp\nb\tTXT\nc\thpp\n",
+    "rows": [
+      [
+        "a",
+        "cpp"
+      ],
+      [
+        "c",
+        "hpp"
+      ]
+    ],
+    "positions": [
+      1,
+      3
+    ],
+    "column": 1,
+    "invalid": "x\n",
+    "empty": ""
+  },
+  {
+    "id": "stock-first-zero",
+    "brick": "first_matching_field",
+    "args": [
+      "0",
+      "encounter",
+      "before",
+      "1:int:eq",
+      "0",
+      2
+    ],
+    "input": "x\t5\t9\nx\t0\t15\ny\t2\t18\nx\t3\t21\n",
+    "rows": [
+      [
+        "x",
+        "5",
+        "9",
+        "0",
+        ""
+      ],
+      [
+        "x",
+        "0",
+        "15",
+        "0",
+        ""
+      ],
+      [
+        "y",
+        "2",
+        "18",
+        "0",
+        ""
+      ],
+      [
+        "x",
+        "3",
+        "21",
+        "1",
+        "15"
+      ]
+    ],
+    "positions": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "column": 4,
+    "invalid": "x\n",
+    "empty": ""
+  },
+  {
+    "id": "canonical-archive-name",
+    "brick": "first_matching_field",
+    "args": [
+      "0",
+      "1:text:asc",
+      "whole",
+      "always",
+      "",
+      1
+    ],
+    "input": "grp\tZ\ngrp\ta\nb\t\n",
+    "rows": [
+      [
+        "grp",
+        "Z",
+        "1",
+        "Z"
+      ],
+      [
+        "grp",
+        "a",
+        "1",
+        "Z"
+      ],
+      [
+        "b",
+        "",
+        "1",
+        ""
+      ]
+    ],
+    "positions": [
+      1,
+      2,
+      3
+    ],
+    "column": 3,
+    "invalid": "x\n",
+    "empty": ""
+  },
+  {
+    "id": "booking-endpoints",
+    "brick": "interval_endpoints",
+    "args": [
+      0,
+      1,
+      2
+    ],
+    "input": "R\t2\t5\nR\t5\t7\nA\t4\t7\n",
+    "rows": [
+      [
+        "A",
+        "4",
+        "1"
+      ],
+      [
+        "A",
+        "7",
+        "-1"
+      ],
+      [
+        "R",
+        "2",
+        "1"
+      ],
+      [
+        "R",
+        "5",
+        "-1"
+      ],
+      [
+        "R",
+        "5",
+        "1"
+      ],
+      [
+        "R",
+        "7",
+        "-1"
+      ]
+    ],
+    "positions": [
+      3,
+      3,
+      1,
+      1,
+      2,
+      2
+    ],
+    "column": 2,
+    "invalid": "R\t5\t5\n",
+    "empty": ""
+  },
+  {
+    "id": "radio-uptime",
+    "brick": "interval_endpoints",
+    "args": [
+      1,
+      0,
+      2
+    ],
+    "input": "-2\ttower\t1\n-1\ttower\t1\n",
+    "rows": [
+      [
+        "tower",
+        "-2",
+        "1"
+      ],
+      [
+        "tower",
+        "-1",
+        "1"
+      ],
+      [
+        "tower",
+        "1",
+        "-1"
+      ],
+      [
+        "tower",
+        "1",
+        "-1"
+      ]
+    ],
+    "positions": [
+      1,
+      2,
+      1,
+      2
+    ],
+    "column": 1,
+    "invalid": "x\n",
+    "empty": ""
+  }
+]

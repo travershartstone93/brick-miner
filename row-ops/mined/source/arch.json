@@ -1,0 +1,15 @@
+{
+  "package": "extra/duckdb",
+  "version": "1.5.6-1",
+  "tag": "v1.5.6",
+  "source_id": "069cc9f9b5",
+  "architecture": "x86_64",
+  "signer": "E75CD4814A77AD943C7AB5A3E0959FEA8B550539",
+  "files": {
+    "duckdb-1.5.6-1-x86_64.pkg.tar.zst": "05015ebf87a5845696664df279b0cb932174e8f7be4c51eb0f09db913463b28a",
+    "duckdb-1.5.6-1-x86_64.pkg.tar.zst.sig": "21589d9df07d95e12b5d3eebe46a04e1d647e7bd073e75e3c25e85cb36c35a4b",
+    "duckdb-debug-1.5.6-1-x86_64.pkg.tar.zst": "02dc053e5f9d40be5d2a6ff8533e7111df92d5ce875fb31aa4d12fd5d950d2db",
+    "duckdb-debug-1.5.6-1-x86_64.pkg.tar.zst.sig": "c82bfbad7ae428c6892dc553769c37d5beffadc6ee56a549bd2edfa5b43119a5",
+    "PKGBUILD": "61f49a0cb04cdf273818fab07fc702c7fef3d80f7e4e30c07ae806e3a8e02790"
+  }
+}

@@ -1,0 +1,3 @@
+{
+ "reachable_nodes":{"from":"rows","to":"strings","args":{"from_column":"column","to_column":"column","seed":"text"},"meaning":"List distinct nodes reachable from a supplied seed by following a caller-selected pair of text fields as directed edges. Sort by exact text, exclude the seed and terminate on cycles. Swap fields to follow incoming edges.","symbols":["PhysicalRecursiveCTE::GetDataInternal"]}
+}

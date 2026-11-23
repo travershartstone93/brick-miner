@@ -1,0 +1,218 @@
+[
+  {
+    "id": "temperature-median",
+    "brick": "annotate_group_measure",
+    "args": [
+      "0",
+      1,
+      "lower_median",
+      ""
+    ],
+    "input": "A\t-8\nB\t4\nA\t15\nA\t2\nA\t2\n",
+    "empty": "",
+    "invalid": "x\n",
+    "rows": [
+      [
+        "A",
+        "-8",
+        "2"
+      ],
+      [
+        "B",
+        "4",
+        "4"
+      ],
+      [
+        "A",
+        "15",
+        "2"
+      ],
+      [
+        "A",
+        "2",
+        "2"
+      ],
+      [
+        "A",
+        "2",
+        "2"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "editor-count",
+    "brick": "annotate_group_measure",
+    "args": [
+      "0",
+      1,
+      "count_equal",
+      "draft"
+    ],
+    "input": "design\tdraft\ndesign\tlive\nnews\tlive\n",
+    "empty": "",
+    "invalid": "x\n",
+    "rows": [
+      [
+        "design",
+        "draft",
+        "1"
+      ],
+      [
+        "design",
+        "live",
+        "1"
+      ],
+      [
+        "news",
+        "live",
+        "0"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "quantity-min",
+    "brick": "annotate_group_measure",
+    "args": [
+      "0",
+      1,
+      "min",
+      ""
+    ],
+    "input": "X\t2\nX\t-3\nY\t0\n",
+    "empty": "",
+    "invalid": "x\n",
+    "rows": [
+      [
+        "X",
+        "2",
+        "-3"
+      ],
+      [
+        "X",
+        "-3",
+        "-3"
+      ],
+      [
+        "Y",
+        "0",
+        "0"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "quantity-max",
+    "brick": "annotate_group_measure",
+    "args": [
+      "0",
+      1,
+      "max",
+      ""
+    ],
+    "input": "X\t2\nX\t-3\nY\t0\n",
+    "empty": "",
+    "invalid": "x\n",
+    "rows": [
+      [
+        "X",
+        "2",
+        "2"
+      ],
+      [
+        "X",
+        "-3",
+        "2"
+      ],
+      [
+        "Y",
+        "0",
+        "0"
+      ]
+    ],
+    "column": 2
+  },
+  {
+    "id": "booking-overlap",
+    "brick": "match_intervals",
+    "args": [
+      0,
+      1,
+      2,
+      3,
+      "overlap"
+    ],
+    "input": "A\tB\t1\t4\nA\tA\t3\t6\nB\tC\t0\t8\nA\tD\t6\t9\n",
+    "empty": "",
+    "invalid": "A\tX\t4\t2\n",
+    "rows": [
+      [
+        "A",
+        "B"
+      ]
+    ],
+    "column": 1,
+    "positions": [
+      2
+    ]
+  },
+  {
+    "id": "shift-handover",
+    "brick": "match_intervals",
+    "args": [
+      0,
+      1,
+      2,
+      3,
+      "touches"
+    ],
+    "input": "w\tshift1\t1\t5\nw\tshift2\t5\t8\nv\tshift3\t5\t6\nw\tshift4\t5\t9\n",
+    "empty": "",
+    "invalid": "x\n",
+    "rows": [
+      [
+        "shift1",
+        "shift2"
+      ],
+      [
+        "shift1",
+        "shift4"
+      ]
+    ],
+    "column": 1,
+    "positions": [
+      1,
+      1
+    ]
+  },
+  {
+    "id": "maintenance-containment",
+    "brick": "match_intervals",
+    "args": [
+      0,
+      1,
+      2,
+      3,
+      "contains"
+    ],
+    "input": "w\twork\t2\t8\nw\tpause\t3\t7\nw\tcopy\t2\t8\n",
+    "empty": "",
+    "invalid": "x\n",
+    "rows": [
+      [
+        "copy",
+        "pause"
+      ],
+      [
+        "work",
+        "pause"
+      ]
+    ],
+    "column": 0,
+    "positions": [
+      3,
+      1
+    ]
+  }
+]

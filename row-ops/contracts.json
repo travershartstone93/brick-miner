@@ -1,0 +1,14 @@
+{
+  "group_rows": {
+    "meaning": "Partition complete rows by the tuple of exact text fields at the chosen zero-based columns. Keep source positions and encounter order inside each group.",
+    "from": "rows", "to": "row_groups", "args": {"keys": "text", "group_order": "text"}
+  },
+  "aggregate_groups": {
+    "meaning": "Return one row per group with the key fields and its count, distinct text value count, or signed integer total. Choose a value column and result order.",
+    "from": "row_groups", "to": "rows", "args": {"measure": "text", "value_column": "column", "result_order": "text"}
+  },
+  "select_group_row": {
+    "meaning": "Return the full first or last row of each group under encounter order or a stable ordering by caller-selected fields, types and directions. Preserve the selected row's original position.",
+    "from": "row_groups", "to": "rows", "args": {"which": "text", "order_by": "text", "result_order": "text"}
+  }
+}

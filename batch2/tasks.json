@@ -1,0 +1,53 @@
+{
+  "line_uri_component_encode": {
+    "meaning": "Percent-encode each input line's bytes as one URI component using uppercase hexadecimal. Leave only ASCII letters, digits, hyphen, period, underscore and tilde unchanged. Preserve line order and repetitions.",
+    "to": "strings",
+    "packages": ["libcurl"],
+    "cases": [
+      {"name":"syntax-and-order","input":"a b/c?\na+b\na b/c?","output":["a%20b%2Fc%3F","a%2Bb","a%20b%2Fc%3F"]},
+      {"name":"unreserved","input":"AZaz09-._~","output":["AZaz09-._~"]},
+      {"name":"arbitrary-bytes","input_hex":"ff00800d0a","output":["%FF%00%80%0D"]},
+      {"name":"utf8-and-percent","input":"café\n%2F","output":["caf%C3%A9","%252F"]},
+      {"name":"empty-record","input":"\n","output":[""]},
+      {"name":"empty-file","input":"","output":[]},
+      {"name":"missing-file","error":"missing"},
+      {"name":"output-is-directory","input":"input","error":"destination-directory"}
+    ]
+  },
+  "line_ipv6_canonical": {
+    "meaning": "Canonicalize each bare IPv6 address literal to libuv's lowercase compressed presentation, including dotted-decimal IPv4-mapped addresses. Reject invalid literals, zone IDs, embedded NUL and empty records. Preserve order and repetitions. No resolver or network I/O.",
+    "to": "strings",
+    "packages": ["libuv"],
+    "cases": [
+      {"name":"normal-order","input":"2001:0DB8:0000:0000:0000:0000:0000:0001\n::1\n2001:db8::1","output":["2001:db8::1","::1","2001:db8::1"]},
+      {"name":"ties-and-mapped","input":"2001:DB8:0:0:1:0:0:1\n::ffff:c000:0201","output":["2001:db8::1:0:0:1","::ffff:192.0.2.1"]},
+      {"name":"all-zero","input":"0:0:0:0:0:0:0:0","output":["::"]},
+      {"name":"empty-file","input":"","output":[]},
+      {"name":"wrong-family","input":"::1\n192.0.2.1","error":"invalid"},
+      {"name":"zone","input":"fe80::1%eth0","error":"invalid"},
+      {"name":"embedded-nul","input":"::1\u0000x","error":"invalid"},
+      {"name":"empty-record","input":"\n","error":"invalid"},
+      {"name":"bad-compression","input":"::1::2","error":"invalid"},
+      {"name":"missing-file","error":"missing"},
+      {"name":"output-is-directory","input":"::1","error":"destination-directory"}
+    ]
+  },
+  "line_http_date_epoch": {
+    "meaning": "Parse each canonical 29-byte English IMF-fixdate (GMT) and return its signed Unix timestamp in seconds. Require a valid date, correct weekday and exact canonical spelling. Preserve order and repetitions. Reject malformed dates before writing output.",
+    "to": "integers",
+    "packages": ["libsoup-3.0"],
+    "cases": [
+      {"name":"order-and-repeat","input":"Sun, 06 Nov 1994 08:49:37 GMT\nThu, 01 Jan 1970 00:00:00 GMT\nSun, 06 Nov 1994 08:49:37 GMT","output":[784111777,0,784111777]},
+      {"name":"pre-epoch-and-wide","input":"Wed, 31 Dec 1969 23:59:59 GMT\nTue, 19 Jan 2038 03:14:08 GMT","output":[-1,2147483648]},
+      {"name":"leap-day","input":"Sat, 29 Feb 2020 12:34:56 GMT","output":[1582979696]},
+      {"name":"empty-file","input":"","output":[]},
+      {"name":"wrong-weekday","input":"Thu, 01 Jan 1970 00:00:00 GMT\nFri, 01 Jan 1970 00:00:00 GMT","error":"invalid"},
+      {"name":"impossible-date","input":"Mon, 31 Feb 2020 12:34:56 GMT","error":"invalid"},
+      {"name":"trailing-byte","input":"Thu, 01 Jan 1970 00:00:00 GMT\r","error":"invalid"},
+      {"name":"empty-record","input":"\n","error":"invalid"},
+      {"name":"obsolete-format","input":"Sunday, 06-Nov-94 08:49:37 GMT","error":"invalid"},
+      {"name":"missing-file","error":"missing"},
+      {"name":"output-is-directory","input":"Thu, 01 Jan 1970 00:00:00 GMT","error":"destination-directory"}
+    ]
+  }
+}
