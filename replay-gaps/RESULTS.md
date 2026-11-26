@@ -634,3 +634,33 @@ H063's single-output regression through the shared helper reproduces its previou
 The two pinned runs took 178.46 and 205.51 wall seconds. Each contains 60 saved fixture verdicts, 30 executions on exact archived trees and 24 fresh executions. The repeat reproduces the plans, program hashes, outputs and verdicts. Timed receipt hashes differ. All 68 recorded file hashes verified in each run, and both runs released their scratch executables. The primary report SHA-256 is `bace72893bc599004a2d0564c058213083257d1f396760bf565d21cc72282b68` and the repeat SHA-256 is `0064731db910a6d26787cd2bd777c1c2ed856708573a7b54ce1f1a095576ca2f`. The C++ language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-directory-replay-XXHTdjz7/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-directory-replay-XXT9ct4g/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXJUXuBQ/controls.json)
 
 Build with `make .build/residual-directory-replay` and run `.build/residual-directory-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## ZIP requests with uncovered prose
+
+H051, H052, H055 and H057 are the four remaining archive requests from the prose-obligation ranking. Their five supplied roles use existing readers and the plain-text or JSON writer. The replay verifies the correlated ZIP reader binding, header and runtime against its earlier `ext,parent` qualification. The present tests exercise `base,parent`, `path,size` and `path,depth` through the emitted programs. H051 uses the scalar regular-member reader followed by basename projection and stable deduplication. [Prose-obligation ranking](#replies-with-uncovered-prose-and-no-typed-gap) · [Retained ZIP reader evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-zip-records-XXkiGzWl/stage/manifest.json)
+
+| Request | Behavior checked |
+|---|---|
+| H051 | Emit each exact regular-file basename at its first appearance in archive order. |
+| H052 | Count distinct parent folders for each exact basename, including the root as a parent. |
+| H055 | Report zero-length regular files in full-path order. |
+| H057 | Send root and nested paths to separate outputs in their respective archive order, retaining repeated entries. |
+
+The independent C++ oracle uses Info-ZIP member names, types, uncompressed sizes and order. It verifies archive integrity and compares the regenerated member manifests with the saved manifests. The replay also runs the programs directly on the exact archived ZIP bytes. For JSON reports, the oracle checks decoded path arrays and verifies the archive outputs byte for byte in a separate check. [Native replay and oracle](residual-zip.cpp)
+
+The 19-entry fresh ZIP interleaves root files, nested files and directory entries. It contains distinct case-sensitive parent names, a basename present both at the root and below it, an exact basename that differs from an uppercase variant, and duplicate entries in one parent. A second ZIP contains only directories. The fixture builder is shared with the earlier ZIP size-chain replay. [Fixture builder](zip-fixture.hpp)
+
+The supplied programs passed 20/20 archived fixtures and reproduced all 25 saved output files on the exact ZIP bytes. The fresh split contains four root entries and eleven nested entries, preserving archive order within each output. H057's saved first role remains marked complete. Its generated program writes the same unfiltered regular-member list to both destinations. The archived program passes only the directory-only fixture.
+
+| Altered construction | Saved fixtures passed | Difference on the fresh archive |
+|---|---:|---|
+| H051, sort basenames alphabetically | 2/5 | Moves `rootname.txt` from its first encounter and changes the order of case variants. |
+| H052, count member entries | 5/5 | Counts four `collide.bin` entries in three distinct folders and reports a false collision for `same.bin`. |
+| H055, retain archive order | 2/5 | Reports `zTop.txt` before the other empty files. |
+| H057, replay both saved roles | 1/5 | Emits the same 15 regular entries to both destinations. |
+
+The two pinned runs took 67.11 and 122.29 wall seconds. Each contains 40 saved fixture verdicts, 25 executions on exact archived ZIPs and 16 fresh executions. All 20 regenerated inputs have different bytes from their saved archives and match the saved ordered member manifests. The repeat reproduces the plans, program hashes, regenerated archives, fresh archives, outputs and verdicts. Timed receipt hashes differ. All 87 file hashes verified in each run, and both released their scratch executables. The primary report SHA-256 is `bc1d40444fd5e431806629b915754899ee9f8a172dc7526d582e26ab502eda6f` and the repeat SHA-256 is `ff20942d8ad9457db99697fdf09358230a27e32acb0aa34c49a6445581d786a4`. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-zip-replay-XXRDOTGr/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-zip-replay-XXoTAXVT/report.json)
+
+The shared ZIP builder reproduces the earlier size-chain fixture bytes, plans, executable hashes and output verdicts. Timed receipt hashes differ. The C++ language, cross-file and capability-gap checks passed. [ZIP size-chain regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-zip-chain-replay-XXrmJuQ1/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXbtKlKI/controls.json)
+
+Build with `make .build/residual-zip-replay` and run `.build/residual-zip-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.

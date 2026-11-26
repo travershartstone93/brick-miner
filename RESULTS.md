@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The four remaining ZIP requests passed 20 saved fixtures on their exact archive inputs. Fresh tests distinguish archive order, distinct parent counts and separate root and nested outputs. [ZIP replay and reproduction](replay-gaps/RESULTS.md#zip-requests-with-uncovered-prose)
+
 The six remaining directory requests now have execution evidence on their exact archived trees. The fresh fixture checks binary identity, hidden basenames and ancestors, case-sensitive filenames, ASCII spelling counts and tied maximum depths. [Directory replay and reproduction](replay-gaps/RESULTS.md#directory-requests-with-uncovered-prose)
 
 The next archived cohort has 19 requests and 22 output roles with uncovered prose at the request level and zero typed gaps. All 22 supplied roles plan on the retained catalog. Earlier H058 and H070 execution evidence leaves 17 requests for scoped execution checks, including six directory requests. [Prose-obligation ranking](replay-gaps/RESULTS.md#replies-with-uncovered-prose-and-no-typed-gap)
