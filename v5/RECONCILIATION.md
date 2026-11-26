@@ -199,3 +199,16 @@ make check check-v5-queue check-v5-gap
 ```
 
 A clean repeat reproduced all 29 program hashes, both contract files, the semantic-port view and facts, SQLite, standalone and integration verdicts, and the executable bundle manifest. Run-specific job receipts and search-index files have separate pins. Clean worker cost was 48.49 CPU seconds, 52.34 summed wall seconds, 292,944 KiB peak process RSS and 142,542,090 peak sampled disk bytes, with zero source download bytes. XXH32 extraction and standalone qualification used 1.75 CPU seconds. Human time was unmetered. [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXK3sa8r/stage/package/manifest.json) · [Successor migration ledger](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XXxUwqAc/snapshot/summary.json)
+
+## H1a restricted XML adapter
+
+The historical `line_xml_escape` adapter requires every record to contain no NUL and to fit within `INT_MAX` bytes. The target compiler has a 32-bit `int`. Both restrictions come from the adapter's authored guard. The pinned upstream implementation accepts a NUL-terminated C string and uses a signed integer cursor. Clang replayed the original compilation commands, found the same two-function closure and rejected a separate candidate that reads mutable debugger state. The paired header, implementation and GPL notice matched the installed CUDA-GDB source archive. [Source and Clang receipts](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-inventory-HtBkG7y6/input-and-result.sha256)
+
+| Evidence | Result |
+|---|---|
+| Actual component client | Valid inputs passed. A NUL-containing record threw `std::invalid_argument`. Removing the NUL check failed the client. |
+| Extracted guard expression | Twelve synthetic size/NUL combinations passed. Changing the inclusive upper bound rejected a valid witness at exactly `INT_MAX`. No multi-gigabyte record was allocated. |
+| Ordinary historical emitted CLI | All eight frozen file cases passed. A late NUL left a new destination absent and preserved the sentinel in a pre-existing destination. A successful write replaced the sentinel. Allocation failure and partial device writes remain unknown. |
+| Proposed admission | Seven development examples pair per-record facts with expected eligibility. Main owns admission and any future versioned interface. The verified seven-provider stage remains the control. |
+
+Run `make check-v5-xml-domain` to verify the archive, source and build context, rebuild the intact adapter and mutants, and replay the historical emitter. Clean runs produced receipt SHA-256 `a342dee546ab34e3e1a5456b239ccefdc57e392abf4c137c569dbe1eaa83a462`. Each successful run pins and releases five private test binaries. The compiled size predicate, observed exceptions and file effects carry separate evidence. This study adds zero admitted or published capabilities. [Development fixture](../tests/v5/xml-domain.json) · [Qualification receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-domain-XXa309Fp/receipt.json)

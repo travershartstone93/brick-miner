@@ -1,0 +1,31 @@
+{
+  "scope": "H1a development fixture for interface review. No planner admission.",
+  "capability": "line_xml_escape",
+  "input": "ordered strings",
+  "output": "ordered strings with the five predefined XML entities escaped once",
+  "required_input_facts": {
+    "quantifier": "each record",
+    "nul_byte_absent": true,
+    "max_bytes_inclusive": 2147483647
+  },
+  "target": {"os": "Linux", "architecture": "x86_64", "cxx_int_bits": 32},
+  "examples_for_consumer_review": [
+    {"facts": {"nul_byte_absent": true, "max_bytes_inclusive": 100}, "expected": "eligible"},
+    {"facts": {"nul_byte_absent": true, "max_bytes_inclusive": 2147483647}, "expected": "eligible"},
+    {"facts": {"nul_byte_absent": true, "max_bytes_inclusive": 2147483648}, "expected": "undischarged"},
+    {"facts": {"max_bytes_inclusive": 10}, "expected": "undischarged"},
+    {"facts": {"nul_byte_absent": true}, "expected": "undischarged"},
+    {"facts": {"nul_byte_absent": false, "max_bytes_inclusive": 2}, "expected": "undischarged"},
+    {"facts": {}, "expected": "undischarged"}
+  ],
+  "cli_cases": [
+    {"name": "both quotes and brackets", "input": "<&>\"'\n", "expected_json": ["&lt;&amp;&gt;&quot;&apos;"]},
+    {"name": "existing entity", "input": "&amp;\n", "expected_json": ["&amp;amp;"]},
+    {"name": "empty record and duplicates", "input": "\nx\nx\n", "expected_json": ["", "x", "x"]},
+    {"name": "valid replaces existing destination", "input": "<\n", "prior": "sentinel", "expected_json": ["&lt;"]},
+    {"name": "leading NUL", "input": "\u0000x\n", "expected_exit": 1},
+    {"name": "trailing NUL after valid record", "input": "ok\nx\u0000\n", "expected_exit": 1},
+    {"name": "NUL preserves existing destination", "input": "ok\na\u0000b\n", "prior": "sentinel", "expected_exit": 1},
+    {"name": "missing input preserves existing destination", "prior": "sentinel", "expected_exit": 1}
+  ]
+}
