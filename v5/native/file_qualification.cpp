@@ -110,11 +110,13 @@ J file_contract(const Path &stage, const Path &package, const J &record,
   c["interface"]["callable"] = record["call"];
   c["interface"]["structural_input"] = key["from"];
   c["interface"]["structural_output"] = key["to"];
+  const auto bundle = package / "bundle";
   c["source"] = object({{"id", src["id"]},
                         {"revision", src["revision"]},
                         {"archive_sha256", src["sha256"]},
                         {"implementation_sha256", record["header_sha256"]},
-                        {"header", "headers/" + record["header"].asString()},
+                        {"header", binding_header(bundle, record["header"].asString())
+                                       .lexically_relative(bundle).generic_string()},
                         {"source_registry_sha256", digest(registry)}});
   c["facets"]["license"] =
       array({src["rights"]["upstream_files"], src["rights"]["redistribute"]});

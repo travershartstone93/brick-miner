@@ -50,7 +50,9 @@ miner::Path qualify_json_writer(const miner::Path &package,
                                 const std::string &registry_pin);
 miner::J sequence_writer_identities(const miner::Path &package);
 miner::J file_binding_identity(const miner::J &row, const miner::Path &bundle);
+miner::Path binding_header(const miner::Path &bundle, const std::string &name);
 void project_binding_records(const miner::Path &stage);
+void verify_binding_records(const miner::Path &stage, const miner::J &bindings);
 miner::J file_contract(const miner::Path &stage, const miner::Path &package,
                        const miner::J &record, const miner::J &source,
                        const miner::Path &registry);
@@ -84,6 +86,8 @@ miner::J replay_binding_usage(const miner::Path &snapshot,
                               const std::string &pin);
 miner::J rank_supplied_usage(const miner::Path &audit, const std::string &audit_pin,
                             const miner::Path &snapshot, const std::string &ledger_pin);
+miner::J select_ranked_scope(const miner::Path &package, const std::string &pin,
+                            const miner::J &priority, const miner::J &job);
 miner::Path qualify_filter_records(const miner::Path &package,
                                    const std::string &pin,
                                    const miner::Path &registry,
@@ -96,6 +100,9 @@ miner::Path qualify_group_rows(const miner::Path &package,
                                const std::string &pin,
                                const miner::Path &registry,
                                const std::string &registry_pin);
+miner::Path qualify_column(const miner::Path &package, const std::string &pin,
+                            const miner::Path &registry,
+                            const std::string &registry_pin);
 miner::Path binding_identity_fixture(const miner::Path &package,
                                      const std::string &pin);
 } // namespace v5

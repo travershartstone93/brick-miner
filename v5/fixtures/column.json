@@ -1,0 +1,46 @@
+{
+  "binding":{"component_id":"t80","binding_id":"column","from":"rows","to":"strings"},
+  "direct":[
+    {"name":"visit-order-duplicates-empty","index":1,
+     "rows":[[9,["wrong","z"]],[-4,["wrong","a"]],[9,["other","z"]],[0,["wrong",""]]],
+     "expected":["z","a","z",""]},
+    {"name":"bytes-including-nul","index":0,
+     "rows":[[1,["a\u0000b"]],[2,["\r\n\t"]],[3,["雪"]],[4,[" "]]],
+     "expected":["a\u0000b","\r\n\t","雪"," "]},
+    {"name":"zero-index-uniform","index":0,
+     "rows":[[1,["p","ignored"]],[2,["q","ignored"]]],"expected":["p","q"]},
+    {"name":"third-column-ragged","index":2,
+     "rows":[[4,["a","b","three","ignored"]],[41,["a","b",""]],
+             [9,["a","b","three"]]],"expected":["three","","three"]},
+    {"name":"empty-input-large-index","index":18446744073709551615,"rows":[],"expected":[]},
+    {"name":"preserve-trailing-space","index":1,"rows":[[-3,[""," x "]],[7,["","x"]]],
+     "expected":[" x ","x"]}
+  ],
+  "errors":[
+    {"name":"short-first","index":2,"rows":[[7,["a","b"]],[8,["a","b","c"]]],
+     "observed":"out_of_range","visits":1},
+    {"name":"late-short","index":1,"rows":[[4,["good","visible"]],[6,["short"]],[8,["after","missing"]]],
+     "observed":"out_of_range","visits":2},
+    {"name":"no-fields","index":0,"rows":[[1,[]]],"observed":"out_of_range","visits":1},
+    {"name":"maximum-index","index":18446744073709551615,"rows":[[1,["present"]]],
+     "observed":"out_of_range","visits":1},
+    {"name":"producer-exception","index":1,"rows":[[2,["valid","tentative"]]],
+     "producer_error":true,"observed":"producer stopped","visits":1}
+  ],
+  "ordinary":[
+    {"name":"second-column-to-lines","index":1,"type":"text/plain",
+     "cases":[
+       {"name":"ordered-ragged-duplicates","input":"z\tb\tq\r\nx\ta\tw\nx\tb\tq\nonly\t\np\tlast","output":"b\na\nb\n\nlast\n"},
+       {"name":"embedded-nul","input":"left\ta\u0000b\nleft\t雪\n","output":"a\u0000b\n雪\n"},
+       {"name":"empty","input":"","output":""},
+       {"name":"late-short-row","input":"first\tgood\nshort\n","error":"short"}
+     ]},
+    {"name":"third-column-to-json","index":2,"type":"application/json",
+     "cases":[
+       {"name":"trailing-empty-and-duplicates","input":"a\tignored\t雪\nx\tignored\t\r\nb\tignored\t雪\nq\tignored\tx\u0000y","output":["雪","","雪","x\u0000y"]},
+       {"name":"empty","input":"","output":[]},
+       {"name":"initial-short-row","input":"missing\tlast\n","error":"short"},
+       {"name":"missing-input","error":"missing"}
+     ]}
+  ]
+}

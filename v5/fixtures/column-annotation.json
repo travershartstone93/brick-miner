@@ -1,0 +1,34 @@
+{
+  "description":"Project one zero-based text column from callback rows in encounter order.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Synchronous visitor-driven sequence of positioned, possibly ragged rows containing byte strings.",
+    "semantic_output":"One owned string per visited row, keeping selected bytes, order and repetition. Positions do not affect the output.",
+    "parameters":{"column":"Zero-based std::size_t field index."}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","ordered row projection"],
+    "application":["tabular extraction","record reports"],
+    "construction_role":["transform"],
+    "abstraction":["callback rows to ordered strings"],
+    "implementation_form":["retained C++ header"],
+    "platform":["tested Linux x86_64"],
+    "dependencies":["C++17 standard library","retained Rows callback ABI"],
+    "resources":["Materializes the selected strings in an output vector. Peak memory and maximum row count are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"The producer calls the supplied visitor synchronously while its borrowed row is valid. Each visited row needs a field at the zero-based index for successful completion.","evidence":["original/providers/tab_provider.hpp","original/providers/provider_types.hpp","standalone.json"]},
+    "postconditions":{"status":"observed","detail":"Returns the selected bytes unchanged for every visited row in encounter order, preserving empty and repeated values on the frozen examples.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Short rows threw std::out_of_range, including when a preceding row was valid. An empty producer returned an empty sequence even at the maximum tested size_t index.","evidence":["standalone.json"]},
+    "effects":{"status":"observed","detail":"The direct callable invoked the supplied producer and propagated its tested exception. On the ordinary TSV route, short rows and missing input stopped before the destination was created or replaced.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Changing row positions, including repeated and negative positions, did not change visit order. Selected NUL, whitespace and multibyte bytes were preserved.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"observed","detail":"The frozen cases returned a result vector with as many elements as successfully supplied rows when all selected fields existed.","evidence":["standalone.json"]},
+    "formal_predicates":{"status":"unknown","detail":"The qualification provides finite observations and an ABI check. No formal proof was performed.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"The column visitor completed within one call in the tested synchronous producers. Calling it a second time reproduced the result or failure.","evidence":["standalone.json"]},
+    "ownership":{"status":"observed","detail":"The callable borrows the producer by reference and returns copies of selected strings by value. Mutating the original client rows after a call left the result intact.","evidence":["client.cpp","standalone.json"]},
+    "concurrency":{"status":"unknown","detail":"Concurrency and asynchronous producer behavior were not tested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was qualified.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The pinned project registration advertises one text column in original order. The pinned upstream test exercises the shared TSV reader.","evidence":["source.json","original/project-test-components.cpp"]},
+    "specification_question":{"status":"declared","detail":"Which zero-based column should be returned from every row?","evidence":["source.json","spec.json"]}
+  }
+}

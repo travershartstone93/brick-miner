@@ -6,6 +6,11 @@
 #include <QStandardPaths>
 
 namespace v5 {
+Path binding_header(const Path &bundle, const std::string &name) {
+  if (fs::is_regular_file(bundle / "providers" / name))
+    return project_file(bundle, "providers/" + name);
+  return project_file(bundle, "headers/" + name);
+}
 namespace {
 // The component locates shared implementation bytes. Each row names one
 // binding.
@@ -14,7 +19,7 @@ J identify(const J &raw, const Path &bundle, const J &contracts) {
                   {"binding_id", raw["id"]},
                   {"from", raw["from"]},
                   {"to", raw["to"]}});
-  auto header = project_file(bundle / "headers", raw["header"].asString());
+  auto header = binding_header(bundle, raw["header"].asString());
   J record = object({{"key", key},
                      {"logical_id", compact_hash(key)},
                      {"binding_sha256", compact_hash(raw)},
@@ -194,6 +199,18 @@ J sequence_writer_identities(const Path &package) {
 }
 J file_binding_identity(const J &row, const Path &bundle) {
   return identify(row, bundle, array());
+}
+void verify_binding_records(const Path &stage, const J &bindings) {
+  Database db(stage / "bindings.sqlite", true);
+  db.script("PRAGMA trusted_schema=OFF");
+  check(db.query("SELECT CAST(count(*) AS TEXT) FROM binding") ==
+            std::vector<Strings>{{std::to_string(bindings.size())}},
+        "unexpected detached binding count");
+  for (const auto &r : bindings)
+    check(lookup(db, r) ==
+              std::vector<Strings>{{r["key"]["binding_id"].asString(),
+                                    r["qualification"].asString()}},
+          "detached binding lookup differs from its payload");
 }
 void project_binding_records(const Path &stage) {
   auto canonical = load(stage / "payload.json");

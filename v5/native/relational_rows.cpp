@@ -424,7 +424,59 @@ J detached_manifest(const Path &stage, const std::string &pin,
   return manifest;
 }
 
-J select_scope(const J &priority, const J &job, const std::string &parent) {
+J binding_predecessor(const Path &stage, const Path &package, const J &manifest,
+                      const J &ranked) {
+  const auto &files = manifest["files"];
+  for (const auto *name : {"payload.json", "contract.json", "source.json",
+                          "bindings.sqlite", "tested-programs.json"})
+    check(files.isMember(name), "missing sealed predecessor member: " + std::string(name));
+  const auto tested = load(stage / "tested-programs.json");
+  for (const auto *name : {"standalone", "integration", "environment", "spec"}) {
+    const auto file = std::string(name) + ".json";
+    check(files.isMember(file) && tested[std::string(name) + "_sha256"] == files[file],
+          "detached test receipt differs from sealed " + file);
+  }
+  const auto payload = load(stage / "payload.json");
+  const auto contract = load(stage / "contract.json");
+  const auto bundle = package / "bundle";
+  const auto raw = load(stage / "source.json")["binding"];
+  const auto rows = load(bundle / "providers/contracts.json")["providers"];
+  check(std::count(rows.begin(), rows.end(), raw) == 1 &&
+            tested["verdict"] == "passed",
+        "detached binding has no unique parent row or passing receipt");
+  auto expected = file_binding_identity(raw, bundle);
+  const auto &key = expected["key"];
+  expected["contract_sha256"] = files["contract.json"];
+  expected["qualification"] = "ordinary-emission-tested";
+  const auto &bindings = payload["bindings"];
+  check(payload["schema"] == "unllm.staged-binding-qualifications/1" &&
+            payload["catalog_sha256"] == manifest["catalog_sha256"] &&
+            payload["contract_file"] == "contract.json" &&
+            payload["qualified_logical_id"] == expected["logical_id"] &&
+            manifest["binding_id"] == expected["logical_id"] &&
+            std::count(bindings.begin(), bindings.end(), expected) == 1 &&
+            key["binding_id"] == ranked["binding_id"] &&
+            key["component_id"] == ranked["component_id"] &&
+            key["from"] == ranked["from"] && key["to"] == ranked["to"] &&
+            expected["binding_sha256"] == ranked["binding_sha256"] &&
+            expected["header_sha256"] == ranked["header_sha256"],
+        "detached binding differs from the next ranked binding");
+  const auto capability = raw["effect"].isNull() ? key["binding_id"] : raw["effect"];
+  check(contract["provider_id"] == key["component_id"] &&
+            contract["capability_id"] == capability &&
+            contract["interface"]["callable"] == expected["call"] &&
+            contract["interface"]["structural_input"] == key["from"] &&
+            contract["interface"]["structural_output"] == key["to"] &&
+            contract["source"]["implementation_sha256"] == expected["header_sha256"] &&
+            contract["qualification"]["level"] == expected["qualification"],
+        "detached qualification does not describe the exact ranked binding");
+  verify_binding_records(stage, bindings);
+  return expected;
+}
+} // namespace
+
+J select_ranked_scope(const Path &package, const std::string &parent,
+                      const J &priority, const J &job) {
   auto next = priority["bindings"].begin();
   const auto end = priority["bindings"].end();
   const auto pending = [](const auto &row) {
@@ -437,8 +489,21 @@ J select_scope(const J &priority, const J &job, const std::string &parent) {
     const auto stage =
         project_file(runs, previous["manifest"].asString()).parent_path();
     const auto pin = previous["sha256"].asString();
-    const auto sealed =
-        detached_manifest(stage, pin, parent, "unllm.scoped-row-evidence/1");
+    const auto schema = previous.get("schema", "unllm.scoped-row-evidence/1").asString();
+    check(schema == "unllm.scoped-row-evidence/1" ||
+              schema == "unllm.binding-qualification-stage/1",
+          "unsupported ranked predecessor schema");
+    const auto sealed = detached_manifest(stage, pin, parent, schema);
+    if (schema == "unllm.binding-qualification-stage/1") {
+      const auto record = binding_predecessor(stage, package, sealed, *next);
+      reviewed.append(object({{"binding_id", (*next)["binding_id"]},
+                              {"manifest_sha256", pin},
+                              {"logical_id", record["logical_id"]},
+                              {"contract_sha256", record["contract_sha256"]},
+                              {"disposition", "scoped evidence reconciled"}}));
+      ++next;
+      continue;
+    }
     const auto domain = load(stage / "domain.json");
     const auto contract = load(stage / "contract.json");
     check(
@@ -464,6 +529,7 @@ J select_scope(const J &priority, const J &job, const std::string &parent) {
   return object({{"selected", *next}, {"reviewed_predecessors", reviewed}});
 }
 
+namespace {
 Path qualify_rows(const Path &package, const std::string &pin,
                   const Path &registry, const std::string &registry_pin,
                   const RowScope &scope) {
@@ -496,7 +562,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
       select_binding(defs["providers"], scope.operation,
                      "miner_" + scope.operation, "rows", scope.output);
   const auto record = file_binding_identity(row, bundle);
-  const auto selection = select_scope(priority, job, pin);
+  const auto selection = select_ranked_scope(package, pin, priority, job);
   const auto &selected = selection["selected"];
   const auto legacy = load(bundle / (scope.groups() ? group_history : history) /
                            "contracts.json")[scope.operation];
