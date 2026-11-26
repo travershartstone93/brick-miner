@@ -491,3 +491,32 @@ On the shuffled database, H022's row-ID arm starts at Z's scan 55 and includes i
 The two pinned runs took 152.30 and 175.96 wall seconds. Each contains seven planner probes, 50 checker verdicts, 25 executions on exact archived databases and 20 fresh executions. Both reports reproduce the plans, program hashes, database bytes, outputs and verdicts. Timed receipt hashes differ. All 142 recorded file hashes verified in each run, and both runs released their scratch executables. The primary report SHA-256 is `7a64c0e8c5ede30e57d6b46bd49bfa4d4f6bdbb5dcaeac494b696aa223e7a2e4` and the repeat SHA-256 is `69d20b78baa6290b7cf02b918afe2589b2adf81704cbf9404515752054959a39`. Language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-dispatch-replay-XX8yrLPh/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-dispatch-replay-XXaJb29y/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XX4VJVKb/controls.json)
 
 Build with `make .build/unordered-dispatch-replay` and run `.build/unordered-dispatch-replay` with the corpus volume mounted. Substitute this executable in the [pinned read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## Archived build scheduling with no ordered operations
+
+The five saved scheduling replies correctly identify the headerless TSV input and plain-text destination. The pinned V5 planner reproduces the zero-operation stop on each. The later replay menus expose the graph witness and reachability operations where the supplied recipes use them. They still omit stable deduplication for H081, H082, H087 and H089, and sorting for H081 and H082. H086's reachability operation is present in its later menu. [Frequency report and original menu pins](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-finance-replay-XXvu2pML/report.json)
+
+| Request | Construction after the existing TSV reader |
+|---|---|
+| H081 | Keep prerequisite names that never appear as dependents, then deduplicate and sort. |
+| H082 | Keep dependent names that never appear as prerequisites, then deduplicate and sort. |
+| H086 | Follow incoming edges from `app`, terminate on cycles, exclude the seed and sort all distinct prerequisites. |
+| H087 | Follow positive-length directed paths, keep modules that reach themselves, then deduplicate. |
+| H089 | Use exact two-edge witnesses, require their direct edge and three different modules, then sort and deduplicate the output pairs. |
+
+The four new ordinary routes start from the existing `tab_records` binding and use the existing plain-text writer. For H086 the harness verifies the earlier report, catalog, supplied operations, fixture inputs, emission plan and receipt by their recorded hashes. Its independent traversal matches the five retained fixture outputs and the fresh cycle from the prior run, which emits `a,b,core,tail`. [Supplied recipes](../shared/request-recipes.json) · [H086 evidence reused here](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-reachability-replay-XXxyKVfL/report.json)
+
+A separate C++ oracle enumerates graph edges and traverses the distinct directed graph. The new witness pairs 25 rows with a reversed input and a version with the cycle-closing edges removed. It includes two distinct intermediates for the direct `root → target` pair, a two-edge path to `loose` without a direct edge, a direct edge to `long` with only a three-edge alternative, self-loops, two three-module cycles, and a node on each side of a cycle. [Replay harness and oracle](unordered-scheduling.cpp)
+
+The four newly emitted programs passed all 20 original fixtures, byte for byte, and H086 contributes five pinned fixture passes. The new programs agree with the oracle on the three fresh inputs. H087 reports both three-module cycles and both self-loops on the full graph. It emits an empty result on the DAG. H089 reports only `root → target`, once, in both encounter orders.
+
+| Altered construction | Archived fixtures passed | Difference on the full graph |
+|---|---:|---|
+| H087, test only self-loops | 3/5 | Drops all six vertices in the two longer cycles. |
+| H089, omit the direct-edge requirement | 3/5 | Adds `root → loose` and other pairs with only a two-edge path. |
+| H089, allow repeated modules | 2/5 | Adds `onlySelf → onlySelf`, `selfA → plain` and `selfA → selfA`. |
+| H089, use transitive closure in place of exactly two edges | 4/5 | Adds `root → long` and two edges with alternate walks through cycles. |
+
+The two pinned runs took 96.18 and 114.79 wall seconds. Each contains five planner probes, 40 new archived fixture verdicts across the ordinary and altered programs, five reused H086 verdicts and 24 fresh executions. The clean repeat reproduces the plans, executable hashes, outputs and verdicts. Timed receipt hashes differ. All 120 recorded file hashes verified in each run. Both runs released their scratch executables. The primary report SHA-256 is `77ebec07db24b39e8ff66a90604579be52cc0de87124ef495023078f4129c555` and the repeat SHA-256 is `d934216c627b7c3c5469ad71e5b0a4f2b304dcd6ddf4f3afb9825d8b73677e7c`. Language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-scheduling-replay-XXZQnfDy/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-scheduling-replay-XXb5oaoC/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXpoVtEF/controls.json)
+
+Build with `make .build/unordered-scheduling-replay` and run `.build/unordered-scheduling-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.

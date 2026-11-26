@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The five build-scheduling replies with zero operations have passing retained constructions. The audit reuses pinned H086 reachability evidence and checks cycle membership, direct-edge membership, distinct modules and exact path length on a fresh graph. [Build-scheduling replay and reproduction](replay-gaps/RESULTS.md#archived-build-scheduling-with-no-ordered-operations)
+
 The five parcel-dispatch zero-operation replies were replayed with retained SQLite row and history operations. The follow-up separates scan ID order from row insertion order with matching logical data in two fresh databases. [Parcel-dispatch replay and reproduction](replay-gaps/RESULTS.md#archived-parcel-dispatch-with-no-ordered-operations)
 
 The seven room-booking replies with zero operations use the retained JSON reader and interval operations in their supplied constructions. Fresh controls distinguish half-open intervals, departure-first occupancy and summing each canceled duration. [Room-booking replay and reproduction](replay-gaps/RESULTS.md#archived-room-bookings-with-no-ordered-operations)

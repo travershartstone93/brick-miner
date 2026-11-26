@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The five build-scheduling zero-operation replies use the retained TSV reader, graph and membership operations and plain-text writer in their supplied constructions. Four new routes passed 20 fixtures and the pinned H086 transfer contributes five. The independent oracle distinguishes cycle members, path-length requirements, repeated modules and absent direct edges. [Build-scheduling replay and evidence](../replay-gaps/RESULTS.md#archived-build-scheduling-with-no-ordered-operations)
+
 The five SQLite parcel-dispatch replies reproduce the zero-operation stop on the pinned V5 parent. Their supplied constructions use retained correlated reads and keyed history. The saved fixtures alias scan ID to SQLite row ID. A fresh two-database comparison isolates insertion order from scan order and checks both against independent SQL. [Parcel-dispatch replay and evidence](../replay-gaps/RESULTS.md#archived-parcel-dispatch-with-no-ordered-operations)
 
 The seven room-booking replies with zero ordered operations reproduce their archived stop on the pinned V5 parent. The supplied constructions reuse the existing JSON reader, interval matcher and endpoint stream. Five routes use the detached TSV binding. Independent per-minute and pairwise checks cover half-open bounds and expose the archived H099 instruction to merge overlapping cancellations. [Room-booking replay and evidence](../replay-gaps/RESULTS.md#archived-room-bookings-with-no-ordered-operations)
