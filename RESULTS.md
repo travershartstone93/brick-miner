@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+Both stock-history recipes passed all ten fixtures after correcting the construction. A fresh interleaved trace caught an early-rearm variant of H002 and a quantity-only variant of H007 that the archived suites accepted. [Threshold output and stock histories](replay-gaps/RESULTS.md#threshold-output-validation-and-stock-histories)
+
 The eight saved group-order failures all exposed another invalid argument after the first correction. Their fixed recipes passed 40/40. H004's controls distinguished calculating an aisle minimum over every reading from counting each SKU once. [Group order and H004 evidence](replay-gaps/RESULTS.md#group-order-validation-and-the-h004-minimum)
 
 All ten archived grouped-row selector failures exposed a second invalid argument after the first was corrected. Complete fixed constructions passed all 50 fixtures, and four also needed the staged TSV writer. A fresh H032 fixture distinguished reading order from minute order after both had passed the archived suite. [Grouped row selection and reproduction](replay-gaps/RESULTS.md#grouped-row-selection-validation-ten-requests)

@@ -262,3 +262,24 @@ The pinned run took 167.95 wall seconds and recorded 17 validation plans, 65 arc
 A full rerun of the default selector audit reproduced the previous plans, executable hashes, verdicts and outputs across all fifteen integrated arms. All 66 plan and receipt pins verified. Only timed receipts and regenerated fixture hashes were excluded from the report comparison. The regression report SHA-256 is `08ac293f82c366b8ba71be87ca1ca273c3761ccf1838463152d035bfdf33f9da`. [Selector regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-order-replay-XXfkccFW/report.json)
 
 Reproduce with the pinned command in the preceding section and append `--group-order` after `.build/row-order-replay`.
+
+## Threshold output validation and stock histories
+
+Both saved `threshold_entries.emit` failures, H002 and H007, match their original 104-card replies byte for byte. The pinned planner reproduced both errors. The parameter accepts a scalar choice of `key` or `row_number`. The archived diagnostic prints the enum as an array, which makes the expected choices and the rejected array look identical. Each control changes only that parameter and leaves the original operations, output MIME and uncovered text in place. [Original ranking](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-5x2_hyp7/ranking.json)
+
+H002 needs a separate alert state for each SKU. A quantity of two or fewer emits its first alert, readings below five leave the alert suppressed, and five or more rearms the SKU. The `key` scalar selects `threshold_keys` and yields a string sequence. The archived trailing `ordered_column` still expects rows and leaves `strings → rows` open. The `row_number` scalar selects `threshold_rows` and leaves `integers → rows` open at the same column operation. The fixed recipe sends the existing key-output binding directly to the plain-text writer. [Retained keyed latch qualification](../v5/RECONCILIATION.md#h1-and-h1a-retained-stateful-binding)
+
+H007's `key` scalar reaches the writer without a typed gap, and the planner retains its uncovered comparison requirement. The `row_number` scalar also leaves `integers → out:text/plain` open. Neither scalar makes a complete role. The task needs the previous aisle and previous numeric quantity for the same SKU, plus the current source position when both match. The fixed route uses two keyed `previous_field` operations, checks that the predecessor exists, tests both equalities and formats the SKU and position. Both full recipes use the saved output MIME. The experiment holds the supplied specifications fixed.
+
+The two full recipes passed all ten archived fixtures. Separate keyed-state references matched both programs on those ten fixtures and on a fresh fifteen-row stock input. On that input H002 emitted `A, B, B, A`. H007 emitted `A:7, B:10, B:14, A:15` in file order. The same input distinguishes all four deliberately altered programs.
+
+| Request and altered behavior | Archived fixtures passed | Difference on the fresh input |
+|---|---:|---|
+| H002 rearms at four | 5/5 | Emits an extra A alert at row 5, before A has reached five. |
+| H007 compares quantity only | 5/5 | Includes B at rows 4 and 12 and A at row 13 despite aisle changes. |
+| H007 compares aisle only | 2/5 | Includes five rows where the aisle matches and the quantity changed. |
+| H007 uses the previous file row regardless of SKU | 4/5 | Misses valid interleaved repeats at rows 7 and 10 and adds rows 2 and 13. |
+
+Each clean run recorded six planner-only controls, 30 archived fixture verdicts and six executions on the interleaved witness. The repeat reproduced plans, executable hashes, outputs and verdicts. Timed receipt hashes differed. All 18 plan and receipt hashes verified in each run. The primary report SHA-256 is `fff7b885199baab41c40f99930a5309b7c15a6b288b1168ecfc6aed636abdf18` and the repeat SHA-256 is `e2278fffd730e5cd4d010f82af7469c6475871aea440835f3810b9ae11c18177`. C++ language, cross-file and capability-gap checks passed. [Sealed report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-stock-state-replay-XXXUqNGd/report.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-stock-state-replay-XX508TeI/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XX8M74V9/controls.json)
+
+Build with `make .build/stock-state-replay` and run `.build/stock-state-replay` with the corpus volume mounted. To reproduce with the same pinned tools, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests).
