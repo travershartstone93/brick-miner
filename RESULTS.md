@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The retained JSON reader passed direct checks for the exact H035 telemetry projection, including numeric spelling and partial visitation on a late record error. The ordinary H035 program passed 22/22 executions on each bundle. Removing the reader blocked the recipe. [Telemetry qualification and reproduction](v5/RECONCILIATION.md#h1b-telemetry-json-scalar-projection)
+
 The retained directory metadata reader passed seven direct cases in two processes for the exact `parent,ext` projection. The fixed H070 program passed 14/14 executions on each bundle. Removing the reader blocked its recipe. A clean repeat reproduced the 23-file evidence package. [Directory qualification and reproduction](v5/RECONCILIATION.md#h1b-correlated-directory-parent-and-extension-projection)
 
 The retained ZIP metadata reader passed seven direct cases in two processes and 14 ordinary checks on each bundle for the exact `ext,parent` projection. Removing it blocked the fixed H058 recipe. A detached stage reproduced all 29 files and pins the packaged libarchive runtime, adapter, parameter scope and observations. [ZIP qualification and reproduction](v5/RECONCILIATION.md#h1b-correlated-zip-extension-and-parent-projection)

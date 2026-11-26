@@ -1,0 +1,26 @@
+{
+  "description":"Project the four selected telemetry fields from a local JSON array of objects, retaining each scalar's text representation.",
+  "primary_family":"document_geographic",
+  "interface":{"semantic_input":"Local JSON array of objects with the exact selector for sensor, room, minute and temp. Each selected field must occur once and hold a string, number or boolean.","semantic_output":"Ordered rows of four scalar texts, with one-based array positions.","parameters":{"fields":"text"}},
+  "facets":{
+    "technical_hierarchy":["document_geographic","JSON scalar projection"],"application":["telemetry reports","structured record import"],"construction_role":["reader"],
+    "abstraction":["ordered row visitor"],"implementation_form":["authored C++ adapter over vendored yyjson in retained DuckDB reader library"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_readers","DuckDB 1.5.6-1","vendored yyjson","C++17"],
+    "resources":["The parser loads the input before visitation. Qualification uses small fixtures. Peak memory, maximum input size and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Use a readable JSON array and the exact telemetry selector. Each selected key must be unique in its object and select a supported scalar.","evidence":["original/adapter.cpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The reader delivered selected texts in selector order, including original numeric token spelling, decoded string contents, and boolean texts. Duplicate input objects retained separate positions.","evidence":["standalone.json"]},
+    "refinements":{"status":"observed","detail":"Reordering selector fields reordered the result. Unselected nested and repeated fields were ignored in a successful fixture. Repeated selected keys were detected after key decoding.","evidence":["standalone.json"]},
+    "effects":{"status":"observed","detail":"No fixture bytes changed. A late shape error followed an already delivered row in the direct visitor. The ordinary H035 composition preserved destination state on the tested input errors.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Successful repeat visits to the same stable fixture produced identical records and started positions at one.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"No proof over arbitrary JSON inputs was established.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached exact argument predicate bounds the reviewed fixture evidence. Whole-input validity has no formal proof here.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Empty or non-string selectors failed during producer creation. A malformed input produced no callbacks. A late invalid record stopped after the successfully visited prefix.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures the path and selector names by value. The visitor borrows a row for the duration of the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits and input changes during visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter calls yyjson_read_file with raw-number parsing. H035 consumes integer minute and temperature fields for room/day ranges.","evidence":["source.json","original/adapter.cpp","integration.json"]},
+    "specification_question":{"status":"declared","detail":"Which fields are required, and should the text form of numeric values be preserved? This evidence covers the sensor, room, minute and temp projection.","evidence":["spec.json","integration.json"]}
+  }
+}

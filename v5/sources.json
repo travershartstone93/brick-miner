@@ -791,6 +791,30 @@
         "files":{"usr/include/json-c/json.h":"05408079f9d62dbec3c4ebc2c05babdc0f70cf130fdbda39c95337805a358f25","usr/include/json-c/json_object.h":"20499c79777b310c8347319b93a07ecc04c92eb117e00b5197f7be02be88e09e","usr/lib/libjson-c.so.5.5.0":"5519671516f5f73cdfd9988b47f40c08a0d8d5a9fa44bcfb5a8fdf12c9429d46","usr/share/licenses/json-c/COPYING":"74c1e6ca5eba76b54d0ad00d4815c8315c1b3bc45ff99de61d103dc92486284c"}}
     },
     {
+      "id":"retained-json-records","family":"Official Arch packages","upstream":"https://www.duckdb.org",
+      "revision":"sha256:05015ebf87a5845696664df279b0cb932174e8f7be4c51eb0f09db913463b28a",
+      "release":"1.5.6-1","method":"signed-local-package",
+      "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/duckdb-input-GHUYik9e/duckdb-1.5.6-1-x86_64.pkg.tar.zst",
+      "sha256":"05015ebf87a5845696664df279b0cb932174e8f7be4c51eb0f09db913463b28a",
+      "signature_sha256":"21589d9df07d95e12b5d3eebe46a04e1d647e7bd073e75e3c25e85cb36c35a4b",
+      "debug_archive":"duckdb-debug-1.5.6-1-x86_64.pkg.tar.zst",
+      "debug_sha256":"02dc053e5f9d40be5d2a6ff8533e7111df92d5ce875fb31aa4d12fd5d950d2db",
+      "debug_signature_sha256":"c82bfbad7ae428c6892dc553769c37d5beffadc6ee56a549bd2edfa5b43119a5",
+      "signer":"E75CD4814A77AD943C7AB5A3E0959FEA8B550539","recipe_sha256":"61f49a0cb04cdf273818fab07fc702c7fef3d80f7e4e30c07ae806e3a8e02790",
+      "upstream_tag":"v1.5.6","upstream_source_id":"069cc9f9b5",
+      "symbols":["yyjson_read_file"],"families":["document_geographic","files_storage"],
+      "adapter_revision":"b4e51bf11e1fe9494d5770734af982f89ad9158b",
+      "provider_abi_revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a",
+      "provider_abi_notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e",
+      "documentation":"qualifications/shared/readers/contracts.json","examples":"shared/request-recipes.json#H035","tests":"v5/fixtures/json-records.json",
+      "dependencies":["brick_shared_readers","DuckDB 1.5.6-1","DuckDB vendored yyjson","C++17 standard library"],
+      "rights":{"scope":"Existing approved archives and retained runtime for local detached telemetry qualification.",
+                "upstream_files":"DuckDB MIT per signed package. Vendored yyjson carries an MIT notice in the original parser files.",
+                "redistribute":"Local review only. Preserve the archived notices. A separate redistribution grant for the authored adapter is unrecorded."},
+      "approval":"local-pilot",
+      "approval_reference":"Historical approved DuckDB source and readers batch recorded in row-ops/mined/source/arch.json and SHARED-NEEDS.md."
+    },
+    {
       "id":"retained-zip-records","family":"Official Arch packages","upstream":"https://libarchive.org/",
       "revision":"sha256:07b7aaec008cc4892cb2da0c599a16438d2e70869a01b90c4e20bf153f58c3b3",
       "release":"3.8.9-1","method":"signed-local-package",
@@ -830,6 +854,14 @@
     }
   ],
   "jobs": [
+    {
+      "source":"retained-json-records",
+      "route":"api",
+      "target":"read_json_records",
+      "stream":"foundational",
+      "parameter":{"fields":"[\"sensor\", \"room\", \"minute\", \"temp\"]"},
+      "tests":"v5/fixtures/json-records.json"
+    },
     {
       "source":"retained-zip-records",
       "route":"api",
