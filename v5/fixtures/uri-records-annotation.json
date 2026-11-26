@@ -1,0 +1,33 @@
+{
+  "description":"Read absolute URIs from a local URI list and return selected parsed fields in encounter order.",
+  "primary_family":"files_storage",
+  "interface":{
+    "semantic_input":"A readable local URI list with UTF-8 text without embedded NUL and absolute URIs accepted by the retained parser.",
+    "semantic_output":"One-based rows with the requested ordered URI fields.",
+    "parameters":{"fields":"One reviewed ordered projection of original, scheme, host, base and has_fragment"}
+  },
+  "facets":{
+    "technical_hierarchy":["files_storage","URI record projection"],
+    "application":["URI inventories","link and fragment reports"],
+    "construction_role":["reader"],
+    "abstraction":["local URI-list file to positioned row visitor"],
+    "implementation_form":["retained C++ adapter over uriparser and the retained GLib URI-list reader"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_inputs","uriparser 1.0.2-1","GLib 2.90.1","C++17"],
+    "resources":["The URI-list reader loads and validates the input before returning strings to the URI parser. Size ceilings, throughput and peak memory are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply a readable local file and a reviewed fields selector. The URI-list reader requires UTF-8 without embedded NUL, and each retained record must parse as an absolute URI.","evidence":["original/adapter.cpp","original/headers/gir_g_uri_list_extract_uris.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested projections returned the requested field order, ASCII-folded schemes and hosts, originals after list whitespace handling, exact bases and fragment flags.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"An empty fragment delimiter set the presence flag, and a percent-encoded hash stayed in the base. The tested authority-free URIs yielded an empty host. The IPv6 host text preserved its spelling after ASCII folding and excluded brackets.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Input fixture hashes were preserved. The surrounding emitted programs preserved the prior destination state on tested syntax, encoding and missing-file failures.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Comments and blank lines produced no rows, duplicates retained distinct positions, and repeated successful visits produced the same rows in encounter order.","evidence":["standalone.json","integration.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"General URI equivalence, canonicalization and complexity bounds remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached domain records seven exact selector strings. The fixture evidence gives no proof over arbitrary URI lists.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Invalid field selectors failed during producer creation. Missing or invalid byte input failed before delivering a row. A late invalid URI stopped visitation after one valid row.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures the path and requested fields by value. The URI parser state is scoped to each record and row fields are borrowed during the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits and input changes during visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter uses the retained GLib URI-list reader, calls uriParseSingleUriA for each record and releases the parsed structure with uriFreeUriMembersA. Both runtime dependencies are pinned.","evidence":["source.json","original/adapter.cpp"]},
+    "specification_question":{"status":"declared","detail":"Which original and parsed URI fields should appear, and in what order?","evidence":["spec.json"]}
+  }
+}

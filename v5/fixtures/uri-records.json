@@ -1,0 +1,26 @@
+{
+  "binding":{"component_id":"miner_uri_records","binding_id":"uri_records","from":"in:text/uri-list","to":"rows"},
+  "parameters":{"fields":["base,original","host,original,scheme","original","original,scheme","original,scheme,has_fragment","original,scheme,host,base,has_fragment","scheme"]},
+  "inputs":{
+    "ordered":"# before\r\n\r\n \tHTTPS://User@Example.COM:8443/A%23B?key=Q#Frag \t\r\nMAILTO:editor@example.com\r\n# between\nhTTp://[2001:DB8::A]/doc#\nfile:///tmp/Display%20Name\nhttp://MiXeD.Example/%23?q=%23\nHTTPS://User@Example.COM:8443/A%23B?key=Q#Frag",
+    "empty-list":"\n# a comment\r\n\r\n# final",
+    "late-relative":"HTTPS://User@Example.COM:8443/A%23B?key=Q#Frag\n/relative/path\nMAILTO:editor@example.com\n",
+    "late-malformed-uri":"MAILTO:editor@example.com\nhttp://[2001:db8::1\n",
+    "late-nul":"HTTPS://User@Example.COM:8443/A%23B?key=Q#Frag\nhttp://MiXeD.Example/%23?q=%23\u0000unread\n",
+    "invalid-utf8":{"hex":"68747470733a2f2f6578616d706c652e636f6d2f0a68747470733a2f2f6578616d706c652e636f6d2f800a"},
+    "missing":null
+  },
+  "cases":[
+    {"name":"ordered","rows":[{"original":"HTTPS://User@Example.COM:8443/A%23B?key=Q#Frag","scheme":"https","host":"example.com","base":"HTTPS://User@Example.COM:8443/A%23B?key=Q","has_fragment":"1"},{"original":"MAILTO:editor@example.com","scheme":"mailto","host":"","base":"MAILTO:editor@example.com","has_fragment":"0"},{"original":"hTTp://[2001:DB8::A]/doc#","scheme":"http","host":"2001:db8::a","base":"hTTp://[2001:DB8::A]/doc","has_fragment":"1"},{"original":"file:///tmp/Display%20Name","scheme":"file","host":"","base":"file:///tmp/Display%20Name","has_fragment":"0"},{"original":"http://MiXeD.Example/%23?q=%23","scheme":"http","host":"mixed.example","base":"http://MiXeD.Example/%23?q=%23","has_fragment":"0"},{"original":"HTTPS://User@Example.COM:8443/A%23B?key=Q#Frag","scheme":"https","host":"example.com","base":"HTTPS://User@Example.COM:8443/A%23B?key=Q","has_fragment":"1"}]},
+    {"name":"empty-list","rows":[]},
+    {"name":"late-relative","error":"visit","exception":"invalid_argument","rows":[{"original":"HTTPS://User@Example.COM:8443/A%23B?key=Q#Frag","scheme":"https","host":"example.com","base":"HTTPS://User@Example.COM:8443/A%23B?key=Q","has_fragment":"1"}]},
+    {"name":"late-malformed-uri","error":"visit","exception":"invalid_argument","rows":[{"original":"MAILTO:editor@example.com","scheme":"mailto","host":"","base":"MAILTO:editor@example.com","has_fragment":"0"}]},
+    {"name":"late-nul","error":"visit"},
+    {"name":"invalid-utf8","error":"visit"},
+    {"name":"missing","error":"visit"}
+  ],
+  "selector_controls":[
+    {"name":"unknown-field","input_case":"ordered","selector":"host,unknown","error":"select","exception":"invalid_argument"},
+    {"name":"trailing-delimiter","input_case":"ordered","selector":"original,","error":"select","exception":"invalid_argument"}
+  ]
+}

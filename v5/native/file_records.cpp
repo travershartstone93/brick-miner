@@ -7,6 +7,7 @@
 #include <functional>
 #include <sstream>
 #include <sys/stat.h>
+#include <utility>
 
 namespace v5 {
 namespace {
@@ -236,6 +237,90 @@ void verify_sqlite_materials(const Path &stage, const Path &bundle,
                 {"runtime_files",
                  runtime_files(bundle, base,
                                {library, soname, "libarchive.so.13", "liburiparser.so.1",
+                                "libduckdb.so", "pkgconfig/brick_shared_inputs.pc"})}}));
+}
+
+void verify_uri_materials(const Path &stage, const Path &bundle,
+                          const Path &base, const J &src, const J &row) {
+  const Path archive = src["archive"].asString();
+  const auto recipe = archive.parent_path() / "uriparser.PKGBUILD";
+  const auto ring = arch_keyring(stage);
+  const auto build = signed_build_info(src, recipe, ring);
+  const auto info = package_info(src, "uriparser");
+  check(info.find("\nlicense = custom\n") != std::string::npos,
+        "signed uriparser license metadata changed");
+  save(stage / "arch-pkginfo.txt", info);
+  save(stage / "arch-pkgbuild.txt", bytes(recipe));
+  const auto provenance = load(bundle / history / "source.json");
+  const auto kernel = digest(bundle / runtime / library);
+  const auto soname = "liburiparser.so.1";
+  const auto runtime_pin = digest(bundle / runtime / soname);
+  const auto sealed = provenance["archives"][archive.filename().string()];
+  const auto &definition = provenance["definitions"]["uriParseSingleUriA"];
+  const auto imports = run({"nm", "-D", "--undefined-only", bundle / runtime / library});
+  check(sealed["signer"] == src["signer"] && sealed["sha256"] == src["sha256"] &&
+            sealed["recipe_sha256"] == src["recipe_sha256"] &&
+            provenance["kernel_sha256"] == kernel &&
+            provenance["runtime_sha256"][soname] == runtime_pin &&
+            sha(archive_member(src, src["runtime_member"].asString())) == runtime_pin &&
+            definition["soname"] == soname && definition["header"] == "uriparser/Uri.h" &&
+            imports.find(" U uriParseSingleUriA\n") != std::string::npos &&
+            imports.find(" U g_uri_list_extract_uris\n") != std::string::npos &&
+            run({"nm", "-D", "--defined-only", bundle / runtime / soname})
+                    .find(" T uriParseSingleUriA\n") != std::string::npos,
+        "retained URI linkage or signed parser runtime differs");
+  retain_adapter(stage, bundle, history, src, row, provenance,
+                 "shared/inputs/adapter.cpp");
+  const auto upstream = bundle / "qualifications/shared/upstream/formats";
+  for (const auto &member : provenance["headers"].getMemberNames()) {
+    if (member.rfind("usr/include/uriparser/", 0) != 0 &&
+        member != "usr/share/licenses/uriparser/COPYING.BSD-3-Clause")
+      continue;
+    const auto data = archive_member(src, member);
+    check(sha(data) == provenance["headers"][member].asString() &&
+              data == bytes(upstream / member),
+          "signed uriparser header or notice differs");
+    const auto dest = member.rfind("usr/include/", 0) == 0
+                          ? stage / "original/uriparser" / Path(member).filename()
+                          : stage / "notices/uriparser-BSD-3-Clause";
+    save(dest, data);
+  }
+  const auto dep_id = src["input_reader"].asString();
+  const auto gir = sources()[dep_id];
+  check(gir["approval"] == "local-pilot" &&
+            digest(gir["archive"].asString()) == gir["sha256"].asString(),
+        "URI list dependency differs from its reviewed source");
+  const auto reader = retained_source(stage, dep_id, "uri-list-project-MIT");
+  const Path gir_header = "headers/gir_g_uri_list_extract_uris.hpp";
+  check(bytes(stage / "original" / gir_header) == bytes(bundle / gir_header),
+        "retained URI list dependency differs from the parent");
+  const auto dep = gir["runtime"];
+  const auto glib_info = verified_runtime_package(stage.parent_path(), dep);
+  check(glib_info.find("\npkgname = glib2\n") != std::string::npos &&
+            glib_info.find("\nlicense = LGPL-2.1-or-later\n") != std::string::npos &&
+            glib_info.find("\npkgver = " + dep["pkgver"].asString() + "\n") != std::string::npos,
+        "signed GLib runtime identity differs");
+  save(stage / "glib-pkginfo.txt", glib_info);
+  const auto glib_header = archive_member(dep, "usr/include/glib-2.0/glib/gconvert.h");
+  save(stage / "original/glib/gconvert.h", glib_header);
+  write(stage / "source.json",
+        object({{"binding", row},
+                {"source_id", src["id"]},
+                {"kernel_sha256", kernel},
+                {"arch_signature_sha256", src["signature_sha256"]},
+                {"arch_signer", src["signer"]},
+                {"arch_keyring_sha256", digest(ring)},
+                {"arch_buildinfo_sha256", sha(build)},
+                {"uri_entrypoint", definition},
+                {"uri_list_reader", reader},
+                {"glib_archive_sha256", dep["sha256"]},
+                {"glib_signature_sha256", dep["signature_sha256"]},
+                {"glib_keyring_sha256", digest(stage.parent_path() / "runtime-keyring.gpg")},
+                {"host_runtime", object({{"libglib-2.0.so.0",
+                    dep["files"]["usr/lib/libglib-2.0.so.0.9000.1"]}})},
+                {"runtime_files",
+                 runtime_files(bundle, base,
+                               {library, soname, "libarchive.so.13", "libsqlite3.so.0",
                                 "libduckdb.so", "pkgconfig/brick_shared_inputs.pc"})}}));
 }
 
@@ -751,6 +836,9 @@ Path build_record_client(const Path &stage, const Path &scratch,
                     fs::canonical(bundle / runtime / name).string(),
             "standalone client linked the wrong retained runtime");
   }
+  for (const auto &name : source["host_runtime"].getMemberNames())
+    check(env["resolved_client_libraries"][name]["sha256"] == source["host_runtime"][name],
+          "standalone client linked the wrong installed runtime: " + name);
   write(stage / "environment.json", env);
   return exe;
 }
@@ -920,72 +1008,112 @@ Path qualify_json_records(const Path &package, const std::string &pin,
   return qualify_records(package, pin, registry, registry_pin, projection);
 }
 
-Path qualify_csv_records(const Path &package, const std::string &pin,
-                         const Path &registry, const std::string &registry_pin) {
+namespace {
+struct FiniteReader {
+  std::string operation, fixture, mime, parameter;
+  J values;
+  std::string qualification_scope, domain_scope;
+  bool readers_library;
+  Strings client_libraries;
+  void (*verify_materials)(const Path &, const Path &, const Path &, const J &,
+                           const J &);
+};
+
+J uri_projection_cases(J cases, const std::string &projection) {
+  Strings fields;
+  std::istringstream names(projection);
+  for (std::string name; std::getline(names, name, ',');)
+    fields.push_back(name);
+  for (auto &test : cases) {
+    auto projected = array();
+    std::string output;
+    int position = 0;
+    for (const auto &record : std::as_const(test)["rows"]) {
+      auto row = array();
+      output += std::to_string(++position);
+      for (const auto &field : fields) {
+        check(record[field].isString(), "missing expected URI field: " + field);
+        row.append(record[field]);
+        output += '\t' + record[field].asString();
+      }
+      output += '\n';
+      projected.append(row);
+    }
+    test["rows"] = projected;
+    if (!test.isMember("error"))
+      test["output"] = output;
+  }
+  return cases;
+}
+
+Path qualify_finite_reader(const Path &package, const std::string &pin,
+                           const Path &registry, const std::string &registry_pin,
+                           const FiniteReader &reader) {
   verify(package, pin);
-  const std::string operation = "read_csv_records";
-  const auto src = sources()["retained-csv-records"];
+  const auto &operation = reader.operation;
+  const auto &modes = reader.values;
+  const bool uri = operation == "uri_records";
+  const auto src = sources()["retained-" + reader.fixture];
   const auto job = retained_binding_job(v5_root() / "sources.json", operation);
-  const auto modes = array({"absent", "present"});
-  const auto selector = object({{"parameter", "header"}, {"argument_index", 1},
+  const auto selector = object({{"parameter", reader.parameter}, {"argument_index", 1},
                                 {"argument_type", "const std::string&"},
                                 {"values", modes}});
   check(src["approval"] == "local-pilot" && src["method"] == "signed-local-package" &&
             job["source"] == src["id"] && job["route"] == "api" &&
             job["stream"] == "foundational" &&
-            job["tests"] == "v5/fixtures/csv-records.json" &&
+            job["tests"] == "v5/fixtures/" + reader.fixture + ".json" &&
             job["selector"] == selector,
-        "no reviewed local CSV record job");
+        "no reviewed local file reader selector job");
   const auto priority = rank_supplied_usage(
       project_file(runs, job["coverage_audit"].asString()),
       job["coverage_sha256"].asString(),
       project_file(runs, job["migration_snapshot"].asString() + "/ledger.sqlite")
           .parent_path(),
       job["ledger_sha256"].asString());
-  const auto work = fresh_run("v5-csv-records"), stage = work / ".stage",
+  const auto work = fresh_run("v5-" + reader.fixture), stage = work / ".stage",
              scratch = work / ".test-programs", fixtures = stage / "fixtures",
              bundle = package / "bundle", base = verified_base();
   fs::create_directory(scratch);
   save_file_registry(stage, src, registry, registry_pin);
   check(retained_binding_job(stage / "sources.json", operation) == job,
-        "changed CSV reader job");
+        "changed file reader selector job");
   const auto defs = load(bundle / "providers/contracts.json");
   const auto row = select_binding(defs["providers"], operation,
-                                  "miner_read_csv_records", "in:text/csv", "rows");
+                                  "miner_" + operation, "in:" + reader.mime, "rows");
   const auto record = file_binding_identity(row, bundle);
   const auto selection = select_ranked_scope(package, pin, priority, job);
   const auto &selected = selection["selected"];
-  const auto legacy = load(bundle / readers_history / "contracts.json")[operation];
+  const auto legacy = load(bundle / (reader.readers_library ? readers_history : history) /
+                           "contracts.json")[operation];
   check(selected["binding_id"] == operation &&
             selected["binding_sha256"] == record["binding_sha256"] &&
             selected["header_sha256"] == record["header_sha256"] &&
-            row["call"] == job["callable"] && row["args"] == array({"header"}) &&
+            row["call"] == job["callable"] && row["args"] == array({reader.parameter}) &&
             row["from"] == legacy["from"] && row["to"] == legacy["to"] &&
-            legacy["args"] == object({{"header", "text"}}) &&
+            legacy["args"] == object({{reader.parameter, "text"}}) &&
             defs["outcomes"][operation]["parameters"] == legacy["args"],
-        "CSV qualification differs from ranked ledger or retained ABI");
+        "file reader qualification differs from ranked ledger or retained ABI");
   write(stage / "priority.json", priority);
   write(stage / "selection.json", selection);
-  verify_reader_materials(
-      stage, bundle, base, src, row,
-      {"src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp"});
+  reader.verify_materials(stage, bundle, base, src, row);
   const auto source = load(stage / "source.json");
   for (const auto &[from, to] : std::map<std::string, std::string>{
-           {"csv-records.json", "spec.json"},
-           {"csv-records-client.cpp", "client.cpp"},
-           {"csv-records-annotation.json", "annotation.json"}})
+           {reader.fixture + ".json", "spec.json"},
+           {reader.fixture + "-client.cpp", "client.cpp"},
+           {reader.fixture + "-annotation.json", "annotation.json"}})
     fs::copy_file(v5_root() / "fixtures" / from, stage / to);
   const auto spec = load(stage / "spec.json");
   check(spec["binding"] == record["key"] &&
-            spec["parameters"] == object({{"header", modes}}) &&
-            spec["cases"].getMemberNames() == Strings{"absent", "present"},
-        "CSV fixture differs from the reviewed header modes");
+            spec["parameters"] == object({{reader.parameter, modes}}) &&
+            (uri ? spec["cases"].isArray()
+                 : spec["cases"].getMemberNames() == strings(modes)),
+        "file fixture differs from the reviewed selector values");
   for (const auto &name : spec["inputs"].getMemberNames()) {
     const auto &input = spec["inputs"][name];
     if (input.isObject()) {
       const auto hex = QByteArray::fromStdString(input["hex"].asString());
       const auto data = QByteArray::fromHex(hex);
-      check(data.toHex() == hex, "noncanonical CSV fixture hex");
+      check(data.toHex() == hex, "noncanonical file fixture hex");
       save(fixtures / name, data.toStdString());
     } else if (input.isString()) {
       save(fixtures / name, input.asString());
@@ -994,55 +1122,74 @@ Path qualify_csv_records(const Path &package, const std::string &pin,
   const auto before = tree_hashes(fixtures);
   const auto restore = pin_runtime_path(bundle);
   const auto tools = file_qualification_tools();
-  const auto exe = build_record_client(stage, scratch, bundle, source, tools, true, false);
-  auto observe = [&](const J &cases, const std::string &header) {
-    auto observations = array();
-    for (const auto &test : cases) {
-      const auto name = test["name"].asString();
-      check(spec["inputs"].isMember(name), "CSV test has no input declaration");
-      const auto seen = probe_record_rows(exe, fixtures, bundle, name, header);
-      check_record_rows(test, seen, operation, true);
-      observations.append(object({{"name", name}, {"observation", seen}}));
-    }
-    return observations;
+  const auto exe = build_record_client(stage, scratch, bundle, source, tools,
+                                       reader.readers_library, false, reader.client_libraries);
+  auto observe = [&](const J &test, const std::string &mode) {
+    const auto name = test["name"].asString();
+    const auto input = test.get("input_case", test["name"]).asString();
+    check(spec["inputs"].isMember(input), "file test has no input declaration");
+    const auto seen = probe_record_rows(exe, fixtures, bundle, input, mode);
+    check_record_rows(test, seen, operation, true);
+    return object({{"name", name}, {"observation", seen}});
   };
-  auto direct = object();
+  auto direct = object(), trials = object();
   for (const auto &mode : modes) {
-    const auto header = mode.asString();
-    direct[header] = observe(spec["cases"][header], header);
+    const auto value = mode.asString();
+    auto cases = uri ? uri_projection_cases(spec["cases"], value) : spec["cases"][value];
+    auto observations = array();
+    for (const auto &test : cases)
+      observations.append(observe(test, value));
+    direct[value] = observations;
+    trials[value] = cases;
   }
-  const auto invalid = observe(spec["invalid_header"], "auto");
-  check(tree_hashes(fixtures) == before, "CSV reader changed a fixture");
-  write(stage / "standalone.json",
-        object({{"processes_per_case", 2}, {"cases", direct},
-                {"input_sha256", before}, {"invalid_header", invalid}}));
+  auto standalone = object({{"processes_per_case", 2}, {"cases", direct},
+                              {"input_sha256", before}});
+  if (uri) {
+    auto controls = array();
+    for (const auto &test : spec["selector_controls"])
+      controls.append(observe(test, test["selector"].asString()));
+    standalone["selector_controls"] = controls;
+  } else {
+    auto invalid = array();
+    for (const auto &test : spec["invalid_header"])
+      invalid.append(observe(test, "auto"));
+    standalone["invalid_header"] = invalid;
+  }
+  check(tree_hashes(fixtures) == before, "file reader changed a fixture");
+  write(stage / "standalone.json", standalone);
 
   auto integration = object();
   auto conditions = array();
-  const auto chain = array({"op_0_read_csv_records", "op_1_report_fields", "write_lines"});
+  const auto chain = array({"op_0_" + operation, "op_1_report_fields", "write_lines"});
   auto prepare = [&](const Path &dir, const J &test) {
     const auto fixture = fixtures / test["name"].asString();
     if (fs::exists(fixture))
       fs::copy_file(fixture, dir / "in");
   };
   for (const auto &mode : modes) {
-    const auto header = mode.asString();
+    const auto value = mode.asString();
+    std::string fields = "pos,0,1,2";
+    if (uri) {
+      fields = "pos";
+      const auto count = std::count(value.begin(), value.end(), ',') + 1;
+      for (std::ptrdiff_t i = 0; i < count; ++i)
+        fields += "," + std::to_string(i);
+    }
     const auto ops = array(
-        {object({{"outcome", operation}, {"parameters", object({{"header", header}})}}),
+        {object({{"outcome", operation}, {"parameters", object({{reader.parameter, value}})}}),
          object({{"outcome", "report_fields"},
-                 {"parameters", object({{"fields", "pos,0,1,2"}})}})});
+                 {"parameters", object({{"fields", fields}})}})});
     const auto goal = spec_for(
-        "text/csv", "text/plain", object({{"operations", ops}, {"uncovered", array()}}));
-    integration[header] = file_record_trial(
-        work, bundle, base, row, goal, chain, spec["cases"][header], false, prepare, header);
-    conditions.append(object({{"id", "exact_text"}, {"value", header}}));
+        reader.mime, "text/plain", object({{"operations", ops}, {"uncovered", array()}}));
+    integration[value] = file_record_trial(
+        work, bundle, base, row, goal, chain, trials[value], false, prepare, value);
+    conditions.append(object({{"id", "exact_text"}, {"value", value}}));
   }
   check(file_qualification_tools() == tools, "qualification tools changed");
   write(stage / "integration.json", integration);
   auto contract = file_contract(stage, package, record, src, stage / "sources.json");
   contract["source"]["implementation_sha256"] = source["kernel_sha256"];
-  contract["qualification"]["scope"] =
-      "Detached local CSV byte and file-effect evidence for the absent and present header modes.";
+  contract["qualification"]["scope"] = reader.qualification_scope;
   validate(contract, load(package / "contract.schema.json"));
   write(stage / "contract.json", contract);
   write(stage / "domain.json",
@@ -1059,9 +1206,38 @@ Path qualify_csv_records(const Path &package, const std::string &pin,
                 {"argument_type", selector["argument_type"]},
                 {"quantifier", "argument"},
                 {"any_of", conditions},
-                {"scope", "Each exact header mode has separate direct and file evidence. Input-domain behavior is bounded to the recorded cases."}}));
+                {"scope", reader.domain_scope}}));
   return finish_file_stage(work, package, pin, record["logical_id"].asString(),
                            "unllm.scoped-file-evidence/1");
+}
+} // namespace
+
+Path qualify_csv_records(const Path &package, const std::string &pin,
+                         const Path &registry, const std::string &registry_pin) {
+  return qualify_finite_reader(
+      package, pin, registry, registry_pin,
+      {"read_csv_records", "csv-records", "text/csv", "header",
+       array({"absent", "present"}),
+       "Detached local CSV byte and file-effect evidence for the absent and present header modes.",
+       "Each exact header mode has separate direct and file evidence. Input-domain behavior is bounded to the recorded cases.",
+       true, {},
+       [](const Path &stage, const Path &bundle, const Path &base,
+          const J &src, const J &row) {
+         verify_reader_materials(stage, bundle, base, src, row,
+                                 {"src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp"});
+       }});
+}
+
+Path qualify_uri_records(const Path &package, const std::string &pin,
+                         const Path &registry, const std::string &registry_pin) {
+  return qualify_finite_reader(
+      package, pin, registry, registry_pin,
+      {"uri_records", "uri-records", "text/uri-list", "fields",
+       array({"base,original", "host,original,scheme", "original", "original,scheme",
+              "original,scheme,has_fragment", "original,scheme,host,base,has_fragment", "scheme"}),
+       "Detached local byte and file-effect evidence for seven exact ordered URI field projections.",
+       "Each exact fields value has separate direct and file evidence. Input-domain behavior is bounded to the recorded cases.",
+       false, {"liburiparser.so.1"}, verify_uri_materials});
 }
 
 namespace {

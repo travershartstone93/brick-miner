@@ -330,6 +330,7 @@ int main(int argc, char **argv) try {
       {"--qualify-tree-records", qualify_tree_records},
       {"--qualify-json-records", qualify_json_records},
       {"--qualify-csv-records", qualify_csv_records},
+      {"--qualify-uri-records", qualify_uri_records},
       {"--qualify-sqlite-records", qualify_sqlite_records},
       {"--qualify-xml-records", qualify_xml_records},
       {"--qualify-filter-records", qualify_filter_records},
@@ -366,7 +367,7 @@ int main(int argc, char **argv) try {
       "--binding-identity-fixture, --qualify-writer, --qualify-tsv-writer, "
       "--qualify-recursive-files "
       "--qualify-parent-paths, --qualify-archive-names, --qualify-zip-records, "
-      "--qualify-tree-records, --qualify-json-records, --qualify-csv-records, "
+      "--qualify-tree-records, --qualify-json-records, --qualify-csv-records, --qualify-uri-records, "
       "--qualify-sqlite-records, --qualify-xml-records, "
       "--qualify-filter-extension, "
       "--qualify-json-writer, --qualify-filter-records, --qualify-report-fields, "

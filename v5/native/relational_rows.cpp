@@ -543,6 +543,7 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
   const auto domain = load(stage / "domain.json");
   unsigned kernels = 0;
   bool sqlite_runtime = false;
+  bool uri_runtime = false;
   bool inputs_kernel = false;
   for (const auto &file : source["runtime_files"]) {
     check(digest(project_file(bundle / runtime, file["path"].asString())) ==
@@ -551,6 +552,7 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
     if (file["sha256"] == source["kernel_sha256"])
       ++kernels;
     sqlite_runtime |= file["path"] == "libsqlite3.so.0";
+    uri_runtime |= file["path"] == "liburiparser.so.1";
     inputs_kernel |= file["path"] == "libbrick_shared_inputs.so" &&
                      file["sha256"] == source["kernel_sha256"];
   }
@@ -602,30 +604,54 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
     return object({{"id", "exact_text"}, {"value", value}});
   };
   if (scope.isMember("values")) {
-    const auto modes = array({"absent", "present"});
-    check(key["binding_id"] == "read_csv_records" && parameter == "header" &&
-              !scope.isMember("value") && scope["values"] == modes &&
-              spec["parameters"][parameter] == modes &&
-              domain["any_of"] == array({exact_text(modes[0]), exact_text(modes[1])}) &&
+    const auto id = key["binding_id"].asString();
+    const bool csv = id == "read_csv_records" && parameter == "header";
+    const bool uri = id == "uri_records" && parameter == "fields" &&
+                     source["source_id"] == "retained-uri-records" &&
+                     source["uri_entrypoint"]["soname"] == "liburiparser.so.1" &&
+                     uri_runtime && inputs_kernel;
+    const auto &modes = scope["values"];
+    check((csv || uri) && !scope.isMember("value") && modes.isArray() && !modes.empty() &&
+              (!csv || modes == array({"absent", "present"})) &&
+              spec["parameters"][parameter] == modes && !domain.isMember("all_of"),
+          csv ? "scoped CSV reader differs from the two reviewed header modes"
+              : "scoped URI reader differs from the reviewed ordered projections");
+    auto expected = array();
+    std::set<std::string> names;
+    for (const auto &mode : modes) {
+      check(mode.isString() && names.insert(mode.asString()).second,
+            "scoped file reader has a duplicate or non-text selector");
+      expected.append(exact_text(mode));
+    }
+    check(domain["any_of"] == expected &&
               !domain.isMember("all_of"),
-          "scoped CSV reader differs from the two reviewed header modes");
+          csv ? "scoped CSV reader differs from the two reviewed header modes"
+              : "scoped URI reader differs from the reviewed ordered projections");
+    if (uri) {
+      const auto env = load(stage / "environment.json");
+      const auto glib_sha = source["host_runtime"]["libglib-2.0.so.0"];
+      check(glib_sha.isString() && glib_sha.asString() == digest("/usr/lib/libglib-2.0.so.0") &&
+                env["resolved_client_libraries"]["libglib-2.0.so.0"]["sha256"] == glib_sha,
+            "scoped URI reader GLib runtime differs from tested runtime");
+    }
     const auto integration = load(stage / "integration.json");
     const auto standalone = load(stage / "standalone.json");
     for (const auto &mode : modes) {
       const auto name = mode.asString();
       const auto &trial = integration[name];
       const auto &operation = trial["spec"]["roles"][0]["requirement"]["operations"][0];
-      const auto &direct = spec["cases"][name];
+      const auto &direct = uri ? spec["cases"] : spec["cases"][name];
       check(direct.isArray() && !direct.empty() &&
                 standalone["cases"][name].size() == direct.size() &&
-                trial["spec"]["input_type"] == "text/csv" &&
+                trial["spec"]["input_type"].asString() == (uri ? "text/uri-list" : "text/csv") &&
                 operation["outcome"] == key["binding_id"] &&
-                operation["parameters"] == object({{"header", mode}}) &&
+                operation["parameters"] == object({{parameter, mode}}) &&
                 trial["baseline"] == trial["staged"] &&
                 trial["staged"]["execution"].size() == 2 * direct.size() &&
-                trial["removed"]["gaps"]["r"].asString().find("read_csv_records") !=
+                trial["removed"]["gaps"]["r"].asString().find(id) !=
                     std::string::npos,
-            "scoped CSV reader lacks paired direct and ordinary evidence for " + name);
+            (csv ? "scoped CSV" : "scoped URI") +
+                std::string(" reader lacks paired direct and ordinary evidence for ") + name);
     }
   } else if (!tuple) {
     check(scope["value"].isString() && spec["parameters"][parameter] == scope["value"] &&
