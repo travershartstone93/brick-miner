@@ -183,3 +183,47 @@ Reproduce with the corpus volume mounted. The language gate inspected 859 files 
 make .build/booking-state-replay
 .build/booking-state-replay
 ```
+
+## Grouped row selection validation (ten requests)
+
+The largest argument-validation cluster in the archived replay covers ten requests and twelve output roles. Each saved 104-card answer matches the corresponding 127-card replay answer byte for byte. The current ordinary provider planner reproduced all twelve `select_group_row.order_by` errors. The order argument accepts an empty string for encounter order, or a tuple of zero-based columns with type and direction, such as `2:num:asc,0:text:asc`. The saved values use field names, prose, or an incomplete term. [Ranked validation parameters](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-5x2_hyp7/ranking.json)
+
+The three validation arms plan each role separately. The first intervention changes only `order_by`. The values were mapped by hand against the expected input projections. In H032 this preserves the archived request to order ties by minute, which differs from the English requirement to use reading order. The ordinary validation step then rejects `result_order` in all twelve roles. The second intervention supplies the declared selector argument set with `result_order=group` and leaves the remaining operations and uncovered prose in place. It reaches zero complete roles. The original order values and both interventions are retained with their raw plans.
+
+| Requests | Where the selector-only plan stops |
+|---|---|
+| H006 | Both roles still pass an array to the scalar `threshold_entries.emit` option. |
+| H021, H024, H027 | SQLite input has no path to row groups in the supplied operation list. The roles also need row-to-text operations. |
+| H032 | The nested-list reader yields layers. The selector needs row groups, and its output still needs tabular formatting. |
+| H053 | The separately requested archive-name and size operations cannot chain to its grouped selector. |
+| H066 | Recursive path strings lack the correlated size and first-level directory fields required for grouping. |
+| H084 | The selected rows lack the distinct-prerequisite aggregation and output formatting. |
+| H092, H095 | The JSON source lacks booking projection and grouping. Both need active filtering before selection, and H095 additionally needs computed duration. |
+
+Seven fixed recipes retain grouped row selection. H024 and H084 need distinct counts, while H053 needs globally ordered ZIP file records followed by a limit. These three use other existing operations. The fixed arms use the ordinary planner, emitter, compiler and five-case checker. They hold each saved output MIME, including the four explicitly typed TSV destinations.
+
+All ten fixed programs passed all 50 ordinary and held checks. H024, H032, H092 and H095 reached `strings → out:text/tab-separated-values` on the parent and failed all 20 checks there. The previously staged writer, whose removal reproduces the exact parent manifest, brought those same complete recipes to 20/20. The tests use supplied specifications. Fresh selection from English remains unmeasured.
+
+For H032 the full recipe chooses the first reading at the maximum temperature. An alternative that breaks ties by ascending minute also passed all five archived fixtures. A separate JSON array contains two peak readings for the same sensor, with minute 30 appearing before minute 10. The full recipe emitted minute 30, as the English request specifies array order. The alternative emitted minute 10. Both reached a complete typed program. This test distinguishes the semantics that the archived suite accepted interchangeably.
+
+The generated TSV and JSON inputs matched the saved fixture hashes. The directory fixtures matched by relative path, entry kind and content. Regenerated SQLite files have different container hashes but matching schema and row dumps. The fixed programs for the three SQLite requests and the ZIP request also ran against all twenty exact saved database and archive files and reproduced the checker outputs.
+
+The first complete execution detected a sibling planner rebuild before sealing. Its observations remain available without a single-version claim. The repeat uses four copied native tools mounted read-only over their usual executable paths in a private namespace. It reproduced the plans, executable hashes, verdicts and outputs of all fifteen integrated arms. The pinned repeat took 328.65 wall seconds and recorded 36 role-level planning probes, 75 archived fixture verdicts and 22 additional runs. All 66 plan and receipt hashes verified. The report SHA-256 is `d72e461d2412510f8038b66da5b415716e7e5dae32cc9da5926498f8529a3172`. The C++ scan inspected 862 files with zero violations. Cross-file, capability-gap and H096 harness regressions passed. [Sealed report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-order-replay-XXxsGfyg/report.json) · [Unsealed run](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-order-replay-XXcaT7Eo/progress.json) · [Pinned tool hashes](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-order-tools-KNSLftHC/SHA256SUMS) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXD51Rt6/controls.json)
+
+Reproduce from the miner checkout with the corpus volume mounted. The first command builds the C++ harness. Use the pinned tool copy to repeat the confirmed context even if the sibling rebuilds its planner.
+
+```sh
+make .build/row-order-replay
+runs=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+pinned="$runs/v5-row-order-tools-KNSLftHC"
+native="$(realpath ../unllm-upgrade/build/native)"
+(
+  cd "$pinned" && sha256sum --strict -c SHA256SUMS
+) && bwrap --die-with-parent --ro-bind / / --dev-bind /dev /dev --proc /proc \
+  --bind "$runs" "$runs" \
+  --ro-bind "$pinned/brick-provider-plan" "$native/brick-provider-plan" \
+  --ro-bind "$pinned/brick-row-replay" "$native/brick-row-replay" \
+  --ro-bind "$pinned/brick-end-user-check" "$native/brick-end-user-check" \
+  --ro-bind "$pinned/unllm_logic_worker" "$native/unllm_logic_worker" \
+  -- .build/row-order-replay
+```

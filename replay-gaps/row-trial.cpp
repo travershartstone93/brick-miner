@@ -54,8 +54,7 @@ static J requirements(const J &spec, unsigned slot) {
 }
 
 J trial(const Path &work, const std::string &arm, const std::string &request,
-        const Path &bundle, const Path &spec_file, const std::string &input,
-        const J &expected_inputs) {
+        const Path &bundle, const Path &spec_file) {
   std::cout << request << " " << arm << std::endl;
   const auto dir = work / arm / request;
   run({main_repo / "build/native/brick-row-replay", work, arm, request, bundle,
@@ -75,8 +74,7 @@ J trial(const Path &work, const std::string &arm, const std::string &request,
             receipt["status"] != "time_budget" &&
             plan["interpretation_errors"].empty() &&
             plan["clarifications"].empty() &&
-            load(dir / "run/calls/interpret/response.json") == spec &&
-            input_hashes(dir, input) == expected_inputs,
+            load(dir / "run/calls/interpret/response.json") == spec,
         "changed replay context for " + request + " " + arm);
   auto roles = object();
   for (const auto &p : plan["providers"]) {
@@ -116,6 +114,15 @@ J trial(const Path &work, const std::string &arm, const std::string &request,
        {"roles", roles},
        {"planner_diagnostics", plan["gaps"]},
        {"program_sha256", fs::is_regular_file(exe) ? J(hash(exe)) : J()}});
+}
+
+J trial(const Path &work, const std::string &arm, const std::string &request,
+        const Path &bundle, const Path &spec_file, const std::string &input,
+        const J &expected_inputs) {
+  auto result = trial(work, arm, request, bundle, spec_file);
+  check(input_hashes(work / arm / request, input) == expected_inputs,
+        "changed replay inputs for " + request + " " + arm);
+  return result;
 }
 
 J ports(const J &role) {

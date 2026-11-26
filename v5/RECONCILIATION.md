@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b validation replay covers all ten archived `select_group_row.order_by` failures. Correcting the selector still leaves every saved construction incomplete. The fixed paths pass all 50 fixtures with retained operations and the scoped TSV registration where required. [Grouped row validation and controls](../replay-gaps/RESULTS.md#grouped-row-selection-validation-ten-requests)
+
 The H1b booking replay resolved H096's archived graph-to-text stop with retained JSON rows, grouped state counts and the text writer. Both fixed field projections passed all archived cases. Evidence covers the two supplied constructions on this generation. [Booking-state replay and controls](../replay-gaps/RESULTS.md#prerequisite-graphs-and-booking-states-h096)
 
 The H1b sensor-history replay reused the qualified H035 reader projection for H037. Both fixed text routes passed on the existing bundle. Reader and aggregate removal isolated the two dependencies, and new boundary observations distinguished four predicate errors. [Sensor-history replay and controls](../replay-gaps/RESULTS.md#named-lists-and-sensor-histories-h037)

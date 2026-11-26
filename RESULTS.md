@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+All ten archived grouped-row selector failures exposed a second invalid argument after the first was corrected. Complete fixed constructions passed all 50 fixtures, and four also needed the staged TSV writer. A fresh H032 fixture distinguished reading order from minute order after both had passed the archived suite. [Grouped row selection and reproduction](replay-gaps/RESULTS.md#grouped-row-selection-validation-ten-requests)
+
 H096's two booking reports passed 5/5 with existing row operations using either the full booking projection or just `room,state`. The archived graph-reader route and the reader-only change both passed 0/5. [Booking-state replay and reproduction](replay-gaps/RESULTS.md#prerequisite-graphs-and-booking-states-h096)
 
 H037 passed 5/5 with the retained telemetry projection and separate row operations for its two sensor reports. Changing only the reader scored 0/5. Three wrong predicate variants also scored 5/5 on the archived fixtures, including using the same predicate for both reports. A fresh sensor fixture distinguished all four seeded errors. [Sensor-history replay and reproduction](replay-gaps/RESULTS.md#named-lists-and-sensor-histories-h037)

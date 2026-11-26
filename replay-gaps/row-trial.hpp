@@ -9,6 +9,9 @@ miner::J scores(const miner::J &receipt);
 miner::J operations(const miner::J &recipe);
 miner::J trial(const miner::Path &work, const std::string &arm,
                const std::string &request, const miner::Path &bundle,
+               const miner::Path &spec_file);
+miner::J trial(const miner::Path &work, const std::string &arm,
+               const std::string &request, const miner::Path &bundle,
                const miner::Path &spec_file, const std::string &input,
                const miner::J &expected_inputs);
 miner::J ports(const miner::J &role);
