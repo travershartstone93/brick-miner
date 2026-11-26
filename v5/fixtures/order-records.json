@@ -1,0 +1,65 @@
+{
+  "binding":{"component_id":"miner_order_records","binding_id":"order_records","from":"rows","to":"rows"},
+  "rows":[
+    [31,["z","2","ab\u0000b"]],
+    [-12,["a","10","tag"]],
+    [2,["b","+2","ab\u0000a"]],
+    [31,["c","002","ab\u0000a"]],
+    [-1,["d","-5",""]],
+    [10,["e","2","ab\u0000a"]],
+    [0,["f","-5","x"]],
+    [12,["g","0","é"]]
+  ],
+  "direct":[
+    {"name":"mixed-stable-order","order_by":"1:int:asc,2:text:desc","order":[6,4,7,0,2,3,5,1]},
+    {"name":"numeric-descending","order_by":"1:int:desc","order":[1,0,2,3,5,7,4,6]},
+    {"name":"text-numeric-spelling","order_by":"1:text:asc","order":[2,4,6,7,3,1,0,5]},
+    {"name":"nul-and-utf8-byte-order","order_by":"2:text:asc","order":[4,2,3,5,0,1,6,7]},
+    {"name":"signed-original-position","order_by":"pos:int:desc","order":[0,3,7,5,2,6,4,1]},
+    {"name":"position-as-text","order_by":"pos:text:asc","order":[4,1,6,5,7,2,0,3]},
+    {"name":"encounter-ragged","order_by":"encounter","order":[0,1,2],"rows":[[42,["first"]],[-9,[]],[42,["","","last"]]]},
+    {"name":"integer-extrema","order_by":"0:int:asc","order":[1,2,0],"rows":[[8,["9223372036854775807"]],[-3,["-9223372036854775808"]],[9,["-0"]]]},
+    {"name":"empty-input","order_by":"0:int:asc","order":[],"rows":[]}
+  ],
+  "errors":[
+    {"name":"missing-sort-key","order_by":"","error":"invalid_argument"},
+    {"name":"incomplete-key","order_by":"0:asc","error":"invalid_argument"},
+    {"name":"unknown-mode","order_by":"0:num:asc","error":"invalid_argument"},
+    {"name":"unknown-direction","order_by":"0:text:down","error":"invalid_argument"},
+    {"name":"trailing-key-delimiter","order_by":"1:int:asc,","error":"invalid_argument"},
+    {"name":"negative-column","order_by":"-1:text:asc","error":"invalid_argument"},
+    {"name":"column-at-limit","order_by":"2147483647:text:desc","error":"invalid_argument"},
+    {"name":"late-missing-key","order_by":"1:int:asc","error":"missing column","rows":[[1,["present","1"]],[2,["absent"]]]},
+    {"name":"late-invalid-number","order_by":"1:int:asc","error":"invalid integer","rows":[[1,["present","1"]],[2,["whitespace"," 2"]]]},
+    {"name":"overflowing-key","order_by":"1:int:asc","error":"Could not convert","rows":[[1,["present","1"]],[2,["large","9223372036854775808"]]]}
+  ],
+  "controls":[
+    {"name":"number-as-text","witness":"mixed-stable-order","order_by":"1:text:asc,2:text:desc"},
+    {"name":"dropped-secondary-key","witness":"mixed-stable-order","order_by":"1:int:asc"},
+    {"name":"flipped-secondary-direction","witness":"mixed-stable-order","order_by":"1:int:asc,2:text:asc"},
+    {"name":"reordered-ties","witness":"mixed-stable-order","order_by":"1:int:asc,2:text:desc,0:text:desc"},
+    {"name":"position-compared-as-text","witness":"signed-original-position","order_by":"pos:text:desc"}
+  ],
+  "ordinary":[
+    {"name":"mixed-stable-order","fields":"pos,0,1,2","parameters":{"order_by":"1:int:asc,2:text:desc"},
+     "cases":[
+       {"name":"mixed-keys-and-stable-ties","input":"z\t2\tab\u0000b\na\t10\ttag\nb\t+2\tab\u0000a\nc\t002\tab\u0000a\nd\t-5\t\ne\t2\tab\u0000a\nf\t-5\tx\ng\t0\té\n","output":"7\tf\t-5\tx\n5\td\t-5\t\n8\tg\t0\té\n1\tz\t2\tab\u0000b\n3\tb\t+2\tab\u0000a\n4\tc\t002\tab\u0000a\n6\te\t2\tab\u0000a\n2\ta\t10\ttag\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"short-row","input":"ok\t2\tx\nragged\t3\n","error":true},
+       {"name":"malformed-decimal","input":"ok\t2\tx\nbad\t2.5\tz\n","error":true},
+       {"name":"numeric-overflow","input":"ok\t2\tx\nlarge\t9223372036854775808\tz\n","error":true}
+     ]},
+    {"name":"original-position-descending","fields":"pos,0,1,2","parameters":{"order_by":"pos:int:desc"},
+     "cases":[
+       {"name":"reverses-visits-preserves-positions","input":"z\t2\tab\u0000b\na\t10\ttag\nb\t+2\tab\u0000a\nc\t002\tab\u0000a\nd\t-5\t\ne\t2\tab\u0000a\nf\t-5\tx\ng\t0\té\n","output":"8\tg\t0\té\n7\tf\t-5\tx\n6\te\t2\tab\u0000a\n5\td\t-5\t\n4\tc\t002\tab\u0000a\n3\tb\t+2\tab\u0000a\n2\ta\t10\ttag\n1\tz\t2\tab\u0000b\n"},
+       {"name":"singleton","input":"one\t0\tok\n","output":"1\tone\t0\tok\n"},
+       {"name":"empty-input","input":"","output":""}
+     ]},
+    {"name":"encounter","fields":"pos,0","parameters":{"order_by":"encounter"},
+     "cases":[
+       {"name":"unsorted-visits","input":"z\t2\tab\u0000b\na\t10\ttag\nb\t+2\tab\u0000a\nc\t002\tab\u0000a\nd\t-5\t\ne\t2\tab\u0000a\nf\t-5\tx\ng\t0\té\n","output":"1\tz\n2\ta\n3\tb\n4\tc\n5\td\n6\te\n7\tf\n8\tg\n"},
+       {"name":"ragged-unselected-fields","input":"b\t1\nx\na\t3\tmore\n","output":"1\tb\n2\tx\n3\ta\n"},
+       {"name":"empty-input","input":"","output":""}
+     ]}
+  ]
+}

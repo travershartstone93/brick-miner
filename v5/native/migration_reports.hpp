@@ -125,6 +125,10 @@ miner::Path qualify_derive_integer(const miner::Path &package,
                                    const std::string &pin,
                                    const miner::Path &registry,
                                    const std::string &registry_pin);
+miner::Path qualify_order_records(const miner::Path &package,
+                                   const std::string &pin,
+                                   const miner::Path &registry,
+                                   const std::string &registry_pin);
 miner::Path binding_identity_fixture(const miner::Path &package,
                                      const std::string &pin);
 } // namespace v5

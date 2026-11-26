@@ -338,6 +338,7 @@ int main(int argc, char **argv) try {
       {"--qualify-aggregate-groups", qualify_aggregate_groups},
       {"--qualify-annotate-group-measure", qualify_annotate_group_measure},
       {"--qualify-derive-integer", qualify_derive_integer},
+      {"--qualify-order-records", qualify_order_records},
       {"--qualify-filter-extension", qualify_filter_extension},
       {"--qualify-json-writer", qualify_json_writer}};
   if ((argc == 4 || argc == 7) && file_trials.contains(argv[1])) {
@@ -364,7 +365,8 @@ int main(int argc, char **argv) try {
       "--qualify-json-writer, --qualify-filter-records, --qualify-report-fields, "
       "--qualify-group-rows, --qualify-column, --qualify-select-group-row, "
       "--qualify-tab-records, --qualify-aggregate-groups, --qualify-annotate-group-measure "
-      "--qualify-derive-integer or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
+      "--qualify-derive-integer, --qualify-order-records "
+      "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);
   std::unique_ptr<Frozen> prior;

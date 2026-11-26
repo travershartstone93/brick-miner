@@ -1,0 +1,32 @@
+{
+  "description":"Order complete positioned rows by caller-selected keys and retain encounter order for ties.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite positioned rows with the selected text or signed integer sort fields.",
+    "semantic_output":"A reordered copy of the same row visits with each row's original position and fields.",
+    "parameters":{"order_by":"encounter, or comma-separated column:type:direction keys. Use a zero-based column or pos, type int or text, and direction asc or desc."}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","stable row ordering"],
+    "application":["tabular reports","ranked lists","chronological views"],
+    "construction_role":["transform"],"abstraction":["positioned rows to positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB order operator"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_relational","DuckDB 1.5.6-1","C++17"],
+    "resources":["Materializes input and ordered query results. The table helper configures a 64MB DuckDB memory setting and one DuckDB thread. Process memory and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply encounter or valid order keys. Each selected column must be present in every input row. Selected int fields must parse as signed decimal int64 text. The pos key can be ordered numerically or by its decimal text.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"Every original row and position was preserved in the exact expected order for the tested encounter, numeric, text and mixed cases.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Tested integer keys used signed value order across leading zeros, plus signs and int64 extrema. Tested text keys distinguished spelling, embedded NUL and UTF-8 bytes. Invalid keys and out-of-range numbers failed on the tested inputs.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The surrounding emitted file programs preserved the previous destination state for tested short rows and malformed or out-of-range numeric fields. File I/O belongs to the surrounding providers.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Tested rows equal on all requested keys retained encounter order, including ties with duplicate original positions and numerically equal fields of different spelling.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"A general ordering-equivalence proof and complexity bound remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached scope records bounded executable observations.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Invalid selector shapes failed before visiting the source. Invalid data failed at visitation before emitting any row on tested inputs. A second successful visit consumed the source again.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The returned producer captures its source producer by value. The source producer must keep its own captures valid during visitation.","evidence":["original/table.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent construction and visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter emits a DuckDB ORDER BY with encounter ordinal as its final key. The retained DuckDB order operator and upstream source unit are pinned.","evidence":["original/adapter.cpp","original/table.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which fields should control row order, in what sequence, and with which types and directions?","evidence":["spec.json"]}
+  }
+}

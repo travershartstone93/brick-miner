@@ -17,16 +17,15 @@ struct RowScope {
   std::string operation, source_id, fixture, output, unit;
   J arguments;
   std::string qualification, fingerprint;
+  std::string observation_key{}, call_count_key{}, domain_kind{};
   bool report() const { return operation == "report_fields"; }
   bool groups() const { return operation == "group_rows"; }
   bool selects() const { return operation == "select_group_row"; }
   bool aggregates() const { return operation == "aggregate_groups"; }
   bool annotates() const { return operation == "annotate_group_measure"; }
-  bool derives() const { return operation == "derive_integer"; }
   bool group_transform() const { return selects() || aggregates(); }
   bool row_kernels() const { return groups() || group_transform(); }
-  bool appends_fields() const { return annotates() || derives(); }
-  bool renders_rows() const { return row_kernels() || appends_fields(); }
+  bool renders_rows() const { return !domain_kind.empty(); }
   bool filter() const { return !report() && !renders_rows(); }
   Path origin() const {
     if (row_kernels())
@@ -220,7 +219,7 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
       {.output = source});
   const auto source_pin = digest(source);
   check(source_pin == src["source_unit_sha256"].asString() &&
-            (!scope.appends_fields() ||
+            (!scope.renders_rows() ||
              source_pin == provenance["headers"][unit].asString()),
         "signed relational source member differs");
   retain_adapter(stage, bundle, origin, src, row, provenance,
@@ -297,7 +296,7 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
       expected = array({"tab_records", "op_0_group_rows", "op_1_" + scope.operation,
                         "op_2_report_fields", "write_lines"});
       result["chain"] = expected;
-    } else if (scope.appends_fields()) {
+    } else if (scope.renders_rows()) {
       expected = array({"tab_records", "op_0_" + scope.operation,
                         "op_1_report_fields", "write_lines"});
       result["chain"] = expected;
@@ -438,21 +437,12 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
             parse(run(cmd, {.seconds = 30, .probe_limits = true})) == first,
         "standalone relational suite failed to reproduce");
   if (!scope.filter()) {
-    const auto cases = scope.derives() ? "derivations" :
-                       scope.annotates() ? "annotations" :
-                       scope.aggregates() ? "aggregates" :
-                       scope.selects() ? "selections" : scope.groups() ? "groupings" : "reports";
-    const auto calls = scope.derives() ? "calls_per_derivation" :
-                       scope.annotates() ? "calls_per_annotation" :
-                       scope.selects() ? "calls_per_selection" :
-                       scope.groups() ? "calls_per_grouping" :
-                       scope.aggregates() ? "calls_per_aggregate" : "calls_per_report";
-    check(first[cases].size() ==
+    check(first[scope.observation_key].size() ==
               spec["direct"].size(),
           "incomplete direct relational observations");
     return object(
         {{"fresh_processes", 2},
-         {calls, 2},
+         {scope.call_count_key, 2},
          {"observations", first}});
   }
   check(first["comparisons"].size() == 24,
@@ -844,11 +834,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
     domain["selector_fixture_sha256"] = digest(stage / "spec.json");
     domain["selection_sha256"] = digest(stage / "selection.json");
     if (scope.renders_rows()) {
-      const auto kind = scope.derives() ? "checked_integer_derivation" :
-                        scope.annotates() ? "group_measure_annotation" :
-                        scope.aggregates() ? "group_aggregation" :
-                        scope.selects() ? "row_selection" : "grouping";
-      domain[kind] = object(
+      domain[scope.domain_kind] = object(
           {{"arguments", scope.arguments}, {"direct_cases", spec["direct"]}});
     } else {
       domain["selector"] = object({{"argument_index", 1},
@@ -890,7 +876,7 @@ Path qualify_report_fields(const Path &package, const std::string &pin,
        "Detached field-selector fixtures and ordinary line and TSV emission "
        "with the recorded DuckDB runtime and provider ABI.",
        "Exact field and position rendering on the frozen ordered fixture "
-       "rows."});
+       "rows.", "reports", "calls_per_report"});
 }
 
 Path qualify_group_rows(const Path &package, const std::string &pin,
@@ -902,8 +888,8 @@ Path qualify_group_rows(const Path &package, const std::string &pin,
        "Detached finite grouping fixtures and two ordinary constructions using "
        "the recorded DuckDB row kernels and provider ABI.",
        "Exact selected key tuples, group order and positioned member rows on "
-       "the "
-       "frozen grouping fixtures."});
+       "the frozen grouping fixtures.",
+       "groupings", "calls_per_grouping", "grouping"});
 }
 
 Path qualify_select_group_row(const Path &package, const std::string &pin,
@@ -913,7 +899,8 @@ Path qualify_select_group_row(const Path &package, const std::string &pin,
       {"select_group_row", "retained-select-group-row", "select-group-row", "rows", "",
        array({"which", "order_by", "result_order"}),
        "Detached positional and ordered selection fixtures through the pinned DuckDB row kernels.",
-       "Entire selected rows and signed positions across checked encounter, numeric and byte orderings."});
+       "Entire selected rows and signed positions across checked encounter, numeric and byte orderings.",
+       "selections", "calls_per_selection", "row_selection"});
 }
 
 Path qualify_aggregate_groups(const Path &package, const std::string &pin,
@@ -923,7 +910,8 @@ Path qualify_aggregate_groups(const Path &package, const std::string &pin,
       {"aggregate_groups", "retained-aggregate-groups", "aggregate-groups", "rows", "",
        array({"measure", "value_column", "result_order"}),
        "Detached count, distinct byte count and checked signed sum fixtures on the pinned DuckDB row kernels.",
-       "Exact group keys, decimal results, output positions, value order and failure outcomes."});
+       "Exact group keys, decimal results, output positions, value order and failure outcomes.",
+       "aggregates", "calls_per_aggregate", "group_aggregation"});
 }
 
 Path qualify_annotate_group_measure(const Path &package, const std::string &pin,
@@ -934,7 +922,8 @@ Path qualify_annotate_group_measure(const Path &package, const std::string &pin,
        "annotate-group-measure", "rows", "src/function/window/window_aggregate_function.cpp",
        array({"keys", "column", "measure", "value"}),
        "Detached count-equal, min, max and lower-median fixtures on the pinned DuckDB window adapter.",
-       "Exact original fields and positions, encounter order, appended partition measures and failure outcomes."});
+       "Exact original fields and positions, encounter order, appended partition measures and failure outcomes.",
+       "annotations", "calls_per_annotation", "group_measure_annotation"});
 }
 
 Path qualify_derive_integer(const Path &package, const std::string &pin,
@@ -945,6 +934,18 @@ Path qualify_derive_integer(const Path &package, const std::string &pin,
        "src/execution/operator/projection/physical_projection.cpp",
        array({"column", "operation", "operand"}),
        "Detached signed add, subtract, divide and absolute-value fixtures on the pinned DuckDB projection adapter.",
-       "Exact original fields and positions, signed decimal results, and failure outcomes."});
+       "Exact original fields and positions, signed decimal results, and failure outcomes.",
+       "derivations", "calls_per_derivation", "checked_integer_derivation"});
+}
+
+Path qualify_order_records(const Path &package, const std::string &pin,
+                            const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"order_records", "retained-order-records", "order-records", "rows",
+       "src/execution/operator/order/physical_order.cpp", array({"order_by"}),
+       "Detached stable row ordering fixtures on the pinned DuckDB order adapter.",
+       "Exact complete rows and original positions across encounter, signed numeric, text and mixed sort orders.",
+       "orderings", "calls_per_ordering", "stable_row_ordering"});
 }
 } // namespace v5
