@@ -73,6 +73,9 @@ $(BUILD_DIR)/stock-state-replay: replay-gaps/stock-state.cpp $(ROW_REPLAY_INPUTS
 $(BUILD_DIR)/sensor-conflicts-replay: replay-gaps/sensor-conflicts.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/xml-chain-replay: replay-gaps/xml-chains.cpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
+
 $(BUILD_DIR)/library-pilot: src/experiments/discovery.cpp src/experiments/pilot.cpp src/experiments/pilots.hpp src/experiments/original_adapter.hpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -lpugixml -o "$@"
 

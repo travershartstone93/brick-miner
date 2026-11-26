@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The seven XML chain failures replayed through the retained article projection and appropriate row operations. The fixed recipes passed all 35 fixtures, with the staged TSV binding for four reports. Three single-XPath alternatives also passed. [XML chain diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-xml-article-chains-seven-requests)
+
 H039 closes the audit of the 21 archived first-error argument-validation cases. Its fixed route reuses the exact qualified telemetry projection, separate extrema and the detached TSV writer. A numeric-minute variant corrects a signed-zero grouping failure witnessed on legal JSON integer input. [H039 replay evidence](../replay-gaps/RESULTS.md#conflicting-readings-and-numeric-minute-keys-h039)
 
 The H1b threshold-output audit reproduced both archived scalar-enum errors. H002 uses the retained keyed alert. H007 needs per-SKU previous values and source positions and passes through those retained row operations. [Stock-history fixtures and controls](../replay-gaps/RESULTS.md#threshold-output-validation-and-stock-histories)

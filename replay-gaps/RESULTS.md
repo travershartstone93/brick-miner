@@ -305,3 +305,27 @@ The primary run took 65.84 wall seconds and retained four planner-only controls,
 Build with `make .build/sensor-conflicts-replay` and run `.build/sensor-conflicts-replay` with the corpus volume mounted. To reproduce with the same pinned tools, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests).
 
 H037 also reran through the shared projection verification helper. Its plans, role verdicts and probe results matched the earlier report. The run used the later pinned planner. Timed receipt hashes and the aggregate-removal executable hash varied. All 19 plan and receipt hashes verified. If reproducing H037 in the read-only namespace, also mount a writable `/tmp` with `--tmpfs /tmp` for its direct compiler invocation. [H037 regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-sensor-history-replay-XX7GT1cl/report.json)
+
+## Disconnected XML article chains (seven requests)
+
+XML accounts for seven of the 13 archived plans that supply operations but report no complete chain. Five saved chains issue a second XML read after an operation already returns strings. H044 and H050 pass strings to `named_sets`, a JSON graph reader. H044's attribute-name read and reverse form a valid prefix before that boundary. The pinned run reproduced all seven raw diagnostics and constructed all seven prefixes with a JSON writer. The reader-only substitution completed zero roles. H043 still needed `rows → strings` before its string filter. Four requests stopped at `rows → out:text/tab-separated-values` before formatting. H044 and H050 still reported no complete chain with their saved suffixes. [Archived chain ranking](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-5x2_hyp7/ranking.json)
+
+The row-based recipes reuse the retained `xml_records` binding and its pinned input kernel. The selector `/feed/article` keeps the editor, section, state and decoded direct title text from the same article in document order. The source receipt identifies the packaged pugixml XPath implementation. The four TSV comparisons use the detached writer and the exact parent bundle without that binding. [Source and package receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXH5XMi9/stage/package/bundle/qualifications/shared/inputs/source.json) · [Retained recipes](../shared/request-recipes.json)
+
+| Request | Operations after projection |
+|---|---|
+| H043 | Group by decoded title and require both draft and live states. |
+| H044 | Select each section's last appearance and order sections by descending source position. |
+| H045 | Filter to live articles before selecting the latest title per section. |
+| H046 | Rank each editor and decoded-title pair in encounter order, then keep repeat mentions. |
+| H048 | Measure decoded title length and choose the earliest longest title per section. |
+| H049 | Filter to live articles and count distinct editors per decoded title. |
+| H050 | Filter to live articles, project editors, preserve first appearances and keep at most three. |
+
+The seven complete row recipes passed all 35 archived fixtures. H045, H046, H048 and H049 reached `strings → out:text/tab-separated-values` and scored 0/20 on the parent bundle. The staged writer brought those same recipes to 20/20. Three earlier scalar XPath recipes also passed all 15 fixtures on the parent. H043 uses one XPath to compare live titles with draft titles. H044 reads section attribute values before reversing and stably deduplicating them. H050 selects live editor values before stable deduplication and the three-item limit. These runs measure supplied constructions on well-formed feeds.
+
+An authored 16-article feed checks entity equivalence, repeated editor/title pairs across sections, draft exclusions, recency, and title length. The longest-title report keeps `four` over decoded `é🙂` and chooses earlier `zzzz` over later `aaaa` on a length tie. A separate libxml2 extraction and direct reference calculations matched all ten emitted feed outputs. The independent digest file pins the extracted rows and all seven expected result files. [Independent feed outputs](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-chain-replay-XXOSWDDX/independent/SHA256SUMS)
+
+The primary run took 143.95 wall seconds and retained 21 planner-only controls, 70 archived fixture verdicts and ten new feed executions. The repeat reproduced the plans, executable hashes, outputs and verdicts. Timed receipt hashes varied. All 49 plan and receipt hashes verified in each run. The primary report SHA-256 is `34cbcd6b6d6468552f329fa07be9ad425ce678a4d3b4fab4661705a5003b02ca` and the repeat SHA-256 is `9774d5b1f98ea225e59db310b57d1dd927ff86953ffd10ebbb7f996d7b3edbe7`. C++ language, cross-file and capability-gap checks passed. [Sealed report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-chain-replay-XXOSWDDX/report.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-chain-replay-XXPoVB9t/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXtE3ZCc/controls.json)
+
+Build with `make .build/xml-chain-replay` and run `.build/xml-chain-replay` with the corpus volume mounted. To reproduce with the same pinned tools, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests).
