@@ -1,6 +1,8 @@
 # V5 reconciliation and handoff
 
-The H1b worker qualified `xml_records` at 10 supplied requests. The emitted XPath projection passed 16 executions per catalog arm and exact removal blocked delivery. The next binding is `previous_field` at 9. [XML reader qualification](#h1b-article-xpath-projection)
+The H1b worker qualified `previous_field` at 9 supplied requests. Both ordinary TSV programs distinguished a first row from an empty previous value, preserved row positions and passed 18 executions per catalog arm. The ranked check reconciled the existing ZIP projection. The next binding is `uri_records` at 8. [Previous-field qualification](#h1b-per-key-previous-field)
+
+The H1b worker qualified `xml_records` at 10 supplied requests. The emitted XPath projection passed 16 executions per catalog arm and exact removal blocked delivery. [XML reader qualification](#h1b-article-xpath-projection)
 
 The H1b worker qualified `sqlite_records` at 10 supplied requests. The emitted scan projection passed 18 executions per catalog arm on read-only fixtures, and exact removal blocked delivery. The ranked check then reconciled the existing `tree_file_records` scope. [SQLite reader qualification](#h1b-read-only-ordered-sqlite-projection)
 
@@ -1001,3 +1003,24 @@ The primary and clean replay took 10.21 and 21.02 wall seconds. Both reproduced 
 The ranked check accepted the scoped XML receipt with both selector predicates and selected `previous_field` at 9 supplied requests. It rejected a broadened record path and four rehashed receipts. Those controls changed an argument index, omitted the field selector, substituted an ordinary goal with different field parameters, or removed the retained XPath symbol provenance. [Scope controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-records-controls-bEIWmj5g/controls.json)
 
 The separate restricted XML writer regression also passed. Its receipt SHA-256 is `a342dee546ab34e3e1a5456b239ccefdc57e392abf4c137c569dbe1eaa83a462`. [Writer regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-domain-XXYWvYF1/receipt.json)
+
+## H1b per-key previous field
+
+The frozen usage ranking selected `previous_field` at 9 supplied requests after eighteen pinned predecessor scopes. The worker matched the retained history adapter and table helper against Git. It matched the extracted `WindowLeadLagExecutor::EvaluateInternal` symbol and source unit to the historical extraction and signed Arch DuckDB debug package, and checked the linked runtime against the signed binary archive. All source inputs were already local. [Ranked selection](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXzf5UL8/stage/selection.json) · [Source evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXzf5UL8/stage/source.json)
+
+The C++ client passed seven direct cases, eight failures and three alternative parameter choices in two fresh processes. It checked compound and global partitions, interleaved groups, duplicate and signed positions, and keys and values containing NUL. The first row in each partition returned flag `0` and empty text. A later row whose preceding field was empty returned flag `1` and that same empty text. Repeated visits restarted the tested histories. Invalid arguments failed before reading rows, and tested missing fields failed before delivering a row to the visitor. [Frozen cases](fixtures/previous-field.json) · [Standalone results](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXzf5UL8/stage/standalone.json)
+
+Two ordinary programs composed the TSV reader, previous-field transform, field renderer and line writer. Each catalog arm passed all 18 executions. Both arms produced byte-identical binaries. Tested failures preserved an existing destination or left it absent. Removing the exact transform prevented both plans from completing. The qualification remains detached and establishes zero additional passing archived requests and zero production activations. [Ordinary and removal results](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXzf5UL8/stage/integration.json)
+
+```sh
+make .build/v5-inventory
+r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+pkg="$r/v5-queue-XXH5XMi9/stage/package"
+registry="$r/v5-previous-field-XXzf5UL8/stage/sources.json"
+.build/v5-inventory --qualify-previous-field "$pkg" d15aee96917ff440f58f76270e3ca48575268dcfcf2bce951805c865aae3af63 \
+  --source-registry "$registry" 158972ff0c3cbc88e376c92d64e90b9880d88fedfc133f060832ee9896b15d2b
+```
+
+The primary and clean replay took 35.71 and 25.34 wall seconds. Both reproduced all 24 files and manifest SHA-256 `0c00fdfcb9b75acb03de0f8f8e37e82fde14b39648a6b6bcc557fb28961db8b3`, including contract `9792c19f51f7a23129d2c679604104449251a0e96016776cb77bc18121f848fb` and domain `67786784fecd842379d97f317fb46b2ef3af9d1dde445072664edce8c42bb3a6`. Both kept five program digests and released scratch executables. The normal verifier rejected the detached schema. C++ language, cross-file and capability-gap checks passed. The XML manifest reproduced. The ranking suite reproduced its behavioral results and contract, with a different planner digest in the environment and dependent receipts. [Primary manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXzf5UL8/stage/manifest.json) · [Clean replay](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXbSftqT/stage/manifest.json) · [XML regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-records-XXdqD6Ao/stage/manifest.json) · [Ranking regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXIpA1Rl/stage/manifest.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXt7KVd4/controls.json)
+
+The ranked check then verified all 29 files of the existing `zip_file_records` stage on the same parent and reconciled its exact `ext,parent` selector. This credits the earlier H058 qualification without widening it. The check rejected the swapped selector and blocked an attempt to advance past `previous_field` without its evidence. The next pending binding is `uri_records` at 8 supplied requests. [Rank and selector controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-controls-BXwHtWKA/controls.json) · [ZIP scope](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-zip-records-XXkiGzWl/stage/manifest.json)

@@ -1032,4 +1032,15 @@ Path qualify_rank_records(const Path &package, const std::string &pin,
        "Exact positions, original fields, encounter order and stable row numbers within the tested partitions.",
        "rankings", "calls_per_ranking", "partition_row_numbering", "history"});
 }
+
+Path qualify_previous_field(const Path &package, const std::string &pin,
+                            const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"previous_field", "retained-previous-field", "previous-field", "rows",
+       "src/function/window/window_value_function.cpp", array({"keys", "column"}),
+       "Detached previous-field and presence-flag fixtures on the pinned DuckDB window adapter.",
+       "Exact positions, original fields, encounter order and prior values within the tested partitions.",
+       "histories", "calls_per_history", "previous_partition_field", "history"});
+}
 } // namespace v5

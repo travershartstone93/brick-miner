@@ -133,6 +133,10 @@ miner::Path qualify_rank_records(const miner::Path &package,
                                   const std::string &pin,
                                   const miner::Path &registry,
                                   const std::string &registry_pin);
+miner::Path qualify_previous_field(const miner::Path &package,
+                                    const std::string &pin,
+                                    const miner::Path &registry,
+                                    const std::string &registry_pin);
 miner::Path qualify_csv_records(const miner::Path &package,
                                  const std::string &pin,
                                  const miner::Path &registry,

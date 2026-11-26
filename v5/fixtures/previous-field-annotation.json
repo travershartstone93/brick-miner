@@ -1,0 +1,32 @@
+{
+  "description":"Append a previous-value presence flag and the prior selected field within each key partition.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite positioned rows with the selected key and value columns.",
+    "semantic_output":"Original rows in encounter order, with presence flag 0 or 1 and previous field text appended.",
+    "parameters":{"keys":"all for one partition, or a comma-separated list of zero-based key columns","column":"Zero-based field to carry from the prior row in the same partition"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","previous partition value"],
+    "application":["history reports","per-key change detection","event streams"],
+    "construction_role":["transform"],"abstraction":["positioned rows to annotated positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB window operator"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_history","DuckDB 1.5.6-1","C++17"],
+    "resources":["Materializes input and query results. The table helper configures one DuckDB thread and a 64MB database memory setting. Process memory and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply all or a valid list of key columns and a valid value column. Every selected field must be present in each row.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested first row in each partition received flag 0 and empty text. Later rows received flag 1 and the exact previous field, including empty and embedded-NUL values. Original fields, positions and visits were preserved.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"The tested compound key preserved component boundaries and distinguished keys containing NUL. Global and per-key history returned different expected values.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The surrounding emitted programs preserved the previous destination state on tested missing-field errors. File I/O belongs to the surrounding providers.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Interleaved groups retained separate histories. Duplicate original positions did not change encounter-based predecessor selection. Repeating a visit restarted history in the tested cases.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"General equivalence and complexity bounds remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached scope records bounded executable observations.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Tested invalid selector forms failed before consuming input. Missing fields failed during visitation before delivering a row. A repeated successful visit consumed the source again.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures its source producer by value. The source producer must keep its own captures valid during visitation.","evidence":["original/table.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent construction and visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter invokes a DuckDB LAG window ordered by input ordinal, then renders rows in encounter order. The retained operator and signed source unit are pinned.","evidence":["original/adapter.cpp","original/table.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which fields define independent histories and which field should each row carry forward?","evidence":["spec.json"]}
+  }
+}

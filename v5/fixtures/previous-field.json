@@ -1,0 +1,55 @@
+{
+  "binding":{"component_id":"miner_previous_field","binding_id":"previous_field","from":"rows","to":"rows"},
+  "rows":[
+    [23,["a","bc","","alpha-first"]],
+    [-3,["ab","c","beta","beta-first"]],
+    [23,["a","bc","ab\u0000x","after-empty"]],
+    [7,["ab","c","","beta-empty"]],
+    [0,["a","other","local","other"]],
+    [9,["a","bc","end","after-nul"]],
+    [1,["ab","c","same","beta-after-empty"]],
+    [-9,["a","bc","last","alpha-last"]],
+    [11,["","","empty group","empty pair"]]
+  ],
+  "direct":[
+    {"name":"compound-interleaved","keys":"0,1","column":2,"history":[["0",""],["0",""],["1",""],["1","beta"],["0",""],["1","ab\u0000x"],["1",""],["1","end"],["0",""]]},
+    {"name":"one-global-history","keys":"all","column":2,"history":[["0",""],["1",""],["1","beta"],["1","ab\u0000x"],["1",""],["1","local"],["1","end"],["1","same"],["1","last"]]},
+    {"name":"single-key","keys":"0","column":2,"history":[["0",""],["0",""],["1",""],["1","beta"],["1","ab\u0000x"],["1","local"],["1",""],["1","end"],["0",""]]},
+    {"name":"embedded-nul-in-key","keys":"0,1","column":2,"history":[["0",""],["0",""],["1","before-nul"],["1","before-text"],["0",""]],"rows":[[18,["node\u0000","","before-nul"]],[18,["node","","before-text"]],[2,["node\u0000","","after-nul"]],[-5,["node","","after-text"]],[0,["node\u0000x","","new"]]]},
+    {"name":"value-is-partition-key","keys":"2","column":2,"history":[["0",""],["0",""],["0",""],["1",""],["0",""],["0",""],["0",""],["0",""],["0",""]]},
+    {"name":"empty-input","keys":"0,1","column":2,"history":[],"rows":[]},
+    {"name":"singleton","keys":"all","column":0,"history":[["0",""]],"rows":[[-18,[""]]]}
+  ],
+  "errors":[
+    {"name":"empty-key-selector","keys":"","column":2,"error":"invalid_argument"},
+    {"name":"negative-key-column","keys":"0,-1","column":2,"error":"invalid_argument"},
+    {"name":"trailing-key-delimiter","keys":"0,","column":2,"error":"invalid_argument"},
+    {"name":"all-with-index","keys":"all,0","column":2,"error":"invalid_argument"},
+    {"name":"key-index-limit","keys":"2147483647","column":2,"error":"invalid_argument"},
+    {"name":"value-index-limit","keys":"all","column":2147483647,"error":"invalid_argument"},
+    {"name":"missing-partition-field","keys":"0,1","column":2,"error":"missing column","rows":[[3,["a","b","v"]],[2,["a"]],[1,["a","b","w"]]]},
+    {"name":"missing-history-field","keys":"0,1","column":2,"error":"missing column","rows":[[3,["a","b","v"]],[2,["a","b"]],[1,["a","b","w"]]]}
+  ],
+  "controls":[
+    {"name":"merged-partitions","witness":"compound-interleaved","field":"keys","value":"all"},
+    {"name":"missing-secondary-key","witness":"compound-interleaved","field":"keys","value":"0"},
+    {"name":"wrong-value-field","witness":"compound-interleaved","field":"column","value":3}
+  ],
+  "ordinary":[
+    {"name":"compound-interleaved","fields":"pos,0,1,2,3,4,5","parameters":{"keys":"0,1","column":2},
+     "cases":[
+       {"name":"interleaved-empty-and-nul","input":"a\tbc\t\talpha-first\nab\tc\tbeta\tbeta-first\na\tbc\tab\u0000x\tafter-empty\nab\tc\t\tbeta-empty\na\tother\tlocal\tother\na\tbc\tend\tafter-nul\nab\tc\tsame\tbeta-after-empty\na\tbc\tlast\talpha-last\n\t\tempty group\tempty pair\n","output":"1\ta\tbc\t\talpha-first\t0\t\n2\tab\tc\tbeta\tbeta-first\t0\t\n3\ta\tbc\tab\u0000x\tafter-empty\t1\t\n4\tab\tc\t\tbeta-empty\t1\tbeta\n5\ta\tother\tlocal\tother\t0\t\n6\ta\tbc\tend\tafter-nul\t1\tab\u0000x\n7\tab\tc\tsame\tbeta-after-empty\t1\t\n8\ta\tbc\tlast\talpha-last\t1\tend\n9\t\t\tempty group\tempty pair\t0\t\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"singleton","input":"one\tgroup\t\tlabel\n","output":"1\tone\tgroup\t\tlabel\t0\t\n"},
+       {"name":"missing-previous-value-column","input":"a\tb\tok\tvalid\na\tb\na\tb\tend\tvalid\n","error":true},
+       {"name":"missing-partition-column","input":"a\tb\tok\tvalid\na\na\tb\tend\tvalid\n","error":true}
+     ]},
+    {"name":"one-global-history","fields":"pos,0,1,2,3,4,5","parameters":{"keys":"all","column":2},
+     "cases":[
+       {"name":"interleaved-empty-and-nul","input":"a\tbc\t\talpha-first\nab\tc\tbeta\tbeta-first\na\tbc\tab\u0000x\tafter-empty\nab\tc\t\tbeta-empty\na\tother\tlocal\tother\na\tbc\tend\tafter-nul\nab\tc\tsame\tbeta-after-empty\na\tbc\tlast\talpha-last\n\t\tempty group\tempty pair\n","output":"1\ta\tbc\t\talpha-first\t0\t\n2\tab\tc\tbeta\tbeta-first\t1\t\n3\ta\tbc\tab\u0000x\tafter-empty\t1\tbeta\n4\tab\tc\t\tbeta-empty\t1\tab\u0000x\n5\ta\tother\tlocal\tother\t1\t\n6\ta\tbc\tend\tafter-nul\t1\tlocal\n7\tab\tc\tsame\tbeta-after-empty\t1\tend\n8\ta\tbc\tlast\talpha-last\t1\tsame\n9\t\t\tempty group\tempty pair\t1\tlast\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"singleton","input":"one\tgroup\t\tlabel\n","output":"1\tone\tgroup\t\tlabel\t0\t\n"},
+       {"name":"missing-previous-value-column","input":"a\tb\tok\tvalid\na\tb\na\tb\tend\tvalid\n","error":true}
+     ]}
+  ]
+}
