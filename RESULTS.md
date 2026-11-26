@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The 15 typed-conversion requests reconcile to nine previously verified requests and six awaiting scoped execution. All 20 supplied roles plan on retained providers with the staged TSV writer and H016's CSV input correction. [Typed-conversion reconciliation](replay-gaps/RESULTS.md#typed-conversion-requests-and-retained-execution-evidence)
+
 H010, H041 and H047 close the 19-request prose-obligation cohort. The combined evidence covers 22 supplied roles, 95 saved fixture passes and 110 output artifacts. [Cohort replay and reproduction](replay-gaps/RESULTS.md#inventory-and-publishing-close-the-prose-obligation-cohort)
 
 The four URI-list replays use the retained readers and preserve exact URI spelling and duplicate order on the fresh mixed input. The replay separates positive comment filtering, case-sensitive scheme matching, adjacency and first-versus-last selection. [URI-list replay and reproduction](replay-gaps/RESULTS.md#uri-list-requests-with-uncovered-prose)

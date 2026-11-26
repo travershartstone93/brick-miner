@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The typed-conversion reconciliation verifies prior executions for nine of the 15 requests and complete supplied plans for all 20 roles. The staged writer clears ten archived occurrences. H016 also needs the CSV input type. Six requests await scoped execution, with four URI-list cases forming the largest group. [Typed-conversion reconciliation and reproduction](../replay-gaps/RESULTS.md#typed-conversion-requests-and-retained-execution-evidence)
+
 The final inventory and publishing replays close the 19-request prose-obligation cohort with 22 verified supplied roles, 95 saved fixture passes and 110 role outputs. H041's archived XPath also succeeds with the addition of stable exact deduplication. The next reconciliation covers the 15 archived requests with typed conversion gaps. [Cohort replay and evidence](../replay-gaps/RESULTS.md#inventory-and-publishing-close-the-prose-obligation-cohort)
 
 The four URI-list replays exercise reversal, first-three distinct HTTPS selection, adjacent deduplication and last-occurrence order on the retained scalar and correlated readers. The fresh mixed-ending witness preserves URI spelling and distinguishes the archived comment and duplicate-order errors. [URI-list replay and evidence](../replay-gaps/RESULTS.md#uri-list-requests-with-uncovered-prose)

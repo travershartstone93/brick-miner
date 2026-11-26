@@ -721,3 +721,24 @@ The two pinned runs took 101.30 and 127.58 wall seconds. Each contains 45 saved 
 The shared libxml2 fixture reader reproduces the earlier H009/H042 regression outputs, plans, program hashes and the 32-request cohort ledger. Timed receipt hashes differ. [Zero-operation cohort regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-singletons-replay-XXNJ91C8/report.json)
 
 Build with `make .build/residual-closure-replay` and run `.build/residual-closure-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`. The independent XML oracle links the installed `libxml-2.0` through pkg-config.
+
+## Typed-conversion requests and retained execution evidence
+
+The typed-conversion cohort contains 15 requests, 20 output roles and 22 archived typed-gap occurrences. These are ports in the archived plans. The pinned replay probes each role with the saved operations, the saved operations and staged TSV writer, and the supplied operations with and without that writer. The supplied H016 recipe has two additional probes that preserve its original input label. [Archived typed ranking](#what-stopped-the-planner) · [Earlier writer-only execution comparison](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-5x2_hyp7/report.json)
+
+The writer clears the ten `strings → out:text/tab-separated-values` occurrences across eight saved requests. The other twelve archived typed occurrences and all saved prose obligations persist. The earlier writer-only execution receipts record an increase from 0/40 to 11/40 fixture passes with zero newly passing requests. H016 still cannot plan the supplied CSV reader under the archived `text/plain` label. The request names the CSV header and the retained fixture is `ledger.csv`. Using `text/csv` allows both supplied H016 roles to reach the writer.
+
+All 20 supplied roles have complete plans on the retained stack with the staged writer and the H016 input correction. Twelve supplied roles across ten requests require the writer. Two of these roles, H033 and H038, had archived `layers` outputs before the supplied row operations brought them to strings. These probes measure plan construction. Coverage credit comes from the separately checked execution receipts. Eight earlier native replay arms and the original corrected H029 control match the supplied operations and the newly planned provider chains. All nine have five passing fixtures. The raw emitted outputs match the saved bytes, and the original catalog pins are retained with their evidence.
+
+| Scope | Requests |
+|---|---|
+| Verified earlier | H029, H033, H035, H037, H038, H076, H085, H088, H096 |
+| URI lists awaiting scoped execution | H073, H075, H077, H079 |
+| Directory manifest awaiting scoped execution | H065 |
+| Finance reports awaiting scoped execution | H016 |
+
+The reconciliation credits 45 saved fixture passes across 12 output roles. The six remaining requests account for eight roles. The four URI-list requests form the largest remaining group. Their archived chain shapes share the TSV writer gap and cover different operations after reading, including distinct counts per host, separate scheme outputs, ordering by second occurrence and counting repeated schemes.
+
+The two pinned runs took 65.51 and 51.61 wall seconds. Each produced 82 role-level plans and the same receipt bytes at SHA-256 `3f6359bb7836418e0f3d6356e12275cfd600d57078869db528741cadb6cb2f8e`. All 231 recorded file hashes verified in each run. The C++ language, cross-file and capability-gap checks passed. [Sealed reconciliation](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-reconciliation-XXVKXZxL/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-reconciliation-XXONCgOA/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXA7jSOu/controls.json)
+
+Build with `make .build/typed-reconciliation` and run `.build/typed-reconciliation` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
