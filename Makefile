@@ -180,7 +180,7 @@ $(BUILD_DIR)/v5-recovery: tests/v5/recovery.cpp $(addprefix $(BUILD_DIR)/v5/,$(a
 check-v5-queue: $(BUILD_DIR)/v5-miner $(BUILD_DIR)/v5-recovery $(BUILD_DIR)/brick-scan
 	"$(BUILD_DIR)/v5-recovery"
 
-V5_INVENTORY_OBJECTS = inventory_main replay_usage binding_identity writer uri_reader recursive_files json_writer archive_names file_records parent_paths filter_extension file_qualification relational_rows column
+V5_INVENTORY_OBJECTS = inventory_main replay_usage binding_identity writer uri_reader recursive_files json_writer archive_names file_records parent_paths filter_extension file_qualification relational_rows column first_items
 $(BUILD_DIR)/v5-inventory: $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(V5_INVENTORY_OBJECTS) $(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS))) | $(BUILD_DIR)/replay-gaps
 	$(CXX) $^ $(HOST_LIBS) -lsqlite3 -o "$@"
 

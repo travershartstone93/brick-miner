@@ -346,6 +346,7 @@ int main(int argc, char **argv) try {
       {"--qualify-rank-records", qualify_rank_records},
       {"--qualify-previous-field", qualify_previous_field},
       {"--qualify-running-total", qualify_running_total},
+      {"--qualify-first-items", qualify_first_items},
       {"--qualify-filter-extension", qualify_filter_extension},
       {"--qualify-json-writer", qualify_json_writer}};
   if ((argc == 4 || argc == 7) && file_trials.contains(argv[1])) {
@@ -375,7 +376,7 @@ int main(int argc, char **argv) try {
       "--qualify-group-rows, --qualify-column, --qualify-select-group-row, "
       "--qualify-tab-records, --qualify-aggregate-groups, --qualify-annotate-group-measure "
       "--qualify-derive-integer, --qualify-order-records, --qualify-rank-records, "
-      "--qualify-previous-field, --qualify-running-total "
+      "--qualify-previous-field, --qualify-running-total, --qualify-first-items "
       "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);

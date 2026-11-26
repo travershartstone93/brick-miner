@@ -1,6 +1,8 @@
 # V5 reconciliation and handoff
 
-The H1b worker qualified `running_total` at 6 supplied requests. Both ordinary TSV programs passed 32 executions per catalog arm, including signed bounds and overflow with later cancellation. The next ranked binding is `first_items` at 5. [Running-total qualification](#h1b-checked-running-totals)
+The H1b worker qualified `first_items` at five supplied requests. Five ordinary count variants passed 18 executions per catalog arm, and exact removal blocked every plan. The next ranked binding is `filter_membership` at four. [Prefix selection qualification](#h1b-ordered-prefix-selection)
+
+The H1b worker qualified `running_total` at 6 supplied requests. Both ordinary TSV programs passed 32 executions per catalog arm, including signed bounds and overflow with later cancellation. [Running-total qualification](#h1b-checked-running-totals)
 
 The H1b worker qualified `uri_records` at 8 supplied requests. All seven reviewed field projections passed ordinary emission and exact removal blocked delivery. [URI record qualification](#h1b-ordered-uri-record-projections)
 
@@ -1070,3 +1072,24 @@ registry="$r/v5-running-total-XXhEK5Zi/stage/sources.json"
 The primary and clean replay took 29.82 and 85.11 wall seconds. Both reproduced all 24 files and manifest SHA-256 `2b5dd6ab18b81f0f74dc2231a5da2e2db8de5598735b2006a2466e80547c7aea`, including contract `fc88ec50935284b3034a5a2b4a640e6aabedbf1271ee073a4462fa70953a5121` and domain `3bbec2a3b2786c5af4fe901da2864e9e7f7bb5b1c7144b7a484cd052610bae9c`. Each kept five program digests and released scratch executables. The ordinary verifier rejected the detached schema. C++ language, cross-file and capability-gap checks passed. The previous-field manifest reproduced. Group-measure annotation reproduced its standalone and integration results and contract. Its rerun used a different planner digest, which changed its environment and dependent receipts. [Primary manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-running-total-XXhEK5Zi/stage/manifest.json) · [Clean replay](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-running-total-XXY6tX4Z/stage/manifest.json) · [Previous-field regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-previous-field-XXe4B0gI/stage/manifest.json) · [Group-measure regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-annotate-group-measure-XXPnSKLy/stage/manifest.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXEYwMYj/controls.json)
 
 The ranked check accepted the evidence and selected `first_items` at five supplied requests. It rejected an attempt to skip the reviewed URI scope and a rehashed running-total receipt carrying a different raw binding digest. [Rank controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-running-total-controls-D5QLEZQd/controls.json)
+
+## H1b ordered prefix selection
+
+The frozen usage ranking selected `first_items` at five supplied requests after twenty-two reviewed scopes. The worker selected the exact x17 `bricks::take_first` binding and matched the header and provider ABI to the pinned Git archive, active catalog and staged parent. It verified the archived `count:column` operation declaration and retained the MIT notice. All source inputs were local. [Ranked selection](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-XXb58VpY/stage/selection.json) · [Source evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-XXb58VpY/stage/source.json)
+
+The direct C++ client tested nine cases in two fresh processes, with two calls per case. It checked empty and nonempty zero counts, the saved counts of one and three, exact-size and oversized counts, and the maximum native 64-bit count. Prefixes preserved order, empty strings, duplicates, whitespace, UTF-8 and embedded NUL. Changing a returned string left the original vector and repeated result intact. The suffix, sort-before-selection and drop-empty alternatives gave different results. [Frozen cases](fixtures/first-items.json) · [Standalone results](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-XXb58VpY/stage/standalone.json)
+
+The ordinary programs composed plain line input, prefix selection and JSON writing for counts zero, one, three, four and nine. Both catalog arms passed all 18 executions per arm, including missing input and a directory destination, with identical binaries. Removing the exact binding blocked all five plans. The planner rejected a negative, fractional or missing count before delivering a program. The maximum count is direct ABI evidence. The evidence is detached and establishes zero additional passing archived requests and zero production activations. [Ordinary and removal evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-XXb58VpY/stage/integration.json)
+
+```sh
+make .build/v5-inventory
+r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+pkg="$r/v5-queue-XXH5XMi9/stage/package"
+registry="$r/v5-first-items-XXb58VpY/stage/sources.json"
+.build/v5-inventory --qualify-first-items "$pkg" d15aee96917ff440f58f76270e3ca48575268dcfcf2bce951805c865aae3af63 \
+  --source-registry "$registry" 96348a771bf57bf4529b313d235c58eac6acd94f2f0bafeee9c3affc76f615da
+```
+
+The primary and clean replay took 72.81 and 85.60 wall seconds. Both reproduced all 18 files and manifest SHA-256 `ad852c70ca16af7ecbf0d40b67ca91562791e6b0a3879451821044b5f8fbcd44`, including contract `ad7ecbd008358541994ffdd9217a19e24a03ec078105253bd36be3c28448fe11` and the SQLite binding lookup. Each kept eleven program digests and released scratch executables. The ordinary verifier rejected the detached schema. The running-total manifest reproduced. C++ language, cross-file and capability-gap checks passed. [Primary manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-XXb58VpY/stage/manifest.json) · [Clean replay](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-XXFCqYgG/stage/manifest.json) · [Running-total regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-running-total-XX7eSktY/stage/manifest.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXNyBHhX/controls.json)
+
+The ranked check accepted the exact binding and selected `filter_membership` at four supplied requests. Omitting the higher-ranked running-total scope stopped advancement. [Rank controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-first-items-controls-yOFu6qhg/controls.json)

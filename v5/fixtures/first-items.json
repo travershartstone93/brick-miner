@@ -1,0 +1,24 @@
+{
+  "binding":{"component_id":"x17","binding_id":"first_items","from":"strings","to":"strings"},
+  "cases":[
+    {"name":"zero-with-records","count":0,"records":["z","","a"],"expected":[]},
+    {"name":"zero-on-empty","count":0,"records":[],"expected":[]},
+    {"name":"one","count":1,"records":["z","a","z"],"expected":["z"]},
+    {"name":"duplicate-in-prefix","count":3,"records":["z","z","a\u0000tail","é","a"],"expected":["z","z","a\u0000tail"]},
+    {"name":"empty-in-prefix","count":3,"records":["a",""," x ","tail"],"expected":["a",""," x "]},
+    {"name":"exact-size","count":4,"records":["é","","\t","z"],"expected":["é","","\t","z"]},
+    {"name":"larger-than-input","count":9,"records":["z","","z","é"],"expected":["z","","z","é"]},
+    {"name":"larger-than-empty","count":9,"records":[],"expected":[]},
+    {"name":"maximum-native-count","count":18446744073709551615,"records":["a\nline","b\r","c\u0000end"],"expected":["a\nline","b\r","c\u0000end"],"standalone_only":true}
+  ],
+  "controls":[
+    {"name":"last-instead-of-first","witness":"duplicate-in-prefix"},
+    {"name":"sort-before-selection","witness":"duplicate-in-prefix"},
+    {"name":"drop-empty-before-selection","witness":"empty-in-prefix"}
+  ],
+  "invalid_parameters":[
+    {"name":"negative-count","parameters":{"count":-1}},
+    {"name":"fractional-count","parameters":{"count":1.5}},
+    {"name":"missing-count","parameters":{}}
+  ]
+}

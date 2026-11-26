@@ -1,0 +1,32 @@
+{
+  "description":"Take the first requested number of strings while preserving encounter order and bytes.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"An ordered vector of strings and a nonnegative requested count.",
+    "semantic_output":"The prefix of at most count strings in their original order.",
+    "parameters":{"count":"Native std::size_t argument. The ordinary planner declares it as column."}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","sequences","prefix selection"],
+    "application":["limited lists","top records after explicit ordering","preview reports"],
+    "construction_role":["transform"],"abstraction":["ordered string sequence to prefix"],
+    "implementation_form":["retained C++ inline function using std::vector::resize"],
+    "platform":["tested Linux x86_64"],"dependencies":["C++17 standard library","Qt6Core headers and provider types in the retained header unit"],
+    "resources":["Takes the input vector by value and shrinks it when the requested count is smaller. Copying an lvalue may allocate. Throughput and peak memory are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply an ordered string vector and a count representable as std::size_t. The emitted test route uses its documented typed count.","evidence":["original/headers/text_ops.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested counts returned the expected prefix. Zero returned an empty vector, and exact-size and oversized counts returned the full input. A direct case used the maximum 64-bit native count.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"The tested prefixes preserved empty records, duplicates, UTF-8, whitespace and embedded NUL. A direct-only case also preserved strings containing line breaks.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The direct client preserved the passed lvalue and modified its returned result independently. The surrounding emitted programs reported missing input and directory destination failures.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Each returned record came from the corresponding input position. Repeating the operation gave identical outputs. The tested suffix, sort-before-selection and drop-empty alternatives produced different outputs.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"declared","detail":"The checked source reduces the by-value vector length to the smaller of its length and count. The original prefix is preserved by shrink-only vector resize.","evidence":["original/headers/text_ops.hpp"]},
+    "formal_predicates":{"status":"unknown","detail":"The detached contract carries executable evidence for the recorded cases.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Repeated direct calls, including calls after changing a prior result, returned the same prefix from the original vector.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"Input and output use value ownership through std::vector and std::string.","evidence":["original/headers/text_ops.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent calls and memory pressure were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The retained operation declaration describes taking at most the first count elements. The historical recipes request counts one and three.","evidence":["source.json","spec.json"]},
+    "specification_question":{"status":"declared","detail":"How many records should be retained from the start of the current sequence?","evidence":["spec.json"]}
+  }
+}
