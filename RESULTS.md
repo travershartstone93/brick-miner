@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+Main’s ZIP → parent → stable deduplication → JSON program matched 8/10 frozen runs. In the two failures, the archive stored a literal backslash and the ZIP reader exposed a slash. Supplying the original name directly to the parent operation gave the expected result. [Independent composition and ZIP spelling evidence](v5/RECONCILIATION.md#h1b-zip-filename-spelling)
+
 Three partial English requests explicitly needed parent folders. The retained `parent_paths` binding passed seven fixed sequence cases and 35 constructed triples in two processes, plus nine ordinary cases on each executable bundle. A bare filename produced the empty parent. Two requests still require displaying that result as dot. The fifteen-file qualification is staged on the same parent as the independently checked ZIP reader. [Parent-path evidence and reproduction](v5/RECONCILIATION.md#h1b-lexical-parent-paths)
 
 Four archived requests selected the retained ZIP regular-member reader. Its detached H1b qualification passed seven direct cases and fourteen ordinary runs apiece on the active and staged bundles. Removing the ZIP binding blocked the typed goal while the TAR sibling remained usable. The shared implementation accepts TAR input even when called through the ZIP binding. Two clean runs produced the same seventeen-file stage. [Evidence and reproduction command](v5/RECONCILIATION.md#h1b-zip-regular-member-names)

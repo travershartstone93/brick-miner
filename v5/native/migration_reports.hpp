@@ -2,6 +2,7 @@
 #include "common.hpp"
 
 namespace v5 {
+miner::J retained_binding_job(const miner::Path &registry, const std::string &target);
 std::string archive_member(const miner::J &source, const std::string &name);
 std::string verified_runtime_package(const miner::Path &work,
                                      const miner::J &source);

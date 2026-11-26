@@ -1,6 +1,8 @@
 #include "bundle.hpp"
 #include "migration_reports.hpp"
 #include "pilot.hpp"
+#include <QByteArray>
+#include <algorithm>
 #include <iterator>
 #include <sstream>
 
@@ -8,19 +10,91 @@ namespace v5 {
 namespace {
 const std::string effect = "archive_files", zip_id = "archive_files_zip";
 
-Path prepare(const Path &dir, const J &c) {
+// The byte offsets refer only to the immutable 494-byte transfer fixture.
+J spelling_case(const Path &dir, const J &suite, const J &c) {
+  auto bytes = QByteArray::fromHex(
+      QByteArray::fromStdString(suite["source_hex"].asString()));
+  check(bytes.size() == 494 &&
+            sha(bytes.toStdString()) == suite["source_sha256"].asString() &&
+            bytes.mid(180, 4).toHex() == "504b0304" &&
+            bytes.mid(414, 6).toHex() == "504b01021403" &&
+            bytes.mid(206, 2).toHex() == "0300" &&
+            bytes.mid(442, 2).toHex() == "0300",
+        "unexpected local or Unix central-directory header in fixture");
+  auto name = QByteArray::fromHex(
+      QByteArray::fromStdString(c["stored_name_hex"].asString()));
+  check(name.size() == 3 && name.toStdString() == c["members"][3].asString(),
+        "inconsistent stored ZIP filename");
+  for (auto offset : {210, 460}) {
+    check(bytes.mid(offset, 3).toHex() == "615c62", "source name span changed");
+    bytes.replace(offset, 3, name);
+  }
+  auto path = dir / "input";
+  save(path, bytes.toStdString());
+  check(digest(path) == c["input_sha256"].asString(), "changed spelling fixture");
+  run({"unzip", "-tqq", path});
+  auto raw = run({"unzip", "-Z1", path});
+  auto reported = run({"bsdtar", "-tf", path});
+  check(raw == join(strings(c["members"]), "\n") + "\n" &&
+            reported == join(strings(c["expected"]), "\n") + "\n",
+        "unmatched independent archive inventories");
+  return object(
+      {{"input_sha256", digest(path)},
+       {"unzip_listing", raw},
+       {"bsdtar_listing", reported},
+       {"local_name_offset", 210},
+       {"central_name_offset", 460},
+       {"creator_os_byte", 3},
+       {"local_name_hex", bytes.mid(210, 3).toHex().toStdString()},
+       {"central_name_hex", bytes.mid(460, 3).toHex().toStdString()}});
+}
+J add_spelling_suite(const Path &stage, J &spec,
+                     const std::string &registry_pin) {
+  const auto current = retained_binding_job(v5_root() / "sources.json", zip_id);
+  const auto job = retained_binding_job(stage / "sources.json", zip_id);
+  if (job.isNull()) {
+    auto prior = strings(current["prior_registry_sha256"]);
+    check(!registry_pin.empty() && std::find(prior.begin(), prior.end(),
+                                             registry_pin) != prior.end(),
+          "current ZIP qualification needs a spelling suite");
+    return J();
+  }
+  check(job == current && job["source"] == "retained-zip-member-names" &&
+            job["route"] == "direct" && job["stream"] == "foundational" &&
+            job["tests"] == "v5/fixtures/archive-spelling.json",
+        "unreviewed ZIP spelling suite");
+  auto fixture = project_file(root, job["tests"].asString());
+  fs::copy_file(fixture, stage / "archive-spelling.json");
+  check(digest(stage / "archive-spelling.json") == job["tests_sha256"].asString(),
+        "ZIP spelling suite hash mismatch");
+  const auto s = load(stage / "archive-spelling.json");
+  for (const auto &c : s["cases"])
+    spec["cases"].append(c);
+  check(s["cases"].size() == 2 &&
+            s["cases"][0]["members"] != s["cases"][1]["members"] &&
+            s["cases"][0]["expected"] == s["cases"][1]["expected"],
+        "missing equivalent member-name observations");
+  write(stage / "spec.json", spec);
+  auto a = load(stage / "annotation.json");
+  a["interface"]["semantic_output"] = s["semantic_output"];
+  a["claims"]["refinements"]["detail"] = s["refinements"];
+  a["claims"]["refinements"]["evidence"].append("spelling-observations.json");
+  write(stage / "annotation.json", a);
+  return s;
+}
+void prepare(const Path &dir, const J &c) {
   fs::create_directories(dir);
   auto path = dir / "input";
   const auto format = c["format"].asString();
   if (format == "missing")
-    return path;
+    return;
   if (format == "unrecognized") {
     save(path, std::string("\x04\x01\x02\x03", 4));
-    return path;
+    return;
   }
   if (format == "empty-zip") {
     save(path, std::string("PK\005\006", 4) + std::string(18, '\0'));
-    return path;
+    return;
   }
   auto files = dir / "members";
   for (const auto &name : {"z", "d/a.txt", "empty", "plain file", ".hidden"})
@@ -52,7 +126,6 @@ Path prepare(const Path &dir, const J &c) {
           "independent ZIP inventory disagrees with intended fixture");
     run({"unzip", "-tqq", path});
   }
-  return path;
 }
 
 J observe(const Path &exe, const Path &dir, const Path &fixture, const J &c,
@@ -244,6 +317,7 @@ Path qualify_archive_names(const Path &package, const std::string &pin,
            {"archive-names-annotation.json", "annotation.json"}})
     fs::copy_file(v5_root() / "fixtures" / from, stage / to);
   auto spec = load(stage / "spec.json");
+  auto spelling = add_spelling_suite(stage, spec, registry_pin);
   check(spec["binding"] == record["key"], "wrong archive binding");
   auto exe = scratch / "direct";
   Strings cmd = {"g++-15",
@@ -268,15 +342,21 @@ Path qualify_archive_names(const Path &package, const std::string &pin,
   check(env["linked_libarchive_sha256"] ==
             dep["files"]["usr/lib/libarchive.so.13.8.11"],
         "loaded different libarchive");
-  J direct = array(), all;
+  J direct = array(), all, spellings;
   for (const auto &c : spec["cases"]) {
     auto name = c["name"].asString();
-    auto input = prepare(work / "fixtures" / name, c);
+    auto dir = work / "fixtures" / name, input = dir / "input";
+    if (c["format"] == "pinned-spelling")
+      spellings[name] = spelling_case(dir, spelling, c);
+    else
+      prepare(dir, c);
     direct.append(observe(exe, work / "direct" / name, input, c, false));
     if (name == "archive-order")
       all = observe(exe, work / "all-entry-control", input, c, false, false,
                     true);
   }
+  if (!spelling.isNull())
+    write(stage / "spelling-observations.json", spellings);
   check(all["names"].size() == 6, "all-entry witness missing");
   write(stage / "standalone.json",
         object({{"cases", direct}, {"all_entry_specialization", all}}));

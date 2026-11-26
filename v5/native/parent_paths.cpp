@@ -8,12 +8,7 @@ namespace {
 const std::string id = "parent_paths", source_id = "retained-recursive-files";
 
 J registry_job(const Path &registry) {
-  J job;
-  for (const auto &row : load(registry).get("jobs", array()))
-    if (row["target"] == id) {
-      check(job.isNull(), "duplicate parent-path job");
-      job = row;
-    }
+  auto job = retained_binding_job(registry, id);
   check(job["source"] == source_id && job["route"] == "direct" &&
             job["stream"] == "foundational" &&
             job["callable"] == "bricks::parent" &&

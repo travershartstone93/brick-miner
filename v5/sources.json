@@ -808,6 +808,15 @@
   ],
   "jobs": [
     {
+      "source":"retained-zip-member-names",
+      "route":"direct",
+      "target":"archive_files_zip",
+      "stream":"foundational",
+      "tests":"v5/fixtures/archive-spelling.json",
+      "tests_sha256":"8cdcdcb22941cda19e0ca379db7c1003938640cabc6b0caa3b90dd48e0b5c937",
+      "prior_registry_sha256":["3ede1a635f5047ed31d14281bbe7168be6f1d30f731ac5606aadcd2155ed4263","4cef0e2408b7eccc4a97c024ab0978fab90fe2e4c6123f78bc397f78a630083a"]
+    },
+    {
       "source": "retained-recursive-files",
       "route": "direct",
       "target": "parent_paths",

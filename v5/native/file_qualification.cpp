@@ -4,6 +4,15 @@
 #include <QStandardPaths>
 #include <sstream>
 namespace v5 {
+J retained_binding_job(const Path &registry, const std::string &target) {
+  J job;
+  for (const auto &row : load(registry).get("jobs", array()))
+    if (row["target"] == target) {
+      check(job.isNull(), "duplicate retained job: " + target);
+      job = row;
+    }
+  return job;
+}
 std::string archive_member(const J &s, const std::string &file) {
   return run({"bsdtar", "-xOf", s["archive"].asString(), file});
 }
