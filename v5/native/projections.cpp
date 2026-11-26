@@ -142,7 +142,9 @@ J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
               digest(v5_root() / "fixtures" /
                      a.get("probe_suite", "requirements.json").asString())},
              {"observations_sha256",
-              sha(dump(integration["staged"]["probes"]))},
+              key == "prefixed_lines"
+                  ? prefix_fingerprint(integration)
+                  : sha(dump(integration["staged"]["probes"]))},
              {"scope", "fixed development probes on this Linux toolchain"}})},
        {"property_signature", signature},
        {"qualification",
@@ -422,7 +424,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
                                           {"outer", "reverse_order"},
                                           {"occurrence", "unique_lines"},
                                           {"maximal", "adjacent_unique"},
-                                          {"whitespace", "nonempty_lines"}}) {
+                                          {"whitespace", "nonempty_lines"},
+                                          {"beginning", "prefixed_lines"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},
@@ -493,7 +496,8 @@ void assemble(const Path &work, const Path &dest) {
   fs::copy_file(v5_root() / "semantic-vocabulary.json",
                 package / "semantic-vocabulary.json");
   for (const auto *name : {"measure-client.cpp", "measure-probes.json",
-                           "sequence-client.cpp", "sequence-probes.json"})
+                           "sequence-client.cpp", "sequence-probes.json",
+                           "prefix-client.cpp", "prefix-probes.json"})
     fs::copy_file(v5_root() / "fixtures" / name, e / name);
   fs::copy_file(work / "integration/fifo/fifo-integration.json",
                 e / "fifo-integration.json");
@@ -628,6 +632,8 @@ J verify(const Path &package, const std::string &expected) {
     if (std::find(sequence_keys.begin(), sequence_keys.end(),
                   c["capability_id"].asString()) != sequence_keys.end())
       check_sequence_evidence(package, c, binding);
+    if (c["capability_id"] == "prefixed_lines")
+      check_prefix_evidence(package, c, binding);
     ids.append(c["capability_id"]);
     auto events = lifecycle(package, c, binding);
     if (!events.steps.empty()) {

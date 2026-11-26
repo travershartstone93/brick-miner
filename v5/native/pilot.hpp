@@ -3,6 +3,12 @@
 
 namespace v5 {
 using namespace miner;
+J qualify_prefix(const Path &extracted, const Path &out);
+J prefix_requirement(const J &fixture);
+J prefix_argument_controls(const Path &bundle, const Path &dest);
+std::string prefix_fingerprint(const J &trial);
+void check_prefix_evidence(const Path &package, const J &contract,
+                           const J &binding);
 class Database;
 std::map<std::string, Strings> index_semantic_ports(const Path &, Database &,
                                                     const J &);

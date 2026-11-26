@@ -31,11 +31,19 @@ void extract_measures(const Path &out) {
       auto row =
           select_binding(bindings["providers"], key, sel["brick"].asString(),
                          sel["from"].asString(), sel["to"].asString());
+      Strings parameters;
+      const auto &types = bindings["outcomes"][key]["parameters"];
+      for (const auto &arg : row["args"]) {
+        auto name = arg.asString();
+        check(types[name].isString(), "missing parameter type for " + name);
+        parameters.push_back(name + ":" + types[name].asString());
+      }
       check(std::count(s["symbols"].begin(), s["symbols"].end(), row["call"]) ==
                     1 &&
                 line == key + "|" + row["from"].asString() + "|" +
                             row["to"].asString() + "|" +
-                            row["call"].asString() + "||" +
+                            row["call"].asString() + "|" +
+                            join(parameters, ",") + "|" +
                             bindings["outcomes"][key]["meaning"].asString(),
             "upstream documentation differs from planner declaration");
       descriptors[key] =
@@ -98,6 +106,7 @@ void qualify_measures(const Path &extracted, const Path &out) {
                 {"coincident_cases", coincident}});
   }
   qualify_sequences(extracted, out, report);
+  report["prefixed_lines"] = qualify_prefix(extracted, out);
   write(out / "standalone.json", report);
 }
 J semantic_ports(const J &c, const J &binding, const J &annotation) {

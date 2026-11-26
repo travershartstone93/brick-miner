@@ -38,6 +38,71 @@ J probes(const Path &exe, const Path &dest, const J &cases) {
   }
   return observed;
 }
+J ordinary_trial(const std::string &key, const J &row, const J &probe,
+                 bool retained, const Files &stage, const Path &base,
+                 const Path &draft, const Path &dest) {
+  J report = object();
+  auto spec =
+      spec_for(probe["input_type"].asString(), probe["output_type"].asString(),
+               object({{"outcome", key},
+                       {"parameters", probe["parameters"]},
+                       {"uncovered", array()}}));
+  for (std::string label : {"baseline", "staged", "removed"}) {
+    auto d = dest / label, control = d / "bundle";
+    Path folder = label == "baseline" ? base : draft;
+    if (label == "removed") {
+      write_tree(control,
+                 retained ? remove_binding(stage, row) : ablate(stage, key));
+      folder = control;
+    }
+    auto emission = plan(folder, spec, d);
+    if (label == "removed")
+      fs::remove_all(control);
+    auto plans = array();
+    for (const auto &p : emission["providers"])
+      if (p["status"] == "complete" && p["uncovered"].empty())
+        plans.append(p);
+    check(emission["interpretation_errors"].empty() &&
+              emission["clarifications"].empty(),
+          "fixed interpretation rejected");
+    if (label == "removed" || (label == "baseline" && !retained)) {
+      check(plans.empty(), "control unexpectedly passed");
+      report[label] = object(
+          {{"result", "no complete program"}, {"gaps", emission["gaps"]}});
+      continue;
+    }
+    check(plans.size() == 1, "missing stage plan");
+    auto p = plans[0];
+    auto ids = strings(p["bricks"]);
+    check(std::find(ids.begin(), ids.end(), row["brick"].asString()) !=
+                  ids.end() &&
+              p["source"].asString().find(row["call"].asString() + "(") !=
+                  std::string::npos,
+          "wrong provider");
+    auto binary = probe_program(d / "program");
+    build_emission(p, d, binary, "g++-15");
+    std::set<std::string> packages;
+    for (const auto &h : load(d / "components/helpers.json"))
+      for (const auto &pkg : h["packages"])
+        packages.insert(pkg.asString());
+    report[label] = object(
+        {{"result", "passed"},
+         {"bricks", p["bricks"]},
+         {"emitted_sha256", sha(p["source"].asString())},
+         {"binary_sha256", digest(binary)},
+         {"probes", probes(binary, d, probe["cases"])},
+         {"packages", string_array({packages.begin(), packages.end()})}});
+    if (key == "prefixed_lines") {
+      auto chain = array();
+      for (const auto &step : p["plan"]["steps"])
+        chain.append(step["provider"]);
+      check(chain == array({"read_lines", key, "write_lines"}),
+            "unexpected prefix provider chain");
+      report[label]["chain"] = chain;
+    }
+  }
+  return report;
+}
 } // namespace
 void integrate(const Path &extracted, const Path &dest) {
   auto base = verified_base();
@@ -98,57 +163,31 @@ void integrate(const Path &extracted, const Path &dest) {
                        selector["from"].asString(), selector["to"].asString());
     bool retained = std::find(baseline_rows.begin(), baseline_rows.end(),
                               row) != baseline_rows.end();
-    const auto &probe = requirements[key];
-    auto spec = spec_for(probe["input_type"].asString(),
-                         probe["output_type"].asString(),
-                         object({{"outcome", key},
-                                 {"parameters", probe["parameters"]},
-                                 {"uncovered", array()}}));
-    for (std::string label : {"baseline", "staged", "removed"}) {
-      auto d = dest / key / label, control = d / "bundle";
-      Path folder = label == "baseline" ? base : draft;
-      if (label == "removed") {
-        write_tree(control,
-                   retained ? remove_binding(stage, row) : ablate(stage, key));
-        folder = control;
+    auto trial = [&](const J &probe, const Path &dir) {
+      return ordinary_trial(key, row, probe, retained, stage, base, draft, dir);
+    };
+    if (key == "prefixed_lines") {
+      auto fixtures = load(v5_root() / "fixtures/prefix-probes.json");
+      auto &result = report[key];
+      J extra = object();
+      for (const auto &c : fixtures) {
+        auto name = c["name"].asString();
+        auto arm = trial(prefix_requirement(c), dest / key / name);
+        arm["prefix"] = c["prefix"];
+        if (name == "comment") {
+          check(result.isNull(), "duplicate primary prefix trial");
+          result = arm;
+        } else {
+          check(!extra.isMember(name), "duplicate prefix trial");
+          extra[name] = arm;
+        }
       }
-      auto emission = plan(folder, spec, d);
-      if (label == "removed")
-        fs::remove_all(control);
-      auto plans = array();
-      for (const auto &p : emission["providers"])
-        if (p["status"] == "complete" && p["uncovered"].empty())
-          plans.append(p);
-      check(emission["interpretation_errors"].empty() &&
-                emission["clarifications"].empty(),
-            "fixed interpretation rejected");
-      if (label == "removed" || (label == "baseline" && !retained)) {
-        check(plans.empty(), "control unexpectedly passed");
-        report[key][label] = object(
-            {{"result", "no complete program"}, {"gaps", emission["gaps"]}});
-        continue;
-      }
-      check(plans.size() == 1, "missing stage plan");
-      auto p = plans[0];
-      auto ids = strings(p["bricks"]);
-      check(std::find(ids.begin(), ids.end(), row["brick"].asString()) !=
-                    ids.end() &&
-                p["source"].asString().find(row["call"].asString() + "(") !=
-                    std::string::npos,
-            "wrong provider");
-      auto binary = probe_program(d / "program");
-      build_emission(p, d, binary, "g++-15");
-      std::set<std::string> packages;
-      for (const auto &h : load(d / "components/helpers.json"))
-        for (const auto &pkg : h["packages"])
-          packages.insert(pkg.asString());
-      report[key][label] = object(
-          {{"result", "passed"},
-           {"bricks", p["bricks"]},
-           {"emitted_sha256", sha(p["source"].asString())},
-           {"binary_sha256", digest(binary)},
-           {"probes", probes(binary, d, probe["cases"])},
-           {"packages", string_array({packages.begin(), packages.end()})}});
+      check(result.isObject(), "missing primary prefix trial");
+      result["parameter_trials"] = extra;
+      result["argument_controls"] =
+          prefix_argument_controls(draft, dest / key / "arguments");
+    } else {
+      report[key] = trial(requirements[key], dest / key);
     }
   }
   write(dest / "integration.json", report);

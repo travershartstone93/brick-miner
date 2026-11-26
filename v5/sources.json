@@ -677,13 +677,14 @@
         "bricks::reversed",
         "bricks::unique",
         "bricks::consecutive",
-        "bricks::nonempty"
+        "bricks::nonempty",
+        "bricks::prefix"
       ],
       "families": [
         "algorithms"
       ],
       "documentation": "experiments/boilerplate/component-trial/expanded/operations.tsv",
-      "tests": "v5/fixtures/measure-probes.json, measure-client.cpp, sequence-probes.json and sequence-client.cpp",
+      "tests": "v5/fixtures/measure-probes.json, measure-client.cpp, sequence-probes.json, sequence-client.cpp, prefix-probes.json and prefix-client.cpp",
       "examples": "experiments/boilerplate/stress/brick-learning/evidence/published-transfer.json",
       "dependencies": [
         "C++17 standard library",

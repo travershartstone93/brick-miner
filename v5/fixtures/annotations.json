@@ -908,5 +908,28 @@
       "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this binding to bricks::nonempty.","evidence":["evidence/measure-source.json"]},
       "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
     }
+  },
+  {
+    "id":"prefixed_lines","source_id":"retained-text-measures",
+    "binding":{"brick":"x16","from":"strings","to":"strings"},"probe_suite":"prefix-probes.json",
+    "semantic_input":"Ordered string records and one case-sensitive literal text prefix.",
+    "semantic_output":"The matching records in encounter order, including duplicates, with their original bytes.",
+    "primary_family":"algorithms",
+    "facets":{"technical_hierarchy":["algorithms","sequence_transform"],"application":["text utilities","file filtering"],"construction_role":["transform"],"abstraction":["ordered record sequence"],"implementation_form":["retained C++ source"],"platform":["tested Linux x86_64"],"resources":["Constructs a vector of the selected strings. Worst-case resource usage has not been measured."]},
+    "claims":{
+      "preconditions":{"status":"declared","detail":"The caller supplies a string vector and a text parameter named prefix.","evidence":["evidence/measure-source.json"]},
+      "postconditions":{"status":"observed","detail":"Returned the exact matching records in encounter order with duplicates and byte contents preserved on the tested inputs.","evidence":["evidence/standalone.json#prefixed_lines","evidence/integration.json#prefixed_lines"]},
+      "effects":{"status":"observed","detail":"The standalone client observed identical input records after its calls.","evidence":["evidence/standalone.json#prefixed_lines"]},
+      "invariants":{"status":"observed","detail":"An empty prefix selected every tested record. A match at a later position did not suffice. The test cases distinguished case, Unicode spellings, embedded NUL and literal quoting.","evidence":["evidence/standalone.json#prefixed_lines"]},
+      "refinements":{"status":"unknown","detail":"No additional input or output refinement was qualified.","evidence":[]},
+      "mathematical_properties":{"status":"observed","detail":"Idempotent for each of six prefixes on all sequences of length zero through three over the fixed four-record alphabet.","evidence":["evidence/standalone.json#prefixed_lines","evidence/prefix-client.cpp"]},
+      "formal_predicates":{"status":"unknown","detail":"The finite examples do not establish a general proof.","evidence":[]},
+      "state_protocol":{"status":"not-applicable","detail":"One synchronous invocation with no retained object.","evidence":[]},
+      "ownership":{"status":"declared","detail":"The function borrows the two inputs as const references and returns a vector by value.","evidence":["evidence/measure-source.json","evidence/prefix-client.cpp"]},
+      "concurrency":{"status":"unknown","detail":"Concurrent calls were outside this qualification.","evidence":[]},
+      "thread_affinity":{"status":"unknown","detail":"Thread affinity was not tested.","evidence":[]},
+      "upstream_usage":{"status":"declared","detail":"The pinned public operation table declares the callable and its named prefix argument.","evidence":["evidence/measure-source.json"]},
+      "specification_question":{"status":"declared","detail":"Which literal prefix should a record begin with? The operation requires one text value and the empty string is a meaningful choice.","evidence":["evidence/measure-source.json","evidence/prefix-probes.json"]}
+    }
   }
 ]

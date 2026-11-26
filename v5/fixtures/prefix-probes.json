@@ -1,0 +1,9 @@
+[
+  {"name":"comment", "prefix":"#", "records":["a#","#z","","#","#z"," #","#a"], "expected":["#z","#","#z","#a"]},
+  {"name":"file-scheme", "prefix":"file:", "records":["FILE:a","file:","xfile:b","file:/b","file:/b","fil"], "expected":["file:","file:/b","file:/b"]},
+  {"name":"https-scheme", "prefix":"https:", "records":["http:","xhttps:","https:x","HTTPS:x","https:"], "expected":["https:x","https:"]},
+  {"name":"empty-prefix", "prefix":"", "records":["z",""," ","z","é"], "expected":["z",""," ","z","é"]},
+  {"name":"unicode", "prefix":"á", "records":["á.c","á.c","Á.c","xá.c","á.c"], "expected":["á.c","á.c"]},
+  {"name":"embedded-nul", "prefix":"a\u0000b", "records":["a","a\u0000b1","ab","a\u0000","a\u0000c","a\u0000b","za\u0000b"], "expected":["a\u0000b1","a\u0000b"]},
+  {"name":"quoted", "prefix":"\"\\", "records":["\"","\\","x\"\\","\"\\1","\"\\","\"\\1"], "expected":["\"\\1","\"\\","\"\\1"]}
+]

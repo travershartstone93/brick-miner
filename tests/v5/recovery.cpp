@@ -260,7 +260,7 @@ int main() try {
             array({"number_option_prefix", "reverse_record_bytes",
                    "threshold_entries", "byte_lengths", "item_count",
                    "line_xxh32", "sort_lines", "reverse_order", "unique_lines",
-                   "adjacent_unique", "nonempty_lines", "u84"}),
+                   "adjacent_unique", "nonempty_lines", "prefixed_lines", "u84"}),
         "unexpected distinct qualifications");
   Json::UInt64 released = 0;
   unsigned programs = 0;
@@ -302,6 +302,35 @@ int main() try {
   const auto contract_rows = load(pack / "contracts.json");
   const auto binding_rows =
       load(pack / "bundle/providers/contracts.json")["providers"];
+  for (const auto &contract : contract_rows) {
+    if (contract["capability_id"] != "prefixed_lines")
+      continue;
+    const auto binding = select_binding(binding_rows, "prefixed_lines", "x16",
+                                        "strings", "strings");
+    auto checked = array();
+    for (const std::string field :
+         {"missing text parameter", "wrong text type",
+          "different callable argument", "unsupported proof"}) {
+      auto c = contract, b = binding;
+      if (field == "missing text parameter")
+        c["interface"]["parameters"] = object();
+      if (field == "wrong text type")
+        c["interface"]["parameters"]["prefix"] = "integer";
+      if (field == "different callable argument")
+        b["args"] = array({"needle"});
+      if (field == "unsupported proof")
+        c["claims"]["formal_predicates"]["status"] = "established";
+      bool rejected = false;
+      try {
+        check_prefix_evidence(pack, c, b);
+      } catch (const std::runtime_error &) {
+        rejected = true;
+      }
+      check(rejected, "prefix control survived: " + field);
+      checked.append(field);
+    }
+    report["prefix_controls"] = checked;
+  }
   for (auto c : contract_rows) {
     if (c["capability_id"] != "reverse_order")
       continue;
