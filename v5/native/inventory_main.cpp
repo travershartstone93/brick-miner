@@ -1,12 +1,18 @@
 #include "queue.hpp"
+#include <algorithm>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 // Read only unpacked catalog metadata. A discovered occurrence has no authority
 // to activate a provider, including when its descriptive row matches a trial.
 using namespace v5;
 namespace {
-std::map<Path, std::set<std::string>> locations() {
+using Locations = std::map<Path, std::set<std::string>>;
+const Strings metadata_names = {"catalog.json", "components.json",
+                                "providers/contracts.json",
+                                "providers/library.json"};
+Locations locations() {
   auto paths =
       run({"rg", "--files", "--hidden", "--no-ignore", "--null", "-g",
            "catalog.json", "-g", "components.json", "-g",
@@ -30,6 +36,44 @@ bool under(const Path &path, const Path &dir) {
   auto rel = path.lexically_relative(dir);
   return !rel.empty() && *rel.begin() != "..";
 }
+struct Frozen {
+  Path directory;
+  std::string pin;
+  Database db;
+  static Path checked(const Path &dir, const std::string &pin) {
+    check_corpus(dir);
+    auto path = project_file(dir, "ledger.sqlite");
+    check(digest(path) == pin, "frozen ledger pin mismatch");
+    return path;
+  }
+  Frozen(const Path &dir, const std::string &hash)
+      : directory(dir), pin(hash), db(checked(dir, hash), true) {
+    db.script("PRAGMA trusted_schema=OFF; BEGIN");
+  }
+  Locations locations_for(const Path &stage, const Path &base) {
+    auto active = db.query("SELECT path,legacy_manifest_sha256 FROM generation "
+                           "WHERE role='active legacy'");
+    check(active == std::vector<Strings>{{base, base_hash}},
+          "frozen active generation differs");
+    Locations dirs;
+    for (const auto &r : db.query(
+             "SELECT generation,path FROM input ORDER BY generation,path")) {
+      Path dir = r[0], path = r[1];
+      auto name = path.lexically_relative(dir).generic_string();
+      check((under(dir, volume / "unllm") ||
+             under(dir, main_repo / "experiments/boilerplate")) &&
+                std::find(metadata_names.begin(), metadata_names.end(), name) !=
+                    metadata_names.end(),
+            "unsupported frozen inventory location");
+      dirs[dir].insert(name);
+    }
+    if (!dirs.contains(stage))
+      for (const auto &name : metadata_names)
+        if (fs::is_regular_file(stage / name))
+          dirs[stage].insert(name);
+    return dirs;
+  }
+};
 std::string implementation(const Path &dir, const J &row,
                            const std::string &kind) {
   if (!row.isObject() || !row["header"].isString())
@@ -83,16 +127,19 @@ struct Snapshot {
   Database &db;
   const Path base, pack, out;
   const std::vector<Qualified> qualified;
+  Frozen *prior;
+  size_t frozen_headers = 0;
   const J evidence = load(pack / "evidence/integration.json");
   const J registry = load(pack / "sources.json");
   void record(const std::string &file, unsigned ordinal, const Path &dir,
-              const std::string &kind, const J &row) {
+              const std::string &kind, const J &row,
+              const std::string &header) {
     const auto field = [&](const std::string &name) {
       return row.isObject() && row[name].isString() ? row[name].asString()
                                                     : std::string{};
     };
     auto id = kind == "class" ? field("brick") : field("id"),
-         header = implementation(dir, row, kind), brick = field("brick");
+         brick = field("brick");
     auto bytes = dump(row),
          version = sha(dump(array({kind, sha(bytes), header})));
     db.insert("INSERT OR IGNORE INTO revision VALUES(?,?,?,?,?,?,?,?,?,?)",
@@ -163,9 +210,28 @@ struct Snapshot {
   }
   void inventory_file(const Path &dir, const std::string &name) {
     auto file = dir / name;
-    check(fs::is_regular_file(file),
-          "discovered metadata moved during snapshot: " + file.string());
-    auto raw = bytes(file), hash = sha(raw);
+    auto cached =
+        prior ? prior->db.query("SELECT bytes_sha256 FROM input WHERE path=?",
+                                {file})
+              : std::vector<Strings>{};
+    const bool immutable = dir == base || dir == pack / "bundle";
+    std::string raw;
+    std::vector<Strings> observations;
+    if (cached.empty())
+      raw = bytes(file);
+    else {
+      raw =
+          bytes(project_file(prior->directory / "metadata", cached.front()[0]));
+      check(sha(raw) == cached.front()[0], "frozen metadata pin mismatch");
+      if (immutable)
+        check(digest(file) == cached.front()[0],
+              "pinned generation metadata changed since inventory");
+      observations = prior->db.query(
+          "SELECT ordinal,row_sha256,header_sha256 FROM occurrence o JOIN "
+          "revision r ON r.key=o.revision WHERE input=? ORDER BY ordinal",
+          {file});
+    }
+    auto hash = sha(raw);
     auto retained = out / "metadata" / hash;
     if (!fs::exists(retained))
       save(retained, raw);
@@ -201,8 +267,24 @@ struct Snapshot {
         }
     db.insert("INSERT INTO input VALUES(?,?,?,?,?,?,?)",
               {file, dir, hash, kind, std::to_string(count), issue, version});
-    for (unsigned i = 0; i < count; ++i)
-      record(file.string(), i, dir, kind, rows[i]);
+    check(cached.empty() || observations.size() == count,
+          "frozen row count mismatch");
+    for (unsigned i = 0; i < count; ++i) {
+      std::string header;
+      if (!cached.empty()) {
+        const auto &obs = observations[i];
+        check(obs[0] == std::to_string(i) && obs[1] == sha(dump(rows[i])),
+              "frozen row identity mismatch");
+        header = obs[2];
+        if (immutable)
+          check(header == implementation(dir, rows[i], kind),
+                "immutable generation header changed");
+        else
+          ++frozen_headers;
+      } else
+        header = implementation(dir, rows[i], kind);
+      record(file.string(), i, dir, kind, rows[i], header);
+    }
   }
 };
 J count_by(Database &db, const std::string &sql) {
@@ -213,13 +295,17 @@ J count_by(Database &db, const std::string &sql) {
 }
 } // namespace
 int main(int argc, char **argv) try {
-  check(argc == 3,
-        "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
+  check(argc == 3 || (argc == 6 && std::string(argv[3]) == "--frozen"),
+        "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
+        "SNAPSHOT LEDGER_SHA256]");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);
+  std::unique_ptr<Frozen> prior;
+  if (argc == 6)
+    prior = std::make_unique<Frozen>(fs::canonical(argv[4]), argv[5]);
   auto dir = fresh_run("v5-migration"), out = dir / ".snapshot";
   fs::create_directory(out);
-  auto dirs = locations();
+  auto dirs = prior ? prior->locations_for(pack / "bundle", base) : locations();
   check(dirs.contains(pack / "bundle") && dirs.contains(base),
         "missing selected package or active generation in inventory");
   J summary;
@@ -246,7 +332,7 @@ int main(int argc, char **argv) try {
                   {p["contract_hash"].asString(), p["direction"].asString(),
                    p["role_status"].asString(), p["unit_status"].asString(),
                    p["cardinality_status"].asString(), sha(dump(p))});
-    Snapshot snap{db, base, pack, out, admitted(pack)};
+    Snapshot snap{db, base, pack, out, admitted(pack), prior.get()};
     for (const auto &[d, files] : dirs) {
       auto role = d == base              ? "active legacy"
                   : d == pack / "bundle" ? "reviewed stage input"
@@ -255,9 +341,16 @@ int main(int argc, char **argv) try {
                       ? "installed legacy"
                       : "historical or experimental";
       auto manifest = d / "SHA256SUMS";
-      db.insert(
-          "INSERT INTO generation VALUES(?,?,?)",
-          {d, role, fs::is_regular_file(manifest) ? digest(manifest) : ""});
+      std::string manifest_pin;
+      if (prior && d != base && d != pack / "bundle") {
+        auto receipt = prior->db.query(
+            "SELECT legacy_manifest_sha256 FROM generation WHERE path=?", {d});
+        check(receipt.size() == 1, "missing frozen generation identity");
+        manifest_pin = receipt[0][0];
+      } else if (fs::is_regular_file(manifest))
+        manifest_pin = digest(manifest);
+      db.insert("INSERT INTO generation VALUES(?,?,?)",
+                {d, role, manifest_pin});
       for (const auto &name : files)
         snap.inventory_file(d, name);
     }
@@ -314,6 +407,15 @@ int main(int argc, char **argv) try {
           "formats require separate review. Revision identity covers the full "
           "row and resolved header where available. Identical bytes in other "
           "directories carry no qualification automatically."}});
+    if (prior)
+      summary["frozen_inputs"] = object(
+          {{"snapshot", prior->directory.string()},
+           {"ledger_sha256", prior->pin},
+           {"historical_row_observations_reused",
+            Json::UInt64(snap.frozen_headers)},
+           {"scope", "Frozen catalog locations plus the named stage. The "
+                     "active and selected stage headers were rechecked. All "
+                     "qualification dispositions were recomputed."}});
   }
   summary["ledger_sha256"] = digest(out / "ledger.sqlite");
   write(out / "summary.json", summary);

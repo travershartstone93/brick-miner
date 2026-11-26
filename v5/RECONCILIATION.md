@@ -156,3 +156,11 @@ pin=4f87953e1e215409febd74393e3f319c7732b78cbd3f628d2412c05d2e2d3bd4
 .build/v5-miner pilot
 make check check-v5-queue
 ```
+
+### H1b replay of frozen migration inputs
+
+The inventory tool accepts `--frozen SNAPSHOT LEDGER_SHA256` after the staged package and its pin. It checks the prior ledger and replays its frozen metadata and ordered row/header identities. It rechecks the actual active and selected staged headers and recomputes all qualification dispositions against the named package. Pointing it at a successor adds only that reviewed stage to the frozen location set. Newly discovered historical directories require another live inventory.
+
+Replaying the semantic snapshot reused 57,931 historical row observations and yielded a byte-identical SQLite ledger, SHA-256 `92de8e19b5e47cfed46dd3c3b4ec8dde274265d58f5c4f12a0c3ea3407ff5367`. Advancing the earlier FIFO snapshot to the semantic stage reused 56,313 observations, identified the two newly assessed active output units and left every historical occurrence outside staged admission. A wrong ledger pin and changed frozen document both stopped replay. [Replay controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-frozen-controls-yjXxkoQC/controls.json)
+
+Main independently repeated both six-input measurement programs and all eleven semantic controls on the final semantic package. Both stateful consumer regressions also passed on that pin. [Final consumer receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-semantic-fVfGorYZ/sealed/summary.json)
