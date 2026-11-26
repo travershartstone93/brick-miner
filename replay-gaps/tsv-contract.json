@@ -1,0 +1,15 @@
+{
+  "from": "strings",
+  "to": "out:text/tab-separated-values",
+  "provider_id": "write_tsv_lines",
+  "contract": "Each input string is one already-rendered headerless TSV record. Tabs delimit fields. Records supplied by the caller contain no embedded CR or LF. Replace the destination with the exact record bytes in order, appending LF after each record. An empty sequence produces a zero-byte file. Report a write failure to the caller.",
+  "cases": [
+    {"name": "one-column", "records": ["Depot B", "Depot A", "Depot B"], "expected": "Depot B\nDepot A\nDepot B\n"},
+    {"name": "tab-separated-fields", "records": ["beta\t12", "alpha\t-3"], "expected": "beta\t12\nalpha\t-3\n"},
+    {"name": "empty-fields", "records": ["\tX\t", "\t\t"], "expected": "\tX\t\n\t\t\n"},
+    {"name": "empty-record", "records": [""], "expected": "\n"},
+    {"name": "empty-sequence", "records": [], "expected": ""},
+    {"name": "utf8-and-punctuation", "records": ["café\tO'Brien, Jr.", "β\t\"A\""], "expected": "café\tO'Brien, Jr.\nβ\t\"A\"\n"},
+    {"name": "destination-is-directory", "records": ["entry"], "error": "directory"}
+  ]
+}
