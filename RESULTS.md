@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The four typed URI-list requests passed 20 saved fixtures and eight fresh checks with the staged TSV writer. The tested first-occurrence variant for H077 also passed the saved fixtures and failed the fresh ordering check. H016 and H065 are the two remaining typed-conversion requests awaiting execution. [Typed URI-list replay](replay-gaps/RESULTS.md#typed-uri-list-constructions)
+
 The 15 typed-conversion requests reconcile to nine previously verified requests and six awaiting scoped execution. All 20 supplied roles plan on retained providers with the staged TSV writer and H016's CSV input correction. [Typed-conversion reconciliation](replay-gaps/RESULTS.md#typed-conversion-requests-and-retained-execution-evidence)
 
 H010, H041 and H047 close the 19-request prose-obligation cohort. The combined evidence covers 22 supplied roles, 95 saved fixture passes and 110 output artifacts. [Cohort replay and reproduction](replay-gaps/RESULTS.md#inventory-and-publishing-close-the-prose-obligation-cohort)

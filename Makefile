@@ -88,6 +88,9 @@ $(BUILD_DIR)/depot-count-replay: replay-gaps/depot-count.cpp $(ROW_REPLAY_INPUTS
 $(BUILD_DIR)/typed-reconciliation: replay-gaps/typed-reconciliation.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/typed-uri-replay: replay-gaps/typed-uri.cpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
+
 $(BUILD_DIR)/residual-closure-replay: replay-gaps/residual-closure.cpp replay-gaps/xml-fixture.hpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(shell pkg-config --cflags libxml-2.0) $(filter %.cpp %.o,$^) $(HOST_LIBS) $(shell pkg-config --libs libxml-2.0) -o "$@"
 

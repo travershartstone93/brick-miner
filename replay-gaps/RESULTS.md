@@ -742,3 +742,24 @@ The reconciliation credits 45 saved fixture passes across 12 output roles. The s
 The two pinned runs took 65.51 and 51.61 wall seconds. Each produced 82 role-level plans and the same receipt bytes at SHA-256 `3f6359bb7836418e0f3d6356e12275cfd600d57078869db528741cadb6cb2f8e`. All 231 recorded file hashes verified in each run. The C++ language, cross-file and capability-gap checks passed. [Sealed reconciliation](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-reconciliation-XXVKXZxL/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-reconciliation-XXONCgOA/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXA7jSOu/controls.json)
 
 Build with `make .build/typed-reconciliation` and run `.build/typed-reconciliation` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## Typed URI-list constructions
+
+H073, H075, H077 and H079 ran through the ordinary planner, C++ emitter, compiler and checker using their supplied operations. The five output roles use the retained correlated URI reader and the staged TSV writer. Every supplied chain matches the pinned typed-conversion reconciliation. Across 20 saved fixtures the four programs reproduced all 25 output files byte for byte. Removing the exact writer registration from the staged bundle reproduces the parent checksums. With that parent and the same supplied specifications, all five roles stop at the final `strings → out:text/tab-separated-values` port and zero of 20 saved fixtures pass.
+
+The C++ oracle checks the plain-hostname URI-list domain from the requests. The fresh mixed file contains LF and CRLF endings, comments, a blank line, mixed-case schemes and hosts, exact duplicates, and URI spellings that differ by case in percent escapes. The comment-only input checks empty files for all five roles.
+
+| Request | Supplied behavior | Altered construction | Saved passes with alteration |
+|---|---|---|---:|
+| H073 | Count distinct original URIs per lowercased HTTP(S) host. Sort by descending count and then hostname. | Count every occurrence. | 2/5 |
+| H075 | Split file and HTTPS bookmarks case-insensitively, preserving spelling, order and duplicates in each output. | Use the archived case-sensitive prefix operations. | 2/5 |
+| H077 | Count exact repeated URIs and order them by their second occurrence. | Order by first occurrence while preserving the counts. | 5/5 |
+| H079 | Count all bookmarks per lowercased scheme in first-encounter order. | Count distinct original URIs within each scheme. | 2/5 |
+
+All four supplied programs passed both fresh inputs. The four altered constructions returned the expected divergent bytes on the mixed input. In H077, the second distinct URI repeats first and moves ahead of the first on the correct route. The five saved fixtures do not discriminate that ordering.
+
+With the nine earlier execution receipts, the typed-conversion cohort now has 13 verified supplied requests, 17 output roles and 65 saved fixture passes. H016 and H065 still need execution checks. Fresh English interpretation remains unmeasured.
+
+Two clean runs took 149.76 and 155.70 wall seconds. They reproduced the complete plans, source and executable hashes, outputs and verdicts. The raw receipt hashes differ. Each run verified 129 recorded file hashes and retired its 12 scratch executables. `make check check-v5-gap` passed. The primary report SHA-256 is `5672e6e4980c2cb1a2b56626209e3fd720101fcdf48b3fa1c90b2d16c8575f80` and the repeat SHA-256 is `fcda92c37478033bffd0643c2c4fc6c995751df9827fb2070862e6f592da187c`. [Primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-uri-replay-XXUfWrWF/report.json) · [Repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-uri-replay-XX2a9Ftj/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXHsjm6M/controls.json)
+
+Build with `make .build/typed-uri-replay`. Use `.build/typed-uri-replay` and set `pinned="$runs/v5-typed-uri-tools-MOpUkV7w"` in the [read-only replay command](#grouped-row-selection-validation-ten-requests). Include `--tmpfs /tmp` before the command separator. [Tool hashes](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-uri-tools-MOpUkV7w/SHA256SUMS)
