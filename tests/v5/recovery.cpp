@@ -57,6 +57,7 @@ void stop_worker(const Path &q, unsigned attempt, bool concurrency) {
             "no worker lease to interrupt");
       std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
+    check(kill(child, SIGSTOP) == 0, "cannot suspend test client");
     if (concurrency)
       negative({tool(), "resume", q, "--steps", "1"}, "holds the worker lease");
     check(kill(child, SIGKILL) == 0, "worker disappeared");
@@ -152,10 +153,19 @@ int main() try {
   run({tool(), "resume", q}, {.seconds = 60});
   check(queue_status(q) == final, "completed replay mutated ledger");
   auto hash = final["manifest_sha256"].asString();
-  check(verify(q / "stage/package", hash).size() == 2,
+  check(verify(q / "stage/package", hash) ==
+            array({"number_option_prefix", "reverse_record_bytes",
+                   "threshold_entries"}),
         "unexpected distinct qualifications");
   auto pack = q / "stage/package";
   auto pins = load(pack / "cross-check.json");
+  check(pins["logical"]["ObservedEvent"] ==
+            array({"threshold_entries\thold\tsilent",
+                   "threshold_entries\trearm\tsilent",
+                   "threshold_entries\ttrigger\temitted",
+                   "threshold_entries\ttrigger\tsilent"}),
+        "component observations include harness events or omit latch "
+        "transitions");
   check(pins["tantivy_binary"] == digest(override_dir / "unllm_index") &&
             pins["query_library"] == digest(override_dir / "libunllm_search.a"),
         "comparator pins differ");

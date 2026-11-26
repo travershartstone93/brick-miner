@@ -1,0 +1,27 @@
+{
+  "schema": "unllm.development-lifecycle-oracle/1",
+  "step_fields": ["instance","key","event","expected_response"],
+  "scope": "Synchronous single-threaded instances, ordinal event order and observable return values. The registry owns each instance until close.",
+  "traces": {
+    "key_isolation": [
+      ["A","_","open","opened"], ["A","red","hold","silent"],
+      ["A","red","trigger","emitted"], ["A","red","trigger","silent"],
+      ["A","blue","trigger","emitted"], ["A","red","rearm","silent"],
+      ["A","blue","trigger","silent"], ["A","red","hold","silent"],
+      ["A","red","trigger","emitted"], ["A","_","close","closed"]
+    ],
+    "instance_isolation": [
+      ["A","_","open","opened"], ["B","_","open","opened"],
+      ["A","door","trigger","emitted"], ["B","door","trigger","emitted"],
+      ["B","door","rearm","silent"], ["A","door","trigger","silent"],
+      ["B","door","trigger","emitted"], ["A","_","close","closed"],
+      ["A","_","open","opened"], ["A","door","trigger","emitted"],
+      ["B","door","trigger","silent"], ["A","_","close","closed"], ["B","_","close","closed"]
+    ],
+    "repeated_rearm": [
+      ["A","_","open","opened"], ["A","x","rearm","silent"], ["A","x","rearm","silent"],
+      ["A","x","trigger","emitted"], ["A","x","hold","silent"], ["A","x","trigger","silent"],
+      ["A","x","rearm","silent"], ["A","x","rearm","silent"], ["A","x","trigger","emitted"], ["A","_","close","closed"]
+    ]
+  }
+}

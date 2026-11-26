@@ -38,6 +38,19 @@ J probes(const Path &exe, const Path &dest, const J &cases) {
   }
   return observed;
 }
+Files remove_binding(Files stage, const J &binding) {
+  auto &raw = stage.at("providers/contracts.json");
+  auto registry = parse(raw), kept = array();
+  for (const auto &row : registry["providers"])
+    if (row["id"] != binding["id"])
+      kept.append(row);
+  check(kept.size() + 1 == registry["providers"].size(),
+        "binding removal must identify exactly one row");
+  registry["providers"] = kept;
+  raw = dump(registry);
+  seal(stage);
+  return stage;
+}
 } // namespace
 void integrate(const Path &extracted, const Path &dest) {
   auto base = verified_base();
@@ -47,8 +60,12 @@ void integrate(const Path &extracted, const Path &dest) {
   auto anchors = load(v5_root() / "fixtures/annotations.json");
   J tasks = array(), meta = object();
   Files headers;
+  auto baseline_rows =
+      parse(original.at("providers/contracts.json"))["providers"];
   for (const auto &a : anchors) {
     auto key = a["id"].asString();
+    if (a["source_id"] == "retained-keyed-latch")
+      continue;
     bool is_api = key == api;
     auto src = a["source_id"].asString();
     auto task =
@@ -73,8 +90,16 @@ void integrate(const Path &extracted, const Path &dest) {
   write_tree(draft, stage);
   auto requirements = load(v5_root() / "fixtures/requirements.json");
   J report = object();
-  for (const auto &t : tasks) {
+  const auto staged_rows =
+      parse(stage.at("providers/contracts.json"))["providers"];
+  for (const auto &t : anchors) {
     auto key = t["id"].asString();
+    auto selector = t["binding"];
+    auto row =
+        select_binding(staged_rows, key, selector["brick"].asString(),
+                       selector["from"].asString(), selector["to"].asString());
+    bool retained = std::find(baseline_rows.begin(), baseline_rows.end(),
+                              row) != baseline_rows.end();
     const auto &probe = requirements[key];
     auto spec = spec_for(probe["input_type"].asString(),
                          probe["output_type"].asString(),
@@ -85,7 +110,8 @@ void integrate(const Path &extracted, const Path &dest) {
       auto d = dest / key / label, control = d / "bundle";
       Path folder = label == "baseline" ? base : draft;
       if (label == "removed") {
-        write_tree(control, ablate(stage, key));
+        write_tree(control,
+                   retained ? remove_binding(stage, row) : ablate(stage, key));
         folder = control;
       }
       auto emission = plan(folder, spec, d);
@@ -98,7 +124,7 @@ void integrate(const Path &extracted, const Path &dest) {
       check(emission["interpretation_errors"].empty() &&
                 emission["clarifications"].empty(),
             "fixed interpretation rejected");
-      if (label != "staged") {
+      if (label == "removed" || (label == "baseline" && !retained)) {
         check(plans.empty(), "control unexpectedly passed");
         report[key][label] = object(
             {{"result", "no complete program"}, {"gaps", emission["gaps"]}});
@@ -107,8 +133,9 @@ void integrate(const Path &extracted, const Path &dest) {
       check(plans.size() == 1, "missing stage plan");
       auto p = plans[0];
       auto ids = strings(p["bricks"]);
-      check(std::find(ids.begin(), ids.end(), "miner_" + key) != ids.end() &&
-                p["source"].asString().find(t["call"].asString() + "(") !=
+      check(std::find(ids.begin(), ids.end(), row["brick"].asString()) !=
+                    ids.end() &&
+                p["source"].asString().find(row["call"].asString() + "(") !=
                     std::string::npos,
             "wrong provider");
       auto binary = d / "program";

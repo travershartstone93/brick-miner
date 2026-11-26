@@ -18,5 +18,49 @@
       {"input":"3100780a","failure":"invalid-input"}, {"failure":"missing-input"},
       {"failure":"destination-directory"}
     ]
+  },
+  "threshold_entries": {
+    "input_type": "text/tab-separated-values",
+    "output_type": "application/json",
+    "parameters": {
+      "emit": "key",
+      "key_column": 0,
+      "value_column": 1,
+      "trigger": "ge",
+      "threshold": 8,
+      "reset": "le",
+      "reset_threshold": 4
+    },
+    "cases": [
+      {
+        "input": "646f6f7209380a62656c6c09380a646f6f7209380a646f6f7209360a62656c6c09340a62656c6c09380a646f6f7209340a646f6f7209390a",
+        "json": [
+          "door",
+          "bell",
+          "bell",
+          "door"
+        ]
+      },
+      {
+        "input": "7809340a7809340a7809370a7809380a7809380a",
+        "json": [
+          "x"
+        ]
+      },
+      {
+        "input": "",
+        "json": []
+      },
+      {
+        "input": "6d697373696e672d76616c75650a",
+        "failure": "invalid-input"
+      },
+      {
+        "failure": "missing-input"
+      },
+      {
+        "failure": "destination-directory"
+      }
+    ]
   }
 }

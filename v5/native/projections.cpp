@@ -1,5 +1,4 @@
-#include "database.hpp"
-#include "pilot.hpp"
+#include "queue.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <regex>
@@ -73,6 +72,13 @@ void validate_field(const J &v, const J &s, const std::string &path) {
             "invalid string at " + path);
   }
 }
+std::string header_path(const Path &bundle, const J &binding) {
+  const auto name = binding["header"].asString();
+  check(Path(name).filename() == name, "unexpected planner header name");
+  return (fs::is_regular_file(bundle / "providers" / name) ? "providers/"
+                                                           : "headers/") +
+         name;
+}
 J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
   auto key = a["id"].asString();
   auto src = registry[a["source_id"].asString()];
@@ -96,7 +102,16 @@ J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
   for (const auto &k : claims.getMemberNames())
     if (claims[k]["status"] == "observed")
       signature.append(k);
-  auto header = "headers/" + row["header"].asString();
+  auto header = header_path(work / "integration/bundle", row);
+  auto parameters = bindings["outcomes"][key]["parameters"];
+  // The invocation interface contains callable inputs. A fixed dispatch choice
+  // selects the template specialization in the pinned planner binding.
+  for (const auto &name : row["when"].getMemberNames()) {
+    check(!contains(row["args"], name) && parameters[name].isArray() &&
+              contains(parameters[name], row["when"][name]),
+          "unsupported dispatch predicate for " + key);
+    parameters.removeMember(name);
+  }
   return object(
       {{"schema", "unllm.brick-contract/1"},
        {"vocabulary", "unllm.brick-vocabulary/1"},
@@ -106,13 +121,12 @@ J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
        {"description", bindings["outcomes"][key]["meaning"]},
        {"primary_family", a["primary_family"]},
        {"facets", facets},
-       {"interface",
-        object({{"callable", row["call"]},
-                {"structural_input", row["from"]},
-                {"structural_output", row["to"]},
-                {"semantic_input", a["semantic_input"]},
-                {"semantic_output", a["semantic_output"]},
-                {"parameters", bindings["outcomes"][key]["parameters"]}})},
+       {"interface", object({{"callable", row["call"]},
+                             {"structural_input", row["from"]},
+                             {"structural_output", row["to"]},
+                             {"semantic_input", a["semantic_input"]},
+                             {"semantic_output", a["semantic_output"]},
+                             {"parameters", parameters}})},
        {"claims", claims},
        {"source", object({{"id", src["id"]},
                           {"revision", src["revision"]},
@@ -136,13 +150,88 @@ J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
                 {"scope", "Local staged fixed typed development task with "
                           "removal control; external review pending"}})}});
 }
-void project(const Path &package, const Path &scratch, const J &contracts) {
+using Rows = std::vector<Strings>;
+struct Lifecycle {
+  Rows steps, component_inputs;
+};
+Lifecycle lifecycle(const Path &package, const J &c, const J &binding) {
+  Lifecycle result;
+  auto &rows = result.steps;
+  const auto &claim = c["claims"]["state_protocol"];
+  if (claim["status"] != "observed")
+    return result;
+  const std::string prefix = "evidence/lifecycle.json#";
+  for (const auto &ref : claim["evidence"]) {
+    auto path = ref.asString();
+    if (!path.starts_with(prefix))
+      continue;
+    auto id = path.substr(prefix.size());
+    auto evidence = load(package / "evidence/lifecycle.json")[id];
+    check(rows.empty() && evidence["schema"] == "unllm.observed-lifecycle/1" &&
+              evidence["provider"] == c["provider_id"] &&
+              id == binding["id"].asString() &&
+              evidence["binding"] == binding["id"] &&
+              evidence["columns"] ==
+                  array({"instance", "key", "event", "response"}),
+          "lifecycle evidence identity mismatch");
+    auto fixture = package / "evidence";
+    check(digest(fixture / "latch-client.cpp") ==
+                  evidence["client_sha256"].asString() &&
+              digest(fixture / "latch-rows-client.cpp") ==
+                  evidence["adapter_client_sha256"].asString() &&
+              digest(fixture / "latch-traces.json") ==
+                  evidence["oracle_sha256"].asString(),
+          "lifecycle fixture pin mismatch");
+    auto source = load(fixture / "latch-source.json");
+    check(source["revision"] == c["source"]["revision"] &&
+              source["archive_sha256"] == c["source"]["archive_sha256"] &&
+              source["unchanged_members"]["headers/keyed_latch.hpp"][1] ==
+                  evidence["implementation_sha256"],
+          "lifecycle implementation pin mismatch");
+    for (const auto &f : source["unchanged_members"].getMemberNames())
+      check(digest(project_file(package / "bundle", f)) ==
+                source["unchanged_members"][f][1].asString(),
+            "changed retained header " + f);
+    const auto &traces = evidence["traces"];
+    auto alphabet = strings(evidence["bounded_reference"]["event_alphabet"]);
+    std::sort(alphabet.begin(), alphabet.end());
+    check(!alphabet.empty() &&
+              std::adjacent_find(alphabet.begin(), alphabet.end()) ==
+                  alphabet.end(),
+          "invalid component event alphabet");
+    for (const auto &event : alphabet)
+      result.component_inputs.push_back({c["provider_id"].asString(), event});
+    check(traces == load(fixture / "latch-traces.json")["traces"] &&
+              !traces.empty(),
+          "lifecycle observations differ from oracle");
+    for (const auto &name : traces.getMemberNames()) {
+      unsigned ordinal = 0;
+      for (const auto &s : traces[name]) {
+        check(s.size() == 4, "invalid lifecycle columns");
+        Strings row = {c["provider_id"].asString(), name,
+                       std::to_string(++ordinal)};
+        for (const auto &v : s)
+          row.push_back(v.asString());
+        for (const auto &v : row)
+          check(!v.empty() && v.find_first_of("\t\r\n") == v.npos,
+                "invalid lifecycle fact");
+        rows.push_back(std::move(row));
+      }
+    }
+    check(!rows.empty(), "empty lifecycle receipt");
+  }
+  return result;
+}
+void project(const Path &package, const Path &scratch, const J &contracts,
+             const J &bindings) {
   Database db(package / "contracts.sqlite");
   db.script(R"sql(
         CREATE TABLE provider(capability TEXT, provider TEXT PRIMARY KEY, contract_hash TEXT, family TEXT, level TEXT);
         CREATE TABLE port(provider TEXT PRIMARY KEY, input TEXT, output TEXT, semantic_input TEXT, semantic_output TEXT);
         CREATE TABLE facet(provider TEXT, name TEXT, value TEXT, PRIMARY KEY(provider,name,value));
         CREATE TABLE property(provider TEXT, name TEXT, status TEXT, detail TEXT, PRIMARY KEY(provider,name));
+        CREATE TABLE lifecycle(provider TEXT, trace TEXT, step INTEGER, instance TEXT, subject TEXT, event TEXT, response TEXT, PRIMARY KEY(provider,trace,step));
+        CREATE TABLE component_input(provider TEXT, event TEXT, PRIMARY KEY(provider,event));
         CREATE INDEX by_family ON provider(family,capability);
         CREATE INDEX by_property ON property(name,status);
         CREATE INDEX by_facet ON facet(name,value);
@@ -192,6 +281,26 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
                     port["semantic_input"].asString(),
                     port["semantic_output"].asString()};
     append(text, strings(c["facets"]["technical_hierarchy"]));
+    auto binding =
+        select_binding(bindings, cap, id, port["structural_input"].asString(),
+                       port["structural_output"].asString());
+    auto events = lifecycle(package, c, binding);
+    if (!events.steps.empty()) {
+      std::set<std::string> terms;
+      text.push_back(c["claims"]["state_protocol"]["detail"].asString());
+      for (const auto &input : events.component_inputs) {
+        db.insert("INSERT INTO component_input VALUES(?,?)", input);
+        terms.insert(input[1]);
+      }
+      for (const auto &row : events.steps) {
+        db.insert("INSERT INTO lifecycle VALUES(?,?,?,?,?,?,?)", row);
+        if (std::binary_search(events.component_inputs.begin(),
+                               events.component_inputs.end(),
+                               Strings{id, row[5]}))
+          terms.insert(row[6]);
+      }
+      text.insert(text.end(), terms.begin(), terms.end());
+    }
     search.insert("INSERT INTO passages VALUES(?,?,?,?,?,?)",
                   {doc, "contract", join(text, " "), doc, "behavior", "0"});
   }
@@ -202,6 +311,10 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
            {"Provider",
             "SELECT capability,provider,level FROM provider ORDER BY 1,2"},
            {"Port", "SELECT provider,input,output FROM port ORDER BY 1"},
+           {"LifecycleStep",
+            "SELECT * FROM lifecycle ORDER BY provider,trace,step"},
+           {"ComponentInput",
+            "SELECT * FROM component_input ORDER BY provider,event"},
            {"Property",
             "SELECT provider,name,status FROM property ORDER BY 1,2"}}) {
     std::string rows;
@@ -219,7 +332,13 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
             "USING(provider) WHERE level='ordinary-emission-tested'"},
            {"Observed",
             "SELECT DISTINCT capability,name FROM provider JOIN property "
-            "USING(provider) WHERE status='observed'"}}) {
+            "USING(provider) WHERE status='observed'"},
+           {"ObservedEvent",
+            "SELECT DISTINCT capability,event,response FROM provider JOIN "
+            "lifecycle USING(provider) JOIN property USING(provider) WHERE "
+            "name='state_protocol' AND status='observed' AND EXISTS(SELECT 1 "
+            "FROM component_input i WHERE i.provider=provider.provider AND "
+            "i.event=lifecycle.event)"}}) {
     std::istringstream input(bytes(deduced / (name + ".csv")));
     Strings derived, expected;
     std::string line;
@@ -238,8 +357,10 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
   run({"c++", "-std=c++17", v5_root() / "fixtures/tantivy-query.cpp",
        rust / "libunllm_search.a", "-ldl", "-lpthread", "-lm", "-o", reader});
   J results = object();
-  for (auto [q, want] : std::map<std::string, std::string>{
-           {"digit", direct}, {"multiplicity", api}}) {
+  for (auto [q, want] :
+       std::map<std::string, std::string>{{"digit", direct},
+                                          {"multiplicity", api},
+                                          {"rearm", "threshold_entries"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},
@@ -252,7 +373,7 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
                 {"contract_set_sha256", digest(package / "contracts.json")},
                 {"tantivy_binary", digest(rust / "unllm_index")},
                 {"query_library", digest(rust / "libunllm_search.a")},
-                {"queries", "two fixed development terms"}}));
+                {"queries", "fixed development terms"}}));
 }
 } // namespace
 void validate(const J &c, const J &schema) {
@@ -267,13 +388,14 @@ void assemble(const Path &work, const Path &dest) {
   auto package = dest / ".package", e = package / "evidence";
   fs::create_directories(e);
   auto checkpoints = array();
-  for (const auto *name :
-       {"inventory", "extract-api", "test-api", "extract-direct", "test-direct",
-        "extract-composition", "test-composition", "materials", "integration"})
-    checkpoints.append(load(work / name / "checkpoint.json"));
+  for (const auto &job : pilot_jobs(load(v5_root() / "sources.json")))
+    if (job.name != "stage")
+      checkpoints.append(load(work / job.name / "checkpoint.json"));
   write(e / "acquisition.json",
         object({{"schema", "unllm.acquisition-evidence/1"},
                 {"registry_sha256", digest(v5_root() / "sources.json")},
+                {"roadmap_sha256",
+                 digest(main_repo / "docs/UNLLM_MASTER_PLAN_V5.md")},
                 {"activation", "pending main-project review"},
                 {"checkpoints", checkpoints},
                 {"human_time", "not measured for this replay"}}));
@@ -281,6 +403,8 @@ void assemble(const Path &work, const Path &dest) {
            {"inventory", "inputs.json"},
            {"extract", "extraction.json"},
            {"extract", "sketch.json"},
+           {"extract", "latch-source.json"},
+           {"standalone", "lifecycle.json"},
            {"standalone", "standalone.json"},
            {"integration", "integration.json"}})
     fs::copy_file((stage == "extract" || stage == "standalone"
@@ -295,6 +419,9 @@ void assemble(const Path &work, const Path &dest) {
            fs::copy_options::recursive);
   fs::copy_file(v5_root() / "fixtures/requirements.json",
                 e / "requirements.json");
+  for (const auto *name :
+       {"latch-traces.json", "latch-client.cpp", "latch-rows-client.cpp"})
+    fs::copy_file(v5_root() / "fixtures" / name, e / name);
   fs::copy(work / "integration/bundle", package / "bundle",
            fs::copy_options::recursive);
   auto registry = sources(),
@@ -307,7 +434,7 @@ void assemble(const Path &work, const Path &dest) {
     contracts.append(c);
   }
   write(package / "contracts.json", contracts);
-  project(package, dest, contracts);
+  project(package, dest, contracts, bindings["providers"]);
   auto guide = load(package / "vocabulary.json")["primary_families"],
        families = object();
   for (const auto &family : guide.getMemberNames()) {
@@ -371,7 +498,7 @@ J verify(const Path &package, const std::string &expected) {
     check(c["provider_id"] == binding["brick"] &&
               iface["callable"] == binding["call"] &&
               c["source"]["header"].asString() ==
-                  "headers/" + binding["header"].asString(),
+                  header_path(package / "bundle", binding),
           "contract implementation does not match selected binding");
     check(digest(project_file(package / "bundle",
                               c["source"]["header"].asString())) ==
@@ -381,6 +508,19 @@ J verify(const Path &package, const std::string &expected) {
               c["source"]["source_registry_sha256"].asString(),
           "stale source record");
     ids.append(c["capability_id"]);
+    auto events = lifecycle(package, c, binding);
+    if (!events.steps.empty()) {
+      check(db.query(
+                "SELECT * FROM lifecycle WHERE provider=? ORDER BY trace,step",
+                {c["provider_id"].asString()}) == events.steps,
+            "lifecycle projection differs from observations");
+      if (fs::is_regular_file(package / "facts/ComponentInput.facts"))
+        check(
+            db.query(
+                "SELECT * FROM component_input WHERE provider=? ORDER BY event",
+                {c["provider_id"].asString()}) == events.component_inputs,
+            "component event alphabet differs from bounded probes");
+    }
     rows.push_back({c["capability_id"].asString(), c["provider_id"].asString(),
                     sha(dump(c))});
   }

@@ -10,3 +10,10 @@ TestedTransform(c,i,o) :- Provider(c,p,"ordinary-emission-tested"), Port(p,i,o).
 .decl Observed(cap:symbol, property:symbol)
 Observed(c,n) :- Provider(c,p,_), Property(p,n,"observed").
 .output Observed
+.decl LifecycleStep(provider:symbol, trace:symbol, step:number, instance:symbol, subject:symbol, event:symbol, response:symbol)
+.input LifecycleStep
+.decl ComponentInput(provider:symbol, event:symbol)
+.input ComponentInput
+.decl ObservedEvent(cap:symbol, event:symbol, response:symbol)
+ObservedEvent(c,e,r) :- Provider(c,p,_), Property(p,"state_protocol","observed"), ComponentInput(p,e), LifecycleStep(p,_,_,_,_,e,r).
+.output ObservedEvent

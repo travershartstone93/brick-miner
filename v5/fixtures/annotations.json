@@ -242,5 +242,126 @@
       "from": "strings",
       "to": "strings"
     }
+  },
+  {
+    "id": "threshold_entries",
+    "source_id": "retained-keyed-latch",
+    "binding": {
+      "brick": "k42",
+      "from": "rows",
+      "to": "strings"
+    },
+    "semantic_input": "ordered keyed numeric field observations",
+    "semantic_output": "keys entering the trigger condition since the last rearm",
+    "primary_family": "application_state",
+    "facets": {
+      "technical_hierarchy": [
+        "application_state",
+        "keyed_event_detection"
+      ],
+      "application": [
+        "monitoring",
+        "inventory"
+      ],
+      "construction_role": [
+        "stateful transform"
+      ],
+      "abstraction": [
+        "per-key latch over an ordered sequence"
+      ],
+      "implementation_form": [
+        "retained C++ template and class"
+      ],
+      "platform": [
+        "tested Linux x86_64"
+      ],
+      "resources": [
+        "retains active keys and emitted results; limits unknown"
+      ]
+    },
+    "claims": {
+      "preconditions": {
+        "detail": "Rows provides the selected fields in encounter order. The value field must be accepted by std::stoll.",
+        "evidence": [
+          "evidence/latch-source.json"
+        ],
+        "status": "declared"
+      },
+      "postconditions": {
+        "detail": "Emit the triggering key once, suppress its repeats, and allow it to emit again after rearm.",
+        "evidence": [
+          "evidence/integration.json#threshold_entries",
+          "evidence/lifecycle.json#threshold_keys"
+        ],
+        "status": "observed"
+      },
+      "effects": {
+        "detail": "Reads rows and produces a vector of emitted keys on the fixed probes.",
+        "evidence": [
+          "evidence/integration.json#threshold_entries"
+        ],
+        "status": "observed"
+      },
+      "refinements": {
+        "detail": "No machine-checked refinement established",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "formal_predicates": {
+        "detail": "No formal proof supplied",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "mathematical_properties": {
+        "detail": "No general algebraic law established",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "invariants": {
+        "detail": "Interleaved keys and instances retained independent activation on the tested traces.",
+        "evidence": [
+          "evidence/lifecycle.json#threshold_keys"
+        ],
+        "status": "observed"
+      },
+      "ownership": {
+        "detail": "The adapter constructs its latch for one invocation and returns an owned vector.",
+        "evidence": [
+          "evidence/latch-source.json"
+        ],
+        "status": "declared"
+      },
+      "state_protocol": {
+        "detail": "The key-output adapter creates a fresh latch per call. Within that call a first trigger emits, a repeated trigger stays silent until rearm of that key, and hold preserves activation. The trigger comparison has precedence on overlap.",
+        "evidence": [
+          "evidence/lifecycle.json#threshold_keys"
+        ],
+        "status": "observed"
+      },
+      "concurrency": {
+        "detail": "Concurrent use was not tested",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "thread_affinity": {
+        "detail": "Thread affinity was not tested",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "upstream_usage": {
+        "detail": "The retained threshold adapter invokes observe on its local latch and selects keys or positions through its template parameter.",
+        "evidence": [
+          "evidence/latch-source.json"
+        ],
+        "status": "declared"
+      },
+      "specification_question": {
+        "detail": "Which key and value fields, trigger comparison and reset comparison define the entry event?",
+        "evidence": [
+          "evidence/integration.json#threshold_entries"
+        ],
+        "status": "declared"
+      }
+    }
   }
 ]

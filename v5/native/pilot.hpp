@@ -21,6 +21,8 @@ J select_binding(const J &rows, const std::string &capability,
                  const std::string &output);
 void inventory(const Path &dest);
 void extract(const Path &dest, const std::string &route);
+void extract_latch(const Path &dest);
+void qualify_latch(const Path &extracted, const Path &dest);
 void standalone(const Path &extract, const Path &dest,
                 const std::string &route);
 void integrate(const Path &extract, const Path &dest);

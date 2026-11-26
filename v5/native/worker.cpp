@@ -29,8 +29,10 @@ const Strings native_tools = {"brick-provider-plan", "brick-index-formats",
                               "unllm_logic_worker", "libunllm_native_logic.so"};
 void materialize(const Path &work, const Path &out) {
   auto observations = object();
-  for (const auto *route : {"api", "direct", "composition"}) {
-    auto extracted = work / ("extract-" + std::string(route));
+  for (const auto &job : pilot_jobs(load(v5_root() / "sources.json"))) {
+    if (!job.name.starts_with("extract-"))
+      continue;
+    auto extracted = work / job.name;
     for (const auto &e : fs::directory_iterator(extracted)) {
       const auto name = e.path().filename();
       if (name == "notices")
@@ -41,8 +43,13 @@ void materialize(const Path &work, const Path &out) {
                 name != "resource-use.json"))
         fs::copy_file(e.path(), out / "extract" / name);
     }
-    auto values =
-        load(work / ("test-" + std::string(route)) / "standalone.json");
+    auto tested = work / ("test-" + job.name.substr(8));
+    if (fs::exists(tested / "lifecycle.json")) {
+      fs::create_directories(out / "standalone");
+      fs::copy_file(tested / "lifecycle.json",
+                    out / "standalone/lifecycle.json");
+    }
+    auto values = load(tested / "standalone.json");
     for (const auto &k : values.getMemberNames()) {
       check(!observations.isMember(k), "duplicate evidence");
       observations[k] = values[k];
@@ -61,7 +68,8 @@ std::vector<Job> pilot_jobs(const J &registry) {
   const std::map<std::string, std::pair<std::string, std::string>> reviewed = {
       {"std-reverse", {"gcc-libstdcxx", "api"}},
       {"lzip-number-prefix", {"gnu-lzip", "direct"}},
-      {"lzip-index-reverse", {"gnu-lzip", "composition"}}};
+      {"lzip-index-reverse", {"gnu-lzip", "composition"}},
+      {"retained-keyed-latch", {"retained-keyed-latch", "direct"}}};
   std::set<std::string> selected;
   for (const auto &source : registry["sources"]) {
     if (!source.isMember("jobs"))
@@ -92,15 +100,16 @@ std::vector<Job> pilot_jobs(const J &registry) {
       auto score =
           100 * (config["coverage_gain"].asUInt() + config["reuse"].asUInt()) /
           cost;
+      auto unit = selector == "retained-keyed-latch" ? "latch" : route;
       jobs.push_back(
-          {"extract-" + route, id, route, stream, score, {"inventory"}});
+          {"extract-" + unit, id, route, stream, score, {"inventory"}});
       jobs.push_back(
-          {"test-" + route, id, route, stream, score, {"extract-" + route}});
-      required.push_back("test-" + route);
+          {"test-" + unit, id, route, stream, score, {"extract-" + unit}});
+      required.push_back("test-" + unit);
     }
   }
   check(selected.size() == reviewed.size(),
-        "staged pilot requires all three reviewed selectors");
+        "staged pilot requires all reviewed selectors");
   jobs.push_back({"materials", "registry", "", "foundational", 0, required});
   jobs.push_back(
       {"integration", "registry", "", "foundational", 0, {"materials"}});
@@ -142,6 +151,7 @@ J environment_pins() {
            root / ".build/brick-scan", root / "one-brick/check.cpp",
            v5_root() / "contract.schema.json", v5_root() / "vocabulary.json",
            v5_root() / "facts.dl", main_repo / ".deps/bin/souffle",
+           main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
            main_repo / ".deps/native/usr/bin/souffle",
            main_repo / "reasoning/prolog/rules.pl",
            sample_application() / "build/compile_commands.json",
@@ -163,6 +173,10 @@ J worker_step(const std::string &name, const Path &work, const Path &out) {
   const auto start = std::chrono::steady_clock::now();
   if (name == "inventory")
     inventory(out);
+  else if (name == "extract-latch")
+    extract_latch(out);
+  else if (name == "test-latch")
+    qualify_latch(work / "extract-latch", out);
   else if (name.starts_with("extract-"))
     extract(out, name.substr(8));
   else if (name.starts_with("test-"))
@@ -251,6 +265,7 @@ Result launch(const Job &job, const Path &work, const Path &out,
   auto ro = [&](const Path &a) { append(cmd, {"--ro-bind", a, a}); };
   for (const auto &f : std::vector<Path>{
            "/etc/ld.so.cache", root / "v5", root / "src",
+           main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
            root / "one-brick/check.cpp", root / ".build/brick-scan",
            sample_application() / "source", sample_application() / "build",
            sample_application() / "provenance.json", main_repo / ".deps",
@@ -278,11 +293,9 @@ Result launch(const Job &job, const Path &work, const Path &out,
     append(cmd, {"--ro-bind", tantivy_reference() / name,
                  Path("/opt/brick-reference") / name});
   // Only dependencies committed by the parent enter the worker namespace.
-  for (const auto &stage : {"inventory", "extract-api", "extract-direct",
-                            "extract-composition", "test-api", "test-direct",
-                            "test-composition", "materials", "integration"})
-    if (fs::exists(work / stage))
-      ro(work / stage);
+  for (const auto &stage : pilot_jobs(load(v5_root() / "sources.json")))
+    if (stage.name != job.name && fs::exists(work / stage.name))
+      ro(work / stage.name);
   append(cmd, {"--ro-bind", fs::canonical("/proc/self/exe"),
                "/opt/brick-worker", "--bind", out, out, "--chdir", out,
                "/opt/brick-worker", "--worker", job.name, work, out});

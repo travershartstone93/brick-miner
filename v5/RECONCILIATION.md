@@ -58,3 +58,46 @@ The full 100-request review used the saved final generation. Its result establis
 The November 25 recovery trial finished ten checkpoints in eleven attempts. Killing the first worker retained its committed inventory. A separate injected failure after filesystem rename recovered the artifact without rerunning its job. Changing comparator bytes, modifying a committed artifact, exhausting the retry budget, cancelling before execution, requesting unavailable disk capacity and attempting a system-drive resume all produced rejections. A second worker was excluded. The stage retained two ordinary-path qualifications and one caller sketch. The first run exposed a missing MIME-defaults file in the isolated environment. The scheduler now mounts and pins the same MIME inputs used by the native indexer. [Recovery and package digest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recovery-XXYHFfWu/recovery.json)
 
 Run `make check-v5-queue` to repeat the controls. Local comparator builds may set `UNLLM_TANTIVY_REFERENCE_DIR` to the release directory containing `unllm_index` and `libunllm_search.a`. Both hashes enter the job identity and projection receipt. A shared fixture resolves two same-effect alternatives by component and structural ports, rejects missing ports and requires a unique result. [Binding fixture](fixtures/alternative-providers.json)
+
+## H1 and H1a retained stateful binding
+
+The November 25 stage qualified the existing key-output specialization of `threshold_entries`. The planner row is `threshold_keys`, component `k42`, with structural ports `rows → strings`. Its six callable parameter types come from the legacy outcome. The planner selects the specialization with `emit=key`. The first attempt stopped at the v1 schema check when the outcome's enum entered the callable parameter map. The stage now checks fixed dispatch values against their declared choices and keeps them on the original planner row. The same component also serves `threshold_rows`, which remains pending.
+
+The reviewed source is the sibling's local Git revision `6ba6c9245392545fd6f685538ebece88e96ee28c`. Extraction compared all three source headers with their active packaged bytes and retained the MIT notice. The component, adapter and calls already existed. The source selection, expected traces, probes and mutation controls were authored for this experiment. The scheduler reproduced extraction, testing and projections in C++. The source archive can be reproduced from the sibling checkout with the following read-only command. Its SHA-256 is `efcee54212bd28fbc3aee2befca5518fd26626724dbaa2741836e57613a3a54c`.
+
+```sh
+git -C ../unllm-upgrade archive --format=tar 6ba6c9245392545fd6f685538ebece88e96ee28c \
+  LICENSE experiments/boilerplate/stress/cross-domain/candidate/keyed_latch.hpp \
+  experiments/boilerplate/component-trial/providers/threshold_provider.hpp \
+  experiments/boilerplate/component-trial/providers/provider_types.hpp \
+  experiments/boilerplate/stress/cross-domain/README.md \
+  experiments/boilerplate/stress/cross-domain/candidate/check-consumers.cpp | sha256sum
+```
+
+| Check | Measured result |
+|---|---|
+| Component lifecycle | 33 named steps agreed on two fresh executions per trace. All 1,296 length-four sequences over two keys and three events agreed with a two-Boolean reference. Suppressing rearm and merging keys each failed the frozen oracle. |
+| Adapter lifetime | Two calls in one process both emitted A, B, A. The adapter constructs a fresh latch for each call. Within one call each key rearms independently. A trigger takes precedence where both comparisons match. Concurrency and thread affinity remain unknown. |
+| Ordinary program | Baseline and staged programs passed the same six fixed checks, including invalid input and destination failure. Removing only the key-output row blocked the task with the integer-output row still present. This backfill added zero new executable capabilities or passing baseline tasks. |
+| Compact lookup | Actual Tantivy ranked the intended capability first for each of three fixed terms. SQLite and Soufflé agree on the ordered observation inputs and derived component responses. Harness open/close commands remain in raw traces. Retrieval requiring observed concurrency yielded zero candidates. |
+| Independent consumer | Main selected only `threshold_keys` and passed all 13 prefixes of its independently frozen trace twice per process. The emitted binary matched its legacy reference. [Consumer receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-fingerprints-4PgG6aKZ/latch-projected/summary.json) |
+
+The final stage contains three qualified pilot bindings and one separately counted caller sketch. It pins 1,196 files, including the acquisition receipt, lifecycle evidence, client sources and projections. The clean and interrupted runs produced identical contracts, SQLite bytes, facts, deductions, retrieval verdicts, behavioral evidence and executable bundle manifest. The package manifests also cover run-specific job receipts and physical Tantivy segments. The interrupted run finished 12 jobs in 13 attempts and passed all 12 scheduler controls. In the clean run the workers used 16.23 CPU seconds, 17.26 summed wall seconds, 287,104 KiB maximum single-process RSS, 142,098,517 peak sampled disk bytes and zero download bytes. Human development time was unmetered. [Clean acquisition](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXN8JKxd/stage/package/evidence/acquisition.json) · [Recovery receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recovery-XXLnz0oS/recovery.json)
+
+```sh
+make .build/v5-miner .build/v5-inventory
+pkg=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXN8JKxd/stage/package
+pin=f63448e9085e98a6aaf5a076a97e44a69b2bad41fa791e0b28b11816b4d49f22
+.build/v5-miner verify "$pkg" "$pin"
+../unllm-upgrade/build/native/v5-contract-lookup "$pkg" "$pin" rows strings postconditions invariants state_protocol
+.build/v5-miner pilot
+make check-v5-queue
+```
+
+## H1b migration inventory
+
+`.build/v5-inventory "$pkg" "$pin"` reads the unpacked catalog, component, provider-row and class-library registries on the configured corpus volume and in the sibling's boilerplate experiments. Each private snapshot retains the raw metadata documents by hash and an itemized SQLite ledger. Its inventory view joins each occurrence to its source document, legacy version, row and header revision, disposition, reason, new contract hash, classification, qualification and claim statuses. Identical metadata at a different location stays pending until its context is checked.
+
+The November 25 snapshot covers 838 documents at 224 locations, with 54,680 occurrences including historical trials and controls. The active generation has 127 cards, 84 components, 105 row bindings and a separate library descriptor for one class. Of the 105 bindings, one has matching retained-source and ordinary-program evidence in this stage. The other 104 await V5 qualification. The scan found 261 distinct row-and-header versions across the scanned locations and quarantined 234 historical binding occurrences with unresolved headers. These are inventory counts. Compressed archives, other metadata formats, semantic assessment of pending entries, activation and rollback remain open. [Snapshot summary](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XX9ukYid/snapshot/summary.json) · [Itemized ledger](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XX9ukYid/snapshot/ledger.sqlite)
+
+The next H1 class-interface pilot is `u84`, the existing `unllm::UniqueFifo` in `providers/library.json`. Its cancellable queue has three named methods and an object lifetime visible to a client. The pinned class header and library descriptor match the local MIT-licensed revision above. A class trial must use its existing class and operation identities, qualify two live objects and check the ordinary header emitter. The row projection supplies no class qualification.

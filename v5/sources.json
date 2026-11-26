@@ -489,6 +489,61 @@
       "examples": null,
       "rights": null,
       "families": null
+    },
+    {
+      "id": "retained-keyed-latch",
+      "family": "retained project provider",
+      "upstream": "../unllm-upgrade",
+      "revision": "6ba6c9245392545fd6f685538ebece88e96ee28c",
+      "method": "reviewed-local-git-archive",
+      "archive": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-keyed-source-GcmXmeUg/keyed-latch.tar",
+      "sha256": "efcee54212bd28fbc3aee2befca5518fd26626724dbaa2741836e57613a3a54c",
+      "members": {
+        "headers/keyed_latch.hpp": [
+          "experiments/boilerplate/stress/cross-domain/candidate/keyed_latch.hpp",
+          "a4021181e87ccfb2dc9e41c51b9ce74e8685f9130361c9608c6c9a36bb8efc26"
+        ],
+        "providers/threshold_provider.hpp": [
+          "experiments/boilerplate/component-trial/providers/threshold_provider.hpp",
+          "6c01b75b75e4d4b515f57819898949decda7c929c73cbccd0565f70cf091ac77"
+        ],
+        "providers/provider_types.hpp": [
+          "experiments/boilerplate/component-trial/providers/provider_types.hpp",
+          "70f9703c46cfa989382bda5322ec4c0b92c27f701abcf7da1f06678eb93122b8"
+        ]
+      },
+      "symbols": [
+        "unllm::KeyedLatch::observe",
+        "brick_data::threshold_entries<true>"
+      ],
+      "families": [
+        "application_state"
+      ],
+      "documentation": "experiments/boilerplate/stress/cross-domain/README.md",
+      "tests": "experiments/boilerplate/stress/cross-domain/candidate/check-consumers.cpp",
+      "examples": "experiments/boilerplate/component-trial/providers/threshold_provider.hpp",
+      "dependencies": [
+        "C++17 standard library",
+        "brick_data::Rows"
+      ],
+      "rights": {
+        "scope": "local compilation, qualification and staged review of the retained project source",
+        "upstream_files": "MIT per the pinned repository LICENSE; none of the three selected headers declares a different license",
+        "redistribute": "Local stage only; retain copyright and permission notice.",
+        "notice_sha256": "8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"
+      },
+      "approval": "local-pilot",
+      "approval_reference": "V5 §4.5 retained-provider migration; approved local source and corpus staging in this workspace.",
+      "jobs": [
+        {
+          "route": "direct",
+          "selector": "retained-keyed-latch",
+          "stream": "foundational",
+          "coverage_gain": 1,
+          "reuse": 2,
+          "cost_units": 2
+        }
+      ]
     }
   ],
   "jobs": [
