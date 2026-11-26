@@ -209,32 +209,9 @@ J scores(const Path &dir) {
         "missing fixture scores: " + dir.string());
   return result;
 }
-} // namespace
-int main(int argc, char **argv) try {
-  if (argc == 2 && std::string(argv[1]) == "--rank") {
-    std::cout << dump(rank());
-    return 0;
-  }
-  check(argc == 1, "usage: replay-gaps/run [--rank]");
-  auto work = fresh_run("ranked-gaps");
-  std::cout << work << std::endl;
-  auto ranking = rank();
-  write(work / "ranking.json", ranking);
-  auto top = ranking["typed"][0],
-       contract = load(root / "replay-gaps/tsv-contract.json");
+J compare(const Path &work, const Path &base, const Path &staged, const J &top,
+          const J &contract) {
   auto target = ports(contract);
-  check(target ==
-                Pair{top["source"].asString(), top["destination"].asString()} &&
-            top["count"] > ranking["typed"][1]["count"],
-        "leading gap changed");
-  Path base = load(review() / "review.json")["bundle"].asString();
-  check(sha(bytes(base / "SHA256SUMS")) == base_hash,
-        "baseline digest mismatch");
-  run({"sha256sum", "--strict", "--quiet", "-c", "SHA256SUMS"}, {.cwd = base});
-  auto hash = stage(work / "run-1", base, contract),
-       repeat = stage(work / "run-2", base, contract);
-  check(hash == repeat, "staged manifests differ");
-  auto staged = work / "run-1/bundle";
   auto restored = load(staged / "providers/contracts.json"),
        providers = array();
   for (const auto &p : restored["providers"])
@@ -259,18 +236,31 @@ int main(int argc, char **argv) try {
   for (bool with : {true, false}) {
     std::string arm = with ? "with-writer-staged" : "without-writer-staged";
     auto bundle = with ? staged : base;
+    const auto bundle_pin = sha(bytes(bundle / "SHA256SUMS"));
+    auto trial = [&](const std::string &label, const std::string &key,
+                     const Path &spec) {
+      run({runner, work, label, key, bundle, spec},
+          {.seconds = 480,
+           .environment = {
+               {"B42_RUNTIME", (bundle / "runtime/duckdb/lib").string()},
+               {"B42_ABLATION", ""},
+               {"CORPUS_ROOT", (volume / "unllm").string()}}});
+      auto receipt = load(work / label / key / "receipt.json");
+      check(receipt["manifest"] == bundle_pin &&
+                receipt["spec_sha256"] == sha(bytes(spec)) &&
+                receipt["interpreted"] == true && receipt["editor"] == false,
+            "changed comparison context in " + label + "/" + key);
+    };
     for (size_t i = 0; i < ids.size(); i += 3) {
-      std::vector<std::future<std::string>> jobs;
+      std::vector<std::future<void>> jobs;
       for (size_t j = i; j < std::min(ids.size(), i + 3); ++j)
         jobs.push_back(std::async(std::launch::async, [&, key = ids[j]] {
-          return run({runner, work, arm, key, bundle, replay() / key / rel},
-                     {.seconds = 480});
+          trial(arm, key, replay() / key / rel);
         }));
       for (auto &job : jobs)
         job.get();
     }
-    run({runner, work, "control-" + arm, ck, bundle, control},
-        {.seconds = 480});
+    trial("control-" + arm, ck, control);
   }
   auto requests = object();
   for (const auto &key : ids) {
@@ -310,21 +300,94 @@ int main(int argc, char **argv) try {
             load(cb / "receipt.json")["verified"].asBool() &&
             affected(emission(cb), target).empty(),
         "control failed");
+  return object({{"requests", requests},
+                 {"control", object({{"request", ck},
+                                     {"before", scores(ca)},
+                                     {"after", scores(cb)}})}});
+}
+
+void record_replay_programs(const Path &work) {
+  J records = object();
+  std::vector<Path> programs;
+  for (const auto &arm : fs::directory_iterator(work))
+    if (arm.is_directory())
+      for (const auto &trial : fs::directory_iterator(arm.path())) {
+        const auto dir = trial.path();
+        const auto receipt = dir / "receipt.json";
+        if (!fs::is_regular_file(receipt))
+          continue;
+        const auto relative = dir.lexically_relative(work).generic_string();
+        records[relative]["receipt_sha256"] = sha(bytes(receipt));
+        const auto program = dir / "run/project/converter";
+        if (fs::is_regular_file(program)) {
+          records[relative]["program_sha256"] = sha(bytes(program));
+          programs.push_back(program);
+        }
+      }
+  write(work / "tested-programs.json", records);
+  run({"sync", "-f", work / "tested-programs.json"});
+  for (const auto &program : programs)
+    fs::remove(program);
+}
+} // namespace
+
+int main(int argc, char **argv) try {
+  if (argc == 2 && std::string(argv[1]) == "--rank") {
+    std::cout << dump(rank());
+    return 0;
+  }
+  const bool existing =
+      argc == 5 && std::string(argv[1]) == "--compare-existing";
+  check(
+      argc == 1 || existing,
+      "usage: replay-gaps/run [--rank | --compare-existing WORK BASE STAGED]");
+  auto ranking = rank();
+  const auto top = ranking["typed"][0],
+             contract = load(root / "replay-gaps/tsv-contract.json");
+  check(ports(contract) ==
+                Pair{top["source"].asString(), top["destination"].asString()} &&
+            top["count"] > ranking["typed"][1]["count"],
+        "leading gap changed");
+  if (existing) {
+    const auto work = Path(argv[2]), base = fs::canonical(argv[3]),
+               staged = fs::canonical(argv[4]);
+    check_corpus(work.parent_path());
+    check(fs::create_directory(work), "comparison requires a fresh directory");
+    for (const auto &bundle : {base, staged})
+      run({"sha256sum", "--strict", "--quiet", "-c", "SHA256SUMS"},
+          {.cwd = bundle});
+    write(work / "ranking.json", ranking);
+    auto report = compare(work, base, staged, top, contract);
+    report["base_sha256"] = sha(bytes(base / "SHA256SUMS"));
+    report["staged_sha256"] = sha(bytes(staged / "SHA256SUMS"));
+    write(work / "report.json", report);
+    record_replay_programs(work);
+    std::cout << work / "report.json" << std::endl;
+    return 0;
+  }
+  auto work = fresh_run("ranked-gaps");
+  std::cout << work << std::endl;
+  write(work / "ranking.json", ranking);
+  auto base = Path(load(review() / "review.json")["bundle"].asString());
+  check(sha(bytes(base / "SHA256SUMS")) == base_hash,
+        "baseline digest mismatch");
+  run({"sha256sum", "--strict", "--quiet", "-c", "SHA256SUMS"}, {.cwd = base});
+  auto hash = stage(work / "run-1", base, contract),
+       repeat = stage(work / "run-2", base, contract);
+  check(hash == repeat, "staged manifests differ");
+  auto staged = work / "run-1/bundle";
+  auto report = compare(work, base, staged, top, contract);
   auto active = fs::canonical(volume / "unllm/boilerplate/active");
-  write(work / "report.json",
-        object({{"requests", requests},
-                {"source_replay", replay().string()},
-                {"base", base.string()},
-                {"base_sha256", base_hash},
-                {"staged_bundle", staged.string()},
-                {"staged_sha256", hash},
-                {"repeat_sha256", repeat},
-                {"control", object({{"request", ck},
-                                    {"before", scores(ca)},
-                                    {"after", scores(cb)}})},
-                {"published_catalog", active.string()},
-                {"published_verification_sha256",
-                 sha(bytes(active / "verification.json"))}}));
+  report["source_replay"] = replay().string();
+  report["base"] = base.string();
+  report["base_sha256"] = base_hash;
+  report["staged_bundle"] = staged.string();
+  report["staged_sha256"] = hash;
+  report["repeat_sha256"] = repeat;
+  report["published_catalog"] = active.string();
+  report["published_verification_sha256"] =
+      sha(bytes(active / "verification.json"));
+  write(work / "report.json", report);
   std::cout << work / "report.json" << std::endl;
   return 0;
 } catch (const std::exception &e) {

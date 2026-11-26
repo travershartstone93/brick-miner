@@ -1,0 +1,27 @@
+{
+  "binding": {"component_id":"x09","binding_id":"write_tsv_lines","from":"strings","to":"out:text/tab-separated-values"},
+  "contract": "Write preformatted UTF-8 TSV records without embedded CR, LF or NUL, in encounter order, appending an LF after each record.",
+  "standalone": [
+    {"name":"empty-sequence","records":[],"expected_hex":"","existing":true},
+    {"name":"one-empty-record","records":[""],"expected_hex":"0a"},
+    {"name":"order-and-duplicates","records":["62657461093132","616c706861092d33","62657461093132"],"expected_hex":"626574610931320a616c706861092d330a626574610931320a","existing":true},
+    {"name":"empty-fields","records":["095809","0909"],"expected_hex":"0958090a09090a"},
+    {"name":"utf8-and-punctuation","records":["636166c3a9094f27427269656e2c204a722e","ceb209224122"],"expected_hex":"636166c3a9094f27427269656e2c204a722e0aceb2092241220a"},
+    {"name":"binary-and-utf8","records":["61006209ceb2"],"expected_hex":"61006209ceb20a","outside_tsv_text":true},
+    {"name":"embedded-record-breaks","records":["410a42","430d44"],"expected_hex":"410a420a430d440a","outside_tsv_text":true},
+    {"name":"missing-parent","records":["61"],"fault":"missing-parent","exception":["Cannot open output"]},
+    {"name":"directory","records":["61"],"fault":"directory","exception":["Cannot open output"]},
+    {"name":"size-limit-existing","records":["30313233343536373839616263646566"],"fault":"limit-8","existing":true,"exception":["Commit failed","Write error"]},
+    {"name":"size-limit-new","records":["30313233343536373839616263646566"],"fault":"limit-8","exception":["Commit failed","Write error"]}
+  ],
+  "ordinary": [
+    {"name":"empty-file","input_hex":"","expected_hex":"","existing":true},
+    {"name":"one-empty-record","input_hex":"0a","expected_hex":"0a"},
+    {"name":"preformatted-fields","input_hex":"620932090a0961090a620932090a610933","expected_hex":"0961090a6109330a620932090a620932090a","existing":true},
+    {"name":"utf8-and-punctuation","input_hex":"636166c3a9094f27427269656e0a616c70686109224122","expected_hex":"616c706861092241220a636166c3a9094f27427269656e0a"},
+    {"name":"missing-parent","fault":"missing-parent","input_hex":"610a"},
+    {"name":"directory","fault":"directory","input_hex":"610a"},
+    {"name":"size-limit-existing","fault":"limit-8","input_hex":"303132333435363738396162636465660a","existing":true},
+    {"name":"size-limit-new","fault":"limit-8","input_hex":"303132333435363738396162636465660a"}
+  ]
+}

@@ -314,6 +314,7 @@ int main(int argc, char **argv) try {
     return 0;
   }
   const std::map<std::string, decltype(&qualify_uri_reader)> file_trials{
+      {"--qualify-tsv-writer", qualify_tsv_writer},
       {"--qualify-recursive-files", qualify_recursive_files},
       {"--qualify-parent-paths", qualify_parent_paths},
       {"--qualify-uri-reader", qualify_uri_reader},
@@ -339,7 +340,8 @@ int main(int argc, char **argv) try {
       argc == 3 || (argc == 6 && std::string(argv[3]) == "--frozen"),
       "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
       "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
-      "--binding-identity-fixture, --qualify-writer, --qualify-recursive-files "
+      "--binding-identity-fixture, --qualify-writer, --qualify-tsv-writer, "
+      "--qualify-recursive-files "
       "--qualify-parent-paths, --qualify-archive-names, --qualify-zip-records, "
       "--qualify-tree-records, --qualify-json-records, --qualify-filter-extension, "
       "--qualify-json-writer "

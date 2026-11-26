@@ -855,6 +855,15 @@
   ],
   "jobs": [
     {
+      "source":"retained-text-measures",
+      "route":"direct",
+      "target":"write_tsv_lines",
+      "stream":"foundational",
+      "historical_bundle_sha256":"88eff82d2bba78d6049a50be4d625e7bac5b21dda8019c52bca1c6e25ec7d7bc",
+      "tests":"v5/fixtures/write-tsv-lines.json",
+      "approval_reference":"Local V5 enrichment of the exact x09 TSV registration from the reviewed ranked-gaps experiment. Reuse the approved retained project header, with the staged review boundary."
+    },
+    {
       "source":"retained-json-records",
       "route":"api",
       "target":"read_json_records",

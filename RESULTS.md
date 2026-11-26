@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The miner qualified the historical TSV sink on the V5 parent and replayed eight saved interpretations with exact binding removal. The registration closed ten output-role gaps and recovered 11 fixture passes. The corrected H029 control passed all five fixtures with the sink. [TSV qualification and reproduction](v5/RECONCILIATION.md#h1b-tsv-sink-registration)
+
 The retained JSON reader passed direct checks for the exact H035 telemetry projection, including numeric spelling and partial visitation on a late record error. The ordinary H035 program passed 22/22 executions on each bundle. Removing the reader blocked the recipe. [Telemetry qualification and reproduction](v5/RECONCILIATION.md#h1b-telemetry-json-scalar-projection)
 
 The retained directory metadata reader passed seven direct cases in two processes for the exact `parent,ext` projection. The fixed H070 program passed 14/14 executions on each bundle. Removing the reader blocked its recipe. A clean repeat reproduced the 23-file evidence package. [Directory qualification and reproduction](v5/RECONCILIATION.md#h1b-correlated-directory-parent-and-extension-projection)

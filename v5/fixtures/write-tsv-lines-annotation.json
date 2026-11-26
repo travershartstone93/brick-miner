@@ -1,0 +1,26 @@
+{
+  "primary_family":"files_storage",
+  "description":"Write preformatted TSV records in encounter order, appending one LF after every record.",
+  "interface":{"semantic_input":"Ordered UTF-8 TSV record text with delimiters already present, without embedded CR, LF or NUL, and a destination pathname.","semantic_output":"A file containing the caller-formatted records with LF terminators and no added header.","parameters":{}},
+  "facets":{
+    "technical_hierarchy":["files_storage","file_output","tabular reports"],"application":["report generation","tabular exports"],"construction_role":["file writer"],
+    "abstraction":["synchronous file operation"],"implementation_form":["existing C++ line writer with a TSV sink registration"],
+    "platform":["tested Linux x86_64 with Qt6Core"],"dependencies":["C++17","Qt6Core QSaveFile","retained provider_types.hpp"],
+    "resources":["Uses a temporary destination and writes each record separately. General resource and pathname bounds remain unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"The caller supplies already-delimited UTF-8 records without embedded CR, LF or NUL and a destination with a writable parent.","evidence":["spec.json","source.json"]},
+    "postconditions":{"status":"observed","detail":"Preserved the exact supplied record bytes with an LF after each record. A zero-record input produced zero bytes, and an empty record produced one LF.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Leading, trailing and adjacent tabs remained unchanged. The raw writer also preserved embedded line breaks and NUL in separate byte probes outside the qualified textual domain.","evidence":["standalone.json","spec.json"]},
+    "effects":{"status":"observed","detail":"Successful writes replaced the destination. Directory and missing-parent failures were detected. Under the tested process size limit, the call preserved a regular destination's previous bytes or left an absent destination absent.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"The direct writer retained order, duplicate records, punctuation and UTF-8 bytes in the frozen cases.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"observed","detail":"Every successful direct fixture matched the sum of record sizes plus one LF per record.","evidence":["standalone.json","spec.json"]},
+    "formal_predicates":{"status":"unknown","detail":"The detached scope describes the intended input. No general proof of write success, rollback, durability or TSV validity was attempted.","evidence":[]},
+    "state_protocol":{"status":"declared","detail":"The call opens a local QSaveFile, writes the record bytes and terminators, then commits synchronously.","evidence":["original/headers/text_ops.hpp"]},
+    "ownership":{"status":"declared","detail":"The record vector and destination pathname are borrowed during the call.","evidence":["original/headers/text_ops.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent destination access was untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The historical TSV registration reuses the byte-preserving x09 line sink with the distinct TSV output port.","evidence":["source.json","integration.json"]},
+    "specification_question":{"status":"declared","detail":"Do upstream report operations already supply tab delimiters and one record per string? This sink writes the supplied bytes and adds record terminators.","evidence":["spec.json","integration.json"]}
+  }
+}
