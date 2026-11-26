@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H030's retained SQLite row and count operations passed all five fixtures with the staged TSV writer. The independent query and fresh database distinguish counting scans from counting parcels and preserve the zero-delivered condition. [SQLite count and reproduction](replay-gaps/RESULTS.md#disconnected-sqlite-depot-counts-h030)
+
 H063's directory count passed all five fixtures with the retained `top` projection and staged TSV writer. Independent counting matched every saved tree and a fresh tree with hidden files, empty files and nested-only children. [Directory count and reproduction](replay-gaps/RESULTS.md#disconnected-directory-count-h063)
 
 Three disconnected ZIP chains pass all 15 fixtures with retained correlated path and size projections. On the new archive the all-member reader returned 27 names and the size reader returned 21 values, demonstrating the directory-entry mismatch. [ZIP chains and reproduction](replay-gaps/RESULTS.md#disconnected-zip-size-chains-h054-h059-h060)
