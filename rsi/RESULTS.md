@@ -1,6 +1,6 @@
 # Independent self-improvement evaluation
 
-Two successive unllm-authored changes increased verified transfer on separate blind suites. The first change expanded integer synthesis over multiplication and the second expanded it over addition. The second build retained the first gain.
+Three successive unllm-authored changes increased verified transfer on separate blind suites. A matched ablation shows that the second change enabled the third repair in the tested integer synthesis family.
 
 ## Generation one
 
@@ -59,3 +59,23 @@ The scaffold-only control used the same public contract and produced the same fi
 | First submitted second-generation diff | `7fc1a59b6e05b1b4dd705386adb516894878d7d07ee1cf33b66861a9daf9d677` |
 
 The second aggregate evidence is at `unllm/experiments/brick-miner/v5-eval-rsi-second-gen-W1DkStLA/evidence/` on the corpus volume. Its `SHA256SUMS` is `752a378c6736c34a6c191eba775603d00ce85de611b9b5182d6a069220101247` and covers both score summaries, the suite commitment, the first-suite retest, and both controls. Both private suites remain sealed. General V5 mining stays paused.
+
+## Generation three and causal ablation
+
+Both maintenance arms had the same hand-written donor-validation and recurrence proposal code, the first learned change, the same public task, and the same toolchain and catalog. Between the two source trees, only the five lines from the second generated patch differed. The public requests differed only in the pinned checkout commit.
+
+The ablation exhausted the stock donor search at 2,047 visits and emitted no patch. With the second change installed, the ordinary maintenance CLI synthesized the donor in 2,049 visits and passed all three separate public donor checks. It extracted the additive term from the donor IR, inferred a multiplication recurrence with initial value `1` in 31 proposal visits, and emitted the first diff. Independent replay in a clean checkout produced the same diff with zero runtime model calls. Changing just one expected value in the last public donor check kept the donor IR identical and stopped the repair before a diff was emitted.
+
+The third builder was built from the inherited checkout with the first diff applied unchanged. On the fresh blind suite, both pre-patch builders verified **0/4** transfer tasks. The third builder verified **4/4** and passed **44/44** held observations, including all **16/16** expected signed-overflow outcomes. The 13 previously verified programs from the two earlier suites and the three protected programs in the new suite retained identical IR and executable hashes and passed all **138** held observations. All three out-of-grammar checks exhausted, the independent harness rejected all seeded defects, and all three candidate receipts reproduced byte-for-byte.
+
+This comparison establishes that an earlier self-authored capability enabled a later verified improvement through the shared maintenance scaffold. The result covers bounded checked integer synthesis and the tested repair family. The proposal scaffold and public donor task were supplied by the experimenters.
+
+| Input | SHA-256 |
+|---|---|
+| Frozen third suite | `ff8691577163634949697d1a31c127b957102db81f4686b2d8f3b8ec647fd204` |
+| Stock ablation executable | `3c35df82c84a655c18804b984b5dfef87a7775b3233b49eb22d76a26a4550520` |
+| Stock inherited executable | `71c27c96b0724158fa5422dafb4a873f71a99e87d41767ed66901d6ddf8c7f7d` |
+| Matched third candidate | `3645f837967b9c8e5a99bacd680b79ab7dfbfe7a2856a87a54b4bef61669785d` |
+| First submitted third-generation diff | `d839351ab835f6cd81d79d9a91e67a6c9c98866aa906d56246e4f0eb3389a209` |
+
+The main trial at `unllm/experiments/rsi-causal-5yLpTyOi/` provides `command-protocol.md`, the pinned source lineage, and maintenance binaries. The public miner evidence is at `unllm/experiments/brick-miner/v5-eval-rsi-causal-xBbQHZL2/evidence/`. Its `SHA256SUMS` is `5fb55f9317495098eb2cd35e3f78aabf980cc0b41e2df2d908fd3dbe8f505271` and covers the maintenance replay, three score summaries, suite commitment, protected retests, and negative controls. All private suites remain sealed.
