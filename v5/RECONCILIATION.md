@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b sensor-history replay reused the qualified H035 reader projection for H037. Both fixed text routes passed on the existing bundle. Reader and aggregate removal isolated the two dependencies, and new boundary observations distinguished four predicate errors. [Sensor-history replay and controls](../replay-gaps/RESULTS.md#named-lists-and-sensor-histories-h037)
+
 The H1b reachability replay reproduced H085's archived scheduling input gap, then passed the fixed downstream request through the retained TSV and reachability bindings. H086 transferred that route to upstream prerequisites by reversing the edge columns. [Reachability and schedule controls](../replay-gaps/RESULTS.md#a-scheduling-input-gap-in-a-reachability-request-h085-h086)
 
 The H1b row-boundary controls replay H076 and H088. Both fixed constructions passed on retained operations, with the previously staged TSV writer for H076. [Row-boundary controls](../replay-gaps/RESULTS.md#two-strings-to-rows-stops-h076-h088)

@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H037 passed 5/5 with the retained telemetry projection and separate row operations for its two sensor reports. Changing only the reader scored 0/5. Three wrong predicate variants also scored 5/5 on the archived fixtures, including using the same predicate for both reports. A fresh sensor fixture distinguished all four seeded errors. [Sensor-history replay and reproduction](replay-gaps/RESULTS.md#named-lists-and-sensor-histories-h037)
+
 H085 passed 5/5 with existing TSV-to-rows reachability. The archived scheduling route hit a different input type, and supplying its declared JSON graph yielded nested waves on the DAG and rejected the cycle. The reverse-direction H086 transfer passed 5/5. [Reachability audit and reproduction](replay-gaps/RESULTS.md#a-scheduling-input-gap-in-a-reachability-request-h085-h086)
 
 H076 and H088 each passed 5/5 with fixed operations on retained providers. In H076 the typed URI reader removed the row-stream gap and the full route required the staged TSV sink. In H088 the saved route already used the TSV row reader, and keeping rows through the graph work resolved the paired report. [Row-boundary replay and reproduction](replay-gaps/RESULTS.md#two-strings-to-rows-stops-h076-h088)
