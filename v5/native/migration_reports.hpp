@@ -141,6 +141,10 @@ miner::Path qualify_sqlite_records(const miner::Path &package,
                                     const std::string &pin,
                                     const miner::Path &registry,
                                     const std::string &registry_pin);
+miner::Path qualify_xml_records(const miner::Path &package,
+                                 const std::string &pin,
+                                 const miner::Path &registry,
+                                 const std::string &registry_pin);
 miner::J file_argument_scope(const miner::J &arguments,
                               const miner::J &parameters);
 miner::Path binding_identity_fixture(const miner::Path &package,

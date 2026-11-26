@@ -1,0 +1,32 @@
+{
+  "description":"Read the selected fields of feed articles using a fixed record XPath and relative field selectors.",
+  "primary_family":"document_geographic",
+  "interface":{
+    "semantic_input":"A readable local XML document and the exact article and field selector tuple.",
+    "semantic_output":"One-based article rows in document order, with the selected attribute values and direct title text.",
+    "parameters":{"records":"/feed/article","fields":"@editor,@section,@state,title"}
+  },
+  "facets":{
+    "technical_hierarchy":["document_geographic","XML XPath record reading"],
+    "application":["article feeds","tabular document reports"],
+    "construction_role":["reader"],"abstraction":["local XML document to positioned row visitor"],
+    "implementation_form":["retained C++ adapter using the extracted pugixml XPath evaluator"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_inputs","pugixml 1.16-1 extracted kernel","C++17"],
+    "resources":["Loads an XML document and sorts the record node set before visitation. Peak memory, maximum input size and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply a readable local XML file and the reviewed selectors. Each selected record must be a node. Each field selector must match exactly one node or attribute for that record.","evidence":["original/adapter.cpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The exact tuple returned one-based article rows in document order. It preserved field order and decoded UTF-8, entity references, and CDATA on the tested documents.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"A nested record outside the exact path was excluded. A mixed-content title returned its first direct text segment in the tested document. Empty attributes and empty elements yielded empty strings.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Input fixture hashes were preserved. The surrounding emitted programs preserved the previous destination state on the tested parse and field errors.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Duplicate articles retained separate positions. Repeated successful visits produced the same fields and positions. The XPath union control returned selected records in document order.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"General XPath equivalence and complexity bounds remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached domain records both exact selector arguments together. It supplies no proof over arbitrary XML documents.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"The empty field selector failed during producer creation. Parse and invalid XPath errors failed during visitation. A late missing or repeated field stopped after one already delivered row.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures the path and selector text by value. The document belongs to each visit and row fields are borrowed during the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits and input changes during visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter selects record nodes with pugixml, sorts them in document order and reads fields relative to each node. The signed XPath source, SDK headers and retained kernel are pinned.","evidence":["original/adapter.cpp","source.json"]},
+    "specification_question":{"status":"declared","detail":"Which XPath locates a record and which relative paths locate its fields? This scope covers the exact feed article tuple.","evidence":["spec.json"]}
+  }
+}

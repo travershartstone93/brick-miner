@@ -239,6 +239,78 @@ void verify_sqlite_materials(const Path &stage, const Path &bundle,
                                 "libduckdb.so", "pkgconfig/brick_shared_inputs.pc"})}}));
 }
 
+void verify_xml_materials(const Path &stage, const Path &bundle,
+                          const Path &base, const J &src, const J &row) {
+  const Path archive = src["archive"].asString();
+  const auto recipe = archive.parent_path() / "pugixml.PKGBUILD";
+  const auto ring = arch_keyring(stage);
+  const auto build = signed_build_info(src, recipe, ring);
+  auto debug = src;
+  const auto debug_file = src["debug_archive"].asString();
+  debug["archive"] = (archive.parent_path() / debug_file).string();
+  debug["sha256"] = src["debug_sha256"];
+  debug["signature_sha256"] = src["debug_signature_sha256"];
+  const auto debug_build = signed_build_info(debug, recipe, ring);
+  const auto info = package_info(src, "pugixml");
+  check(info.find("\nlicense = MIT\n") != std::string::npos,
+        "signed pugixml license changed");
+  save(stage / "arch-pkginfo.txt", info);
+  save(stage / "arch-pkgbuild.txt", bytes(recipe));
+
+  const auto provenance = load(bundle / history / "source.json");
+  const auto kernel = digest(bundle / runtime / library);
+  const auto symbol = "xpath_query::evaluate_node_set";
+  const auto unit = provenance["source_units"][symbol].asString();
+  const auto &definition = provenance["definitions"][symbol];
+  const auto binary_pin = provenance["archives"][archive.filename().string()];
+  const auto debug_pin = provenance["archives"][debug_file];
+  check(binary_pin["signer"] == src["signer"] && binary_pin["sha256"] == src["sha256"] &&
+            binary_pin["recipe_sha256"] == src["recipe_sha256"] &&
+            debug_pin["signer"] == src["signer"] && debug_pin["sha256"] == debug["sha256"] &&
+            debug_pin["recipe_sha256"] == src["recipe_sha256"] &&
+            provenance["kernel_sha256"] == kernel && unit == src["source_unit"].asString() &&
+            definition["name"].isString() &&
+            run({"nm", "-D", "--defined-only", bundle / runtime / library})
+                    .find(" T " + definition["name"].asString() + "\n") != std::string::npos,
+        "pinned XPath source or extracted symbol differs");
+  retain_adapter(stage, bundle, history, src, row, provenance,
+                 "shared/inputs/adapter.cpp");
+  const auto upstream = bundle / "qualifications/shared/upstream/formats";
+  auto retain = [&](const J &package, const std::string &member, const Path &dest) {
+    const auto data = archive_member(package, member);
+    check(sha(data) == provenance["headers"][member].asString() &&
+              data == bytes(upstream / member),
+          "signed pugixml file differs from the retained origin: " + member);
+    save(stage / dest, data);
+  };
+  retain(src, "usr/include/pugixml.hpp", "original/pugixml.hpp");
+  retain(src, "usr/include/pugiconfig.hpp", "original/pugiconfig.hpp");
+  retain(src, "usr/share/licenses/pugixml/LICENSE.md", "notices/pugixml-LICENSE.md");
+  retain(debug, unit, "original/pugixml.cpp");
+  retain(debug, (Path(unit).parent_path() / "pugixml.hpp").string(),
+         "original/debug-pugixml.hpp");
+  check(digest(stage / "original/pugixml.cpp") == src["source_unit_sha256"].asString(),
+        "signed XPath source pin differs from the registry");
+  write(stage / "source.json",
+        object({{"binding", row},
+                {"source_id", src["id"]},
+                {"kernel_sha256", kernel},
+                {"arch_signature_sha256", src["signature_sha256"]},
+                {"arch_debug_signature_sha256", debug["signature_sha256"]},
+                {"arch_signer", src["signer"]},
+                {"arch_keyring_sha256", digest(ring)},
+                {"arch_buildinfo_sha256", sha(build)},
+                {"arch_debug_buildinfo_sha256", sha(debug_build)},
+                {"xpath_symbol", definition},
+                {"source_unit", unit},
+                {"source_unit_sha256", src["source_unit_sha256"]},
+                {"runtime_files",
+                 runtime_files(bundle, base,
+                               {library, "libsqlite3.so.0", "libarchive.so.13",
+                                "liburiparser.so.1", "libduckdb.so",
+                                "pkgconfig/brick_shared_inputs.pc"})}}));
+}
+
 void verify_reader_materials(const Path &stage, const Path &bundle,
                              const Path &base, const J &src, const J &binding,
                              const Strings &members) {
@@ -630,8 +702,9 @@ auto pin_runtime_path(const Path &bundle) {
 
 Path build_record_client(const Path &stage, const Path &scratch,
                          const Path &bundle, const J &source, const J &tools,
-                         bool readers, bool directory,
-                         const Strings &extra_libraries = {}) {
+                         bool readers, bool archive_tools,
+                         const Strings &extra_libraries = {},
+                         bool inspect_symbols = false) {
   auto options = flags({"jsoncpp", readers ? "brick_shared_readers"
                                            : "brick_shared_inputs"});
   auto exe = scratch / "client";
@@ -646,9 +719,9 @@ Path build_record_client(const Path &stage, const Path &scratch,
   run(cmd);
   auto env = tools;
   auto tool_names = Strings{"bsdtar", "gpgv", "ldd"};
-  if (readers || !extra_libraries.empty())
+  if (readers || !extra_libraries.empty() || inspect_symbols)
     tool_names.push_back("nm");
-  else if (!directory)
+  else if (archive_tools)
     append(tool_names, {"tar", "unzip"});
   for (const auto &name : tool_names)
     env["tool_sha256"][name] =
@@ -760,7 +833,7 @@ Path qualify_records(const Path &package, const std::string &pin,
   const auto restore = pin_runtime_path(bundle);
   const auto tools = file_qualification_tools();
   const auto exe = build_record_client(stage, scratch, bundle, source, tools,
-                                       projection.json(), projection.directory());
+                                       projection.json(), !projection.directory());
   write(stage / "standalone.json",
         repeated_calls(exe, fixtures, bundle, spec, projection));
   write(stage / "integration.json",
@@ -991,70 +1064,80 @@ Path qualify_csv_records(const Path &package, const std::string &pin,
                            "unllm.scoped-file-evidence/1");
 }
 
-Path qualify_sqlite_records(const Path &package, const std::string &pin,
-                            const Path &registry, const std::string &registry_pin) {
+namespace {
+struct TupleReader {
+  std::string operation, fixture, mime, output_fields;
+  J arguments, parameters;
+  std::string qualification_scope, domain_scope;
+  Strings client_libraries;
+  void (*verify_materials)(const Path &, const Path &, const Path &, const J &,
+                           const J &);
+};
+
+Path qualify_tuple_reader(const Path &package, const std::string &pin,
+                          const Path &registry, const std::string &registry_pin,
+                          const TupleReader &reader) {
   verify(package, pin);
-  const std::string operation = "sqlite_records";
-  const std::string mime = "application/vnd.sqlite3";
-  const auto src = sources()["retained-sqlite-records"];
+  const auto &operation = reader.operation;
+  const auto &arguments = reader.arguments;
+  const auto &parameters = reader.parameters;
+  const auto src = sources()["retained-" + reader.fixture];
   const auto job = retained_binding_job(v5_root() / "sources.json", operation);
-  const auto arguments = array({"table", "fields", "order_by"});
-  const auto parameters = object({{"table", "scans"},
-                                  {"fields", "parcel,depot,state,minute,seq"},
-                                  {"order_by", "seq:asc"}});
   check(src["approval"] == "local-pilot" && src["method"] == "signed-local-package" &&
             job["source"] == src["id"] && job["route"] == "api" &&
             job["stream"] == "foundational" &&
-            job["tests"] == "v5/fixtures/sqlite-records.json" &&
+            job["tests"] == "v5/fixtures/" + reader.fixture + ".json" &&
             job["parameter"] == parameters,
-        "no reviewed local SQLite record job");
+        "no reviewed local file reader tuple job");
   const auto priority = rank_supplied_usage(
       project_file(runs, job["coverage_audit"].asString()),
       job["coverage_sha256"].asString(),
       project_file(runs, job["migration_snapshot"].asString() + "/ledger.sqlite")
           .parent_path(),
       job["ledger_sha256"].asString());
-  const auto work = fresh_run("v5-sqlite-records"), stage = work / ".stage",
+  const auto work = fresh_run("v5-" + reader.fixture), stage = work / ".stage",
              scratch = work / ".test-programs", fixtures = stage / "fixtures",
              bundle = package / "bundle", base = verified_base();
   fs::create_directory(scratch);
   fs::create_directories(fixtures);
   save_file_registry(stage, src, registry, registry_pin);
   check(retained_binding_job(stage / "sources.json", operation) == job,
-        "changed SQLite reader job");
+        "changed file reader tuple job");
   const auto defs = load(bundle / "providers/contracts.json");
   const auto row = select_binding(defs["providers"], operation,
-                                  "miner_sqlite_records", "in:" + mime, "rows");
+                                  "miner_" + operation, "in:" + reader.mime, "rows");
   const auto record = file_binding_identity(row, bundle);
   const auto selection = select_ranked_scope(package, pin, priority, job);
   const auto &selected = selection["selected"];
   const auto legacy = load(bundle / history / "contracts.json")[operation];
+  auto expected_parameters = object();
+  for (const auto &name : arguments)
+    expected_parameters[name.asString()] = "text";
   check(selected["binding_id"] == operation &&
             selected["binding_sha256"] == record["binding_sha256"] &&
             selected["header_sha256"] == record["header_sha256"] &&
             row["call"] == job["callable"] && row["args"] == arguments &&
             row["from"] == legacy["from"] && row["to"] == legacy["to"] &&
-            legacy["args"] == object({{"table", "text"}, {"fields", "text"},
-                                     {"order_by", "text"}}) &&
+            legacy["args"] == expected_parameters &&
             defs["outcomes"][operation]["parameters"] == legacy["args"],
-        "SQLite qualification differs from ranked ledger or retained ABI");
+        "file reader qualification differs from ranked ledger or retained ABI");
   write(stage / "priority.json", priority);
   write(stage / "selection.json", selection);
-  verify_sqlite_materials(stage, bundle, base, src, row);
+  reader.verify_materials(stage, bundle, base, src, row);
   const auto source = load(stage / "source.json");
   for (const auto &[from, to] : std::map<std::string, std::string>{
-           {"sqlite-records.json", "spec.json"},
-           {"sqlite-records-client.cpp", "client.cpp"},
-           {"sqlite-records-annotation.json", "annotation.json"}})
+           {reader.fixture + ".json", "spec.json"},
+           {reader.fixture + "-client.cpp", "client.cpp"},
+           {reader.fixture + "-annotation.json", "annotation.json"}})
     fs::copy_file(v5_root() / "fixtures" / from, stage / to);
   const auto spec = load(stage / "spec.json");
   check(spec["binding"] == record["key"] && spec["parameters"] == parameters,
-        "SQLite fixture differs from the reviewed selectors");
+        "file fixture differs from the reviewed selector tuple");
 
   const auto restore = pin_runtime_path(bundle);
   const auto tools = file_qualification_tools();
   const auto exe = build_record_client(stage, scratch, bundle, source, tools,
-                                       false, false, {"libsqlite3.so.0"});
+                                       false, false, reader.client_libraries, true);
   for (const auto &name : spec["inputs"].getMemberNames()) {
     const auto &input = spec["inputs"][name];
     if (input.isNull())
@@ -1064,7 +1147,7 @@ Path qualify_sqlite_records(const Path &package, const std::string &pin,
       append(cmd, {"--make", name, input["sql"].asString()});
       run(cmd, {.seconds = 8, .probe_limits = true});
     } else {
-      check(input["bytes"].isString(), "SQLite fixture has no input bytes");
+      check(input["bytes"].isString(), "file fixture has no input bytes");
       save(fixtures / name, input["bytes"].asString());
     }
     fs::permissions(fixtures / name, fs::perms::owner_read | fs::perms::group_read |
@@ -1072,7 +1155,7 @@ Path qualify_sqlite_records(const Path &package, const std::string &pin,
   }
   const auto before = tree_hashes(fixtures);
   auto observe = [&](const J &test, const std::string &input, const J &params) {
-    check(spec["inputs"].isMember(input), "SQLite test has no input declaration");
+    check(spec["inputs"].isMember(input), "file test has no input declaration");
     const auto seen = probe_record_rows(exe, fixtures, bundle, input, dump(params));
     check_record_rows(test, seen, operation, true);
     return object({{"name", test["name"]}, {"observation", seen}});
@@ -1082,18 +1165,18 @@ Path qualify_sqlite_records(const Path &package, const std::string &pin,
     direct.append(observe(test, test["name"].asString(), parameters));
   for (const auto &test : spec["selector_controls"])
     controls.append(observe(test, test["input_case"].asString(), test["params"]));
-  check(tree_hashes(fixtures) == before, "SQLite reader changed the fixture inventory");
+  check(tree_hashes(fixtures) == before, "file reader changed the fixture inventory");
   write(stage / "standalone.json",
         object({{"processes_per_case", 2}, {"cases", direct},
                 {"input_sha256", before}, {"selector_controls", controls}}));
 
-  const auto chain = array({"op_0_sqlite_records", "op_1_report_fields", "write_lines"});
+  const auto chain = array({"op_0_" + operation, "op_1_report_fields", "write_lines"});
   const auto ops = array(
       {object({{"outcome", operation}, {"parameters", parameters}}),
        object({{"outcome", "report_fields"},
-               {"parameters", object({{"fields", "pos,0,1,2,3,4"}})}})});
+               {"parameters", object({{"fields", reader.output_fields}})}})});
   const auto goal = spec_for(
-      mime, "text/plain", object({{"operations", ops}, {"uncovered", array()}}));
+      reader.mime, "text/plain", object({{"operations", ops}, {"uncovered", array()}}));
   auto prepare = [&](const Path &dir, const J &test) {
     const auto fixture = fixtures / test["name"].asString();
     if (fs::exists(fixture))
@@ -1105,8 +1188,7 @@ Path qualify_sqlite_records(const Path &package, const std::string &pin,
 
   auto contract = file_contract(stage, package, record, src, stage / "sources.json");
   contract["source"]["implementation_sha256"] = source["kernel_sha256"];
-  contract["qualification"]["scope"] =
-      "Detached local evidence for the exact scans table, five selected columns and seq:asc.";
+  contract["qualification"]["scope"] = reader.qualification_scope;
   validate(contract, load(package / "contract.schema.json"));
   write(stage / "contract.json", contract);
   write(stage / "domain.json",
@@ -1121,8 +1203,34 @@ Path qualify_sqlite_records(const Path &package, const std::string &pin,
                 {"call", row["call"]},
                 {"quantifier", "arguments"},
                 {"all_of", file_argument_scope(arguments, parameters)},
-                {"scope", "The three selector predicates apply together. Input-domain behavior is bounded to the recorded cases."}}));
+                {"scope", reader.domain_scope}}));
   return finish_file_stage(work, package, pin, record["logical_id"].asString(),
                            "unllm.scoped-file-evidence/1");
+}
+} // namespace
+
+Path qualify_sqlite_records(const Path &package, const std::string &pin,
+                            const Path &registry, const std::string &registry_pin) {
+  return qualify_tuple_reader(
+      package, pin, registry, registry_pin,
+      {"sqlite_records", "sqlite-records", "application/vnd.sqlite3", "pos,0,1,2,3,4",
+       array({"table", "fields", "order_by"}),
+       object({{"table", "scans"}, {"fields", "parcel,depot,state,minute,seq"},
+               {"order_by", "seq:asc"}}),
+       "Detached local evidence for the exact scans table, five selected columns and seq:asc.",
+       "The three selector predicates apply together. Input-domain behavior is bounded to the recorded cases.",
+       {"libsqlite3.so.0"}, verify_sqlite_materials});
+}
+
+Path qualify_xml_records(const Path &package, const std::string &pin,
+                         const Path &registry, const std::string &registry_pin) {
+  return qualify_tuple_reader(
+      package, pin, registry, registry_pin,
+      {"xml_records", "xml-records", "application/xml", "pos,0,1,2,3",
+       array({"records", "fields"}),
+       object({{"records", "/feed/article"}, {"fields", "@editor,@section,@state,title"}}),
+       "Detached local evidence for the exact article record and relative field XPath selectors.",
+       "The two selector predicates apply together. Input-domain behavior is bounded to the recorded cases.",
+       {}, verify_xml_materials});
 }
 } // namespace v5

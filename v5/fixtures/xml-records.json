@@ -1,0 +1,34 @@
+{
+  "binding":{"component_id":"miner_xml_records","binding_id":"xml_records","from":"in:application/xml","to":"rows"},
+  "parameters":{"records":"/feed/article","fields":"@editor,@section,@state,title"},
+  "inputs":{
+    "ordered":{"bytes":"<feed><article state=\"draft\" section=\"News &amp; Politics\" editor=\"Zo&#235;\"><title>First &lt;draft&gt;</title></article>\n<other><article editor=\"skip\" section=\"x\" state=\"x\"><title>nested record</title></article></other>\n<article editor=\"\" section=\"Culture\" state=\"published\"><title><![CDATA[Line one\nLine two]]></title></article>\n<article editor=\"南\" section=\"Tools\" state=\"draft\"><title>lead<b>nested</b>tail</title></article>\n<article editor=\"A\" section=\"Notes\" state=\"archived\"><title/></article></feed>\n"},
+    "empty":{"bytes":"<feed><other><article editor=\"skip\" section=\"x\" state=\"x\"><title>nested record</title></article></other></feed>\n"},
+    "duplicate-records":{"bytes":"<feed><article state=\"draft\" section=\"News &amp; Politics\" editor=\"Zo&#235;\"><title>First &lt;draft&gt;</title></article>\n<article state=\"draft\" section=\"News &amp; Politics\" editor=\"Zo&#235;\"><title>First &lt;draft&gt;</title></article></feed>\n"},
+    "malformed-document":{"bytes":"<feed><article state=\"draft\" section=\"News &amp; Politics\" editor=\"Zo&#235;\"><title>First &lt;draft&gt;</title></article><article></feed>\n"},
+    "late-missing-title":{"bytes":"<feed><article state=\"draft\" section=\"News &amp; Politics\" editor=\"Zo&#235;\"><title>First &lt;draft&gt;</title></article>\n<article editor=\"e\" section=\"s\" state=\"t\"><summary>ignored</summary></article></feed>\n"},
+    "late-repeated-title":{"bytes":"<feed><article state=\"draft\" section=\"News &amp; Politics\" editor=\"Zo&#235;\"><title>First &lt;draft&gt;</title></article>\n<article editor=\"e\" section=\"s\" state=\"t\"><title>one</title><title>two</title></article></feed>\n"},
+    "missing-attribute":{"bytes":"<feed><article editor=\"e\" state=\"t\"><title>no section</title></article></feed>\n"},
+    "missing":null
+  },
+  "cases":[
+    {"name":"ordered","rows":[["Zoë","News & Politics","draft","First <draft>"],["","Culture","published","Line one\nLine two"],["南","Tools","draft","lead"],["A","Notes","archived",""]],"output":"1\tZoë\tNews & Politics\tdraft\tFirst <draft>\n2\t\tCulture\tpublished\tLine one\nLine two\n3\t南\tTools\tdraft\tlead\n4\tA\tNotes\tarchived\t\n"},
+    {"name":"empty","rows":[],"output":""},
+    {"name":"duplicate-records","rows":[["Zoë","News & Politics","draft","First <draft>"],["Zoë","News & Politics","draft","First <draft>"]],"output":"1\tZoë\tNews & Politics\tdraft\tFirst <draft>\n2\tZoë\tNews & Politics\tdraft\tFirst <draft>\n"},
+    {"name":"malformed-document","error":"visit"},
+    {"name":"missing","error":"visit"},
+    {"name":"late-missing-title","error":"visit","exception":"invalid_argument","rows":[["Zoë","News & Politics","draft","First <draft>"]]},
+    {"name":"late-repeated-title","error":"visit","exception":"invalid_argument","rows":[["Zoë","News & Politics","draft","First <draft>"]]},
+    {"name":"missing-attribute","error":"visit","exception":"invalid_argument"}
+  ],
+  "selector_controls":[
+    {"name":"document-order-from-union","input_case":"ordered","params":{"records":"/feed/article[3] | /feed/article[1]","fields":"@editor,@section,@state,title"},"rows":[["Zoë","News & Politics","draft","First <draft>"],["南","Tools","draft","lead"]]},
+    {"name":"reordered-fields","input_case":"ordered","params":{"records":"/feed/article","fields":"title,@state,@editor,@section"},"rows":[["First <draft>","draft","Zoë","News & Politics"],["Line one\nLine two","published","","Culture"],["lead","draft","南","Tools"],["","archived","A","Notes"]]},
+    {"name":"predicate-filter","input_case":"ordered","params":{"records":"/feed/article[@state='draft']","fields":"@editor,@section,@state,title"},"rows":[["Zoë","News & Politics","draft","First <draft>"],["南","Tools","draft","lead"]]},
+    {"name":"records-are-attributes","input_case":"ordered","params":{"records":"/feed/article/@editor","fields":"@editor,@section,@state,title"},"error":"visit","exception":"invalid_argument"},
+    {"name":"invalid-record-xpath","input_case":"ordered","params":{"records":"/feed/article[","fields":"@editor,@section,@state,title"},"error":"visit","exception":"xpath_exception"},
+    {"name":"scalar-field-result","input_case":"ordered","params":{"records":"/feed/article","fields":"count(title)"},"error":"visit","exception":"xpath_exception"},
+    {"name":"multiple-relative-text-nodes","input_case":"ordered","params":{"records":"/feed/article[3]","fields":"title/text()"},"error":"visit","exception":"invalid_argument"},
+    {"name":"empty-field-selector","input_case":"ordered","params":{"records":"/feed/article","fields":""},"error":"select","exception":"invalid_argument"}
+  ]
+}
