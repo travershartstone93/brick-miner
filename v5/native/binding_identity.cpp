@@ -94,6 +94,8 @@ J controls(Database &db, const J &sort, const J &writer) {
                      "contract_sha256", "qualification"}) {
     J bad = writer;
     bad[field] = sort[field];
+    if (bad[field] == writer[field])
+      bad[field] = "legacy-only";
     reject(field, bad);
   }
   for (auto field : {"from", "to", "component_id", "binding_id"}) {
@@ -167,8 +169,7 @@ J ordinary_program(const Path &bundle, const Path &work) {
   return evidence;
 }
 } // namespace
-Path binding_identity_fixture(const Path &package, const std::string &pin) {
-  verify(package, pin);
+J sequence_writer_identities(const Path &package) {
   const Path bundle = package / "bundle";
   auto raw = load(bundle / "providers/contracts.json")["providers"];
   auto contracts = load(package / "contracts.json");
@@ -189,13 +190,13 @@ Path binding_identity_fixture(const Path &package, const std::string &pin) {
             sort["header_sha256"] == writer["header_sha256"] &&
             sort["logical_id"] != writer["logical_id"],
         "unexpected stage identity or evidence");
-  auto work = fresh_run("v5-binding-identity"), stage = work / ".fixture";
-  fs::create_directory(stage);
-  J payload = object({{"schema", "unllm.binding-identity-fixture/1"},
-                      {"catalog_sha256", pin},
-                      {"bindings", array({sort, writer})},
-                      {"scope", "Detached development fixture"}});
-  write(stage / "payload.json", payload);
+  return array({sort, writer});
+}
+void project_binding_pair(const Path &stage) {
+  auto canonical = load(stage / "payload.json");
+  auto &bindings = canonical["bindings"];
+  check(bindings.size() == 2, "expected two binding records");
+  const auto &sort = bindings[0], &writer = bindings[1];
   J checked;
   {
     Database db(stage / "bindings.sqlite");
@@ -207,19 +208,31 @@ Path binding_identity_fixture(const Path &package, const std::string &pin) {
               "NULL,header_sha256 TEXT NOT NULL,"
               "contract_sha256 TEXT,qualification TEXT NOT "
               "NULL,UNIQUE(component_id,binding_id,inport,outport))");
-    auto canonical = load(stage / "payload.json");
-    for (const auto &r : canonical["bindings"])
+    for (const auto &r : bindings)
       index_binding(db, r);
     check(lookup(db, sort) ==
                   std::vector<Strings>{
                       {"sort_lines", "ordinary-emission-tested"}} &&
               lookup(db, writer) ==
-                  std::vector<Strings>{{"write_lines", "legacy-only"}},
+                  std::vector<Strings>{
+                      {"write_lines", writer["qualification"].asString()}},
           "binding lookup failed");
     checked = controls(db, sort, writer);
   }
   write(stage / "controls.json", checked);
-  write(stage / "ordinary.json", ordinary_program(bundle, work));
+}
+Path binding_identity_fixture(const Path &package, const std::string &pin) {
+  verify(package, pin);
+  auto bindings = sequence_writer_identities(package);
+  auto work = fresh_run("v5-binding-identity"), stage = work / ".fixture";
+  fs::create_directory(stage);
+  write(stage / "payload.json",
+        object({{"schema", "unllm.binding-identity-fixture/1"},
+                {"catalog_sha256", pin},
+                {"bindings", bindings},
+                {"scope", "Detached development fixture"}}));
+  project_binding_pair(stage);
+  write(stage / "ordinary.json", ordinary_program(package / "bundle", work));
   auto manifest =
       object({{"schema", "unllm.binding-identity-fixture-manifest/1"},
               {"catalog_sha256", pin},

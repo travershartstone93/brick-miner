@@ -11,6 +11,7 @@ Files register_tasks(Files base, const J &tasks, const Files &headers,
                      const J &meta, const Path &work, const J &types = object(),
                      const J &conversions = array());
 Files ablate(Files bundle, const std::string &key);
+Files remove_binding(Files bundle, const J &binding);
 J plan(const Path &bundle, const J &spec, const Path &dest);
 J spec_for(const std::string &input, const std::string &output,
            const J &requirement);

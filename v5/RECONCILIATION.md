@@ -1,6 +1,6 @@
 # V5 reconciliation and handoff
 
-The [current H1b handoff](#h1b-retained-sequence-operations) has ten qualified row providers and one qualified class. The [restricted XML study](#h1a-restricted-xml-adapter) has a separate opt-in interchange fixture.
+The [H1b parent catalog](#h1b-retained-sequence-operations) has ten qualified row providers and one qualified class. An [opt-in writer qualification](#h1b-qualification-of-the-existing-plain-text-writer) adds a contract and ordinary-path evidence for the existing `x09/write_lines` binding. The [restricted XML study](#h1a-restricted-xml-adapter) has a separate interchange fixture.
 
 V5 §8 supplies the milestone schedule. Track A owns the miner, with Track E supplying separately specified oracles. The main repository owns B/C/D and production activation.
 
@@ -278,3 +278,29 @@ r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
 ```
 
 Repeating the analysis against the frozen ledger produced the same usage report SHA-256 `51bd29a4de730f198d6043176fc329c932c67604be166927916b4668201ec102`. A fresh fixture build reproduced all four files and manifest SHA-256 `11403a9371776a6977db964f5bc4f5976327ad19e78dece9063f908b0d04dfcf`, including ordinary executable digest `d84237dfbc49a683d0f3dea5eafb828156c18ae81f7f25cd4c5827f7fac70aaf`. Both commands rejected a wrong input pin. [Ranking repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-replay-usage-XXdfOK2w/usage.json) · [Identity repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-binding-identity-XXAAFMau/fixture/manifest.json)
+
+## H1b qualification of the existing plain-text writer
+
+The miner tested the original `bricks::save_lines` on the existing `strings → out:text/plain` binding. It re-extracted the two retained project headers and MIT notice from reviewed archive `5732484b…e94f`, checked their bytes against the active and staged bundles, and compiled against the installed Qt6Core 6.12.0. The source registry, header, callable, raw binding and linked Qt library each have a recorded pin. No source download, new adapter or edit to the provider implementation was needed. Manual work comprised the byte contract, independent expectations, fault cases and qualification harness. [Source and rights](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-writer-XXxoVORS/stage/source.json) · [Frozen contract and cases](fixtures/write-lines.json)
+
+| Check | Observed result |
+|---|---|
+| Standalone C++ client with a compile-time signature check | 9/9. Zero records wrote zero bytes. One empty record wrote one LF. Duplicate records and embedded LF, CR, NUL, invalid UTF-8 and multibyte UTF-8 produced the expected bytes. |
+| Failure effects | A missing parent and a directory destination raised `std::runtime_error("Cannot open output")`. With an eight-byte process file-size limit, both attempts raised `std::runtime_error("Commit failed")`. The original file remained byte-identical and a previously absent destination stayed absent. |
+| Distinguishing controls | The frozen oracle rejected a CR terminator, a NUL-truncating write and a silent return on open failure. |
+| Ordinary program | The same fixed task bound `read_lines → sort_lines → write_lines` on the active and staged executable bundles. Each passed 8/8 file cases. Both produced binary SHA-256 `d84237dfbc49a683d0f3dea5eafb828156c18ae81f7f25cd4c5827f7fac70aaf`. |
+| Exact removal | Removing the full writer row left one unfilled conversion from `strings` to `out:text/plain`. The reader and sorter were still selected. A second ordinary program in the removal bundle sorted to JSON and produced `["a","z","z"]`. |
+
+The staging manifest pins 15 files, including the candidate contract, both binding identities, their SQLite projection, the original headers and qualification receipts. Its parent is `d352c5d8330ba8db3a4331093009fb0225880921444f100d40620e71773e7d8e`. The opt-in view links logical writer ID `9b9d0aaebaab9f73c568f8e2893768ee118a5b42524f8bec49d213c084acc694` to contract SHA-256 `2b37076a7be7827eb66ef90e332321cd8ec62b7b50289f1ac21ce3d80f278318`. The writer's raw effect remains absent. Sort retains its separate contract. All 15 identity controls passed, and the earlier legacy-only fixture independently reproduced its original manifest. [Writer contract](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-writer-XXxoVORS/stage/contract.json) · [Standalone observations](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-writer-XXxoVORS/stage/standalone.json) · [Ordinary and removal evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-writer-XXxoVORS/stage/integration.json)
+
+Two clean runs produced identical stage bytes, including manifest SHA-256 `118a3bbd629fef2b437500aa8c2ce5aeeba0b1de72375639ec66311b7d352689`. The repeat used 17.16 user and 0.78 system CPU seconds in 18.56 seconds elapsed. Each run released seven disposable executables after syncing their inputs, digests and verdicts. The ordinary task already passed on the baseline. This backfill adds one opt-in writer contract, zero newly passing constructions and zero production activations. The evidence covers the observed Linux/ext4 failure modes. Crash durability, concurrent access and arbitrary device failures remain unknown. Main separately reports that this pre-existing binding was required by five H2 compositions that passed 175 held fixtures on the parent. [First sealed stage](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-writer-XXxoVORS/stage/manifest.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-writer-XXgkacdd/stage/manifest.json) · [Main H2 ablations](../../unllm-upgrade/docs/evidence/v5-h2/fixed-sequences.json) · [Main H2 score](../../unllm-upgrade/docs/evidence/v5-h2/independent-score.json)
+
+```sh
+make .build/v5-inventory
+r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+.build/v5-inventory --qualify-writer "$r/v5-queue-XXtVEvtF/stage/package" d352c5d8330ba8db3a4331093009fb0225880921444f100d40620e71773e7d8e
+```
+
+Main independently verified all 15 writer-stage file pins, both x09 binding identities, the writer's absent effect and the exact contract hash. It joined the writer to all five frozen H2 program chains and passed a fresh sandbox overwrite check containing an empty record. The check exercised the ordinary executable with the detached metadata. Production activation remains with main. [Independent writer receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h2-composition-0Zri4Epn/writer-review/receipt.json)
+
+`make check`, `make check-v5-queue` and `make check-v5-gap` passed after the exact-row removal change. The first-party language audit found zero violations in 777 files. [Queue recovery and qualification controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recovery-XX1QV3Ps/recovery.json) · [Gap controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXjTiyZk/controls.json)

@@ -1,0 +1,34 @@
+{
+  "primary_family": "files_storage",
+  "description": "Write ordered byte strings to a named file with LF after each record.",
+  "interface": {
+    "semantic_input": "Ordered, length-delimited byte strings and the caller's destination pathname",
+    "semantic_output": "A file containing the records in encounter order, each followed by byte 0A",
+    "parameters": {}
+  },
+  "facets": {
+    "technical_hierarchy":["files_storage","file_output"],
+    "application":["text utilities","report generation"],
+    "construction_role":["file writer"],
+    "abstraction":["synchronous file operation"],
+    "implementation_form":["retained C++ source"],
+    "platform":["tested Linux x86_64 on the experiment volume"],
+    "dependencies":["C++17 standard library","Qt6Core (QSaveFile)","original provider_types.hpp"],
+    "resources":["Temporary destination storage and per-record writes. General resource bounds are unknown."]
+  },
+  "claims": {
+    "preconditions":{"status":"declared","detail":"Borrowed vector of byte strings and a valid NUL-terminated UTF-8 destination pathname. The tested successful destinations have a writable parent.","evidence":["source.json","original/headers/text_ops.hpp"]},
+    "postconditions":{"status":"observed","detail":"The successful fixtures contained exactly the input record bytes in order with one appended LF per record, including embedded CR, LF and NUL.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Created or replaced the named file on success. With an eight-byte process file-size limit, the failing call preserved a regular destination's previous bytes or left an absent destination absent. Directory and missing-parent failures were observed. Crash durability and arbitrary device failures are unknown.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"unknown","detail":"Maximum supported input or destination size and pathname portability have no qualified bounds.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"No machine-checked proof of byte or failure behavior is available.","evidence":[]},
+    "mathematical_properties":{"status":"observed","detail":"Every successful standalone observation satisfied output byte count = sum of record byte lengths + record count.","evidence":["standalone.json"]},
+    "invariants":{"status":"observed","detail":"Preserved duplicate, empty and non-text records in the fixed standalone examples.","evidence":["standalone.json"]},
+    "state_protocol":{"status":"declared","detail":"The implementation opens a local QSaveFile, writes each record and terminator, then calls commit synchronously. Internal filesystem or Qt state has no separately qualified protocol.","evidence":["original/headers/text_ops.hpp"]},
+    "ownership":{"status":"declared","detail":"Borrowed const record vector and pathname for the duration of the call. The QSaveFile object has automatic storage duration.","evidence":["client.cpp","original/headers/text_ops.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent writers and readers were outside the qualification suite.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread-affinity constraints were not evaluated.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The retained file binding names bricks::save_lines on x09. Its generated use in a complete legacy program was reproduced.","evidence":["source.json","integration.json"]},
+    "specification_question":{"status":"not-applicable","detail":"The task supplies its output path and format. The row exposes no additional selectable options.","evidence":["source.json"]}
+  }
+}

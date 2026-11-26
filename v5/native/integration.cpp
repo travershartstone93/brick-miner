@@ -38,19 +38,6 @@ J probes(const Path &exe, const Path &dest, const J &cases) {
   }
   return observed;
 }
-Files remove_binding(Files stage, const J &binding) {
-  auto &raw = stage.at("providers/contracts.json");
-  auto registry = parse(raw), kept = array();
-  for (const auto &row : registry["providers"])
-    if (row["id"] != binding["id"])
-      kept.append(row);
-  check(kept.size() + 1 == registry["providers"].size(),
-        "binding removal must identify exactly one row");
-  registry["providers"] = kept;
-  raw = dump(registry);
-  seal(stage);
-  return stage;
-}
 } // namespace
 void integrate(const Path &extracted, const Path &dest) {
   auto base = verified_base();

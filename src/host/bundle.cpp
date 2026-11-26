@@ -45,6 +45,19 @@ std::string seal(Files &bundle) {
   bundle["SHA256SUMS"] = out;
   return sha(out);
 }
+Files remove_binding(Files bundle, const J &binding) {
+  auto &raw = bundle.at("providers/contracts.json");
+  auto registry = parse(raw), kept = array();
+  for (const auto &row : registry["providers"])
+    if (row != binding)
+      kept.append(row);
+  check(kept.size() + 1 == registry["providers"].size(),
+        "binding removal must identify exactly one row");
+  registry["providers"] = kept;
+  raw = dump(registry);
+  seal(bundle);
+  return bundle;
+}
 Files register_tasks(Files base, const J &tasks, const Files &headers,
                      const J &meta, const Path &work, const J &types,
                      const J &conversions) {

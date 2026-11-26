@@ -1,0 +1,25 @@
+{
+  "binding": {"component_id":"x09","binding_id":"write_lines","from":"strings","to":"out:text/plain"},
+  "contract": "Given a finite sequence of byte strings and a destination pathname, write each string verbatim in order followed by a single LF byte. An empty sequence produces a zero-byte regular file. Embedded LF, CR, invalid UTF-8 and NUL in record data are data. On success the named regular destination contains exactly the expected bytes.",
+  "standalone": [
+    {"name":"empty-sequence","records":[],"expected_hex":""},
+    {"name":"one-empty-record","records":[""],"expected_hex":"0a"},
+    {"name":"duplicates-and-empty","records":["7a","","61","7a"],"expected_hex":"7a0a0a610a7a0a","existing":true},
+    {"name":"binary-and-utf8","records":["00ff0041","cebb"],"expected_hex":"00ff00410acebb0a"},
+    {"name":"embedded-separators","records":["610a62","0d0a",""],"expected_hex":"610a620a0d0a0a0a","existing":true},
+    {"name":"missing-parent","records":["61"],"fault":"missing-parent","exception":["Cannot open output"]},
+    {"name":"directory","records":["61"],"fault":"directory","exception":["Cannot open output"]},
+    {"name":"size-limit-existing","records":["30313233343536373839616263646566"],"fault":"limit-8","existing":true,"exception":["Commit failed","Write error"]},
+    {"name":"size-limit-new","records":["30313233343536373839616263646566"],"fault":"limit-8","exception":["Commit failed","Write error"]}
+  ],
+  "ordinary": [
+    {"name":"empty-file","input_hex":"","expected_hex":"","existing":true},
+    {"name":"one-empty-record","input_hex":"0a","expected_hex":"0a"},
+    {"name":"sort-repeated-lines","input_hex":"7a0a620a7a0a61","expected_hex":"610a620a7a0a7a0a","existing":true},
+    {"name":"binary-and-cr","input_hex":"6200610a620d0a0a","expected_hex":"0a6200610a620d0a"},
+    {"name":"missing-parent","input_hex":"610a","fault":"missing-parent"},
+    {"name":"directory","input_hex":"610a","fault":"directory"},
+    {"name":"size-limit-existing","input_hex":"303132333435363738396162636465660a","fault":"limit-8","existing":true},
+    {"name":"size-limit-new","input_hex":"303132333435363738396162636465660a","fault":"limit-8"}
+  ]
+}

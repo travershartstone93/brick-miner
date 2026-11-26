@@ -308,10 +308,15 @@ int main(int argc, char **argv) try {
     std::cout << out.string() << '\n' << digest(out) << '\n';
     return 0;
   }
+  if (argc == 4 && std::string(argv[1]) == "--qualify-writer") {
+    auto out = qualify_writer(fs::canonical(argv[2]), argv[3]);
+    std::cout << out.string() << '\n' << digest(out) << '\n';
+    return 0;
+  }
   check(argc == 3 || (argc == 6 && std::string(argv[3]) == "--frozen"),
         "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
         "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
-        "--binding-identity-fixture STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
+        "--binding-identity-fixture or --qualify-writer STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);
   std::unique_ptr<Frozen> prior;
