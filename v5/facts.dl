@@ -1,0 +1,12 @@
+.decl Provider(cap:symbol, provider:symbol, level:symbol)
+.input Provider
+.decl Port(provider:symbol, inport:symbol, outport:symbol)
+.input Port
+.decl Property(provider:symbol, name:symbol, status:symbol)
+.input Property
+.decl TestedTransform(cap:symbol, inport:symbol, outport:symbol)
+TestedTransform(c,i,o) :- Provider(c,p,"ordinary-emission-tested"), Port(p,i,o).
+.output TestedTransform
+.decl Observed(cap:symbol, property:symbol)
+Observed(c,n) :- Provider(c,p,_), Property(p,n,"observed").
+.output Observed

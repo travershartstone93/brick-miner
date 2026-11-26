@@ -1,0 +1,495 @@
+{
+  "schema": "unllm.source-registry/1",
+  "scope": "bounded offline pilot on existing approved source bytes; new remote records are discovery only",
+  "sources": [
+    {
+      "id": "gcc-libstdcxx",
+      "family": "C++ standard library",
+      "upstream": "https://github.com/gcc-mirror/gcc",
+      "revision": "4db0e8df15bef836558857c291c323add11d035c",
+      "release": "15.3.0+r0.g4db0e8df15be-2",
+      "method": "signed-local-package",
+      "archive": "/var/cache/pacman/pkg/gcc15-15.3.0+r0.g4db0e8df15be-2-x86_64.pkg.tar.zst",
+      "sha256": "827ea95be9ef8be6b6f866723a3bff495b6733ab750bed1710b8a7bc18cf8565",
+      "symbols": [
+        "std::reverse"
+      ],
+      "families": [
+        "algorithms"
+      ],
+      "documentation": "https://gcc.gnu.org/onlinedocs/libstdc++/",
+      "tests": "https://github.com/gcc-mirror/gcc/tree/4db0e8df15bef836558857c291c323add11d035c/libstdc++-v3/testsuite/25_algorithms/reverse",
+      "examples": "Lzip_index constructor in the pinned lzip source",
+      "dependencies": [
+        "gcc15",
+        "gcc15-libs"
+      ],
+      "rights": {
+        "scope": "local build and test, installed library invocation",
+        "upstream_files": "GCC GPL-3.0-or-later with runtime exception and additional HP/SGI notices in bits/stl_algo.h",
+        "redistribute": "unreviewed; no library source redistribution"
+      },
+      "files": {
+        "/usr/lib/gcc/x86_64-pc-linux-gnu/15.3.0/include/c++/algorithm": "19ac04637f60d60191d5e6d9972341ae3db83c0973cce66b2d44f90cfe487674",
+        "/usr/lib/gcc/x86_64-pc-linux-gnu/15.3.0/include/c++/bits/stl_algo.h": "869229536e11501ccb63374f0794f106e71ce98c055bdc731dc5dd4c9cf44c81"
+      },
+      "approval": "local-pilot",
+      "approval_reference": "retained gcc15 signed input from row-ops/sources.json; V5 local foundational slice"
+    },
+    {
+      "id": "gnu-lzip",
+      "family": "curated application",
+      "upstream": "https://download.savannah.gnu.org/releases/lzip/lzip-1.26.tar.gz",
+      "revision": "1.26",
+      "release": "1.26-1",
+      "method": "verified-local-upstream-archive",
+      "archive": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/package-source-uLQCSe4g/lzip-1.26.tar.gz",
+      "sha256": "641cf30961525cbe3b340cc883436c8854e9f5032f459f444de4782b621e6572",
+      "files": {
+        "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/project-mining-780_n3ro/run-1/application/source/arg_parser.h": "065e56a7417375a946728aab7907e8f75e279fb057a838d879e77515de52e9ec",
+        "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/project-mining-780_n3ro/run-1/application/source/arg_parser.cc": "c8b6e34d9846a14e652b8115ea7361349093fffb0b0a4c663db1c814089b0561",
+        "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/project-mining-780_n3ro/run-1/application/source/lzip_index.cc": "d771e4b716cbf330490f95f7efdef89641506a13811712f8ec55edccf2fe8040",
+        "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/project-mining-780_n3ro/run-1/application/source/COPYING": "022e9c2e9cc1aac3622313df6f971fbb39c1d1b0cb45324c16b8a1fe231c5ea6"
+      },
+      "symbols": [
+        "is_number",
+        "Lzip_index"
+      ],
+      "families": [
+        "algorithms",
+        "developer_tools"
+      ],
+      "documentation": "doc/lzip.texi",
+      "tests": "testsuite/check.sh",
+      "examples": "arg_parser.cc; lzip_index.cc",
+      "dependencies": [
+        "C++17 standard library"
+      ],
+      "rights": {
+        "scope": "local build and test",
+        "upstream_files": "arg_parser.cc and arg_parser.h carry their own two-condition notice; lzip_index.cc carries GPL terms",
+        "redistribute": "unreviewed; preserve file notices"
+      },
+      "approval": "local-pilot",
+      "approval_reference": "retained project-input/lzip.json; V5 local extraction and call-site pilot"
+    },
+    {
+      "id": "boost-algorithm",
+      "family": "Boost",
+      "upstream": "https://github.com/boostorg/algorithm",
+      "revision": "32c5a6327cfdca5d41ce0f1d8849b811886daa2f",
+      "artifact_url": "https://raw.githubusercontent.com/boostorg/algorithm/32c5a6327cfdca5d41ce0f1d8849b811886daa2f/include/boost/algorithm/hex.hpp",
+      "sha256": "ed4515912981d29cf7e0ad4f634a5ad8f018155f0104fcb7e221db6a4183ca8a",
+      "local_snapshot": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-source-review-n8o_c258/boost-algorithm",
+      "method": "pinned-https-metadata",
+      "families": [
+        "algorithms"
+      ],
+      "approval": "discovery-only",
+      "rights": {
+        "scope": "metadata inspection",
+        "redistribute": "pending file and upstream review"
+      },
+      "dependencies": null,
+      "tests": null,
+      "examples": null,
+      "documentation": "https://github.com/boostorg/algorithm",
+      "reason": "Resolve the original package and review its dependency, harness and licensing scope before execution."
+    },
+    {
+      "id": "vcpkg-fmt",
+      "family": "vcpkg",
+      "upstream": "https://github.com/microsoft/vcpkg",
+      "revision": "a2a9dc4ff7ee69d5bbf261270de92c67c934340e",
+      "artifact_url": "https://raw.githubusercontent.com/microsoft/vcpkg/a2a9dc4ff7ee69d5bbf261270de92c67c934340e/ports/fmt/vcpkg.json",
+      "sha256": "d3e081483ce495f77664ac700f9ba97f88d86703f0b8ebdbd78c56c49a5d1837",
+      "local_snapshot": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-source-review-n8o_c258/vcpkg-fmt",
+      "method": "pinned-https-metadata",
+      "families": [
+        "developer_tools"
+      ],
+      "approval": "discovery-only",
+      "rights": {
+        "scope": "metadata inspection",
+        "redistribute": "pending file and upstream review"
+      },
+      "dependencies": null,
+      "tests": null,
+      "examples": null,
+      "documentation": "https://github.com/microsoft/vcpkg",
+      "reason": "Resolve the original package and review its dependency, harness and licensing scope before execution."
+    },
+    {
+      "id": "conan-fmt",
+      "family": "Conan Center Index",
+      "upstream": "https://github.com/conan-io/conan-center-index",
+      "revision": "f401fcc767aa57d691d9e4661ee720605287a35f",
+      "artifact_url": "https://raw.githubusercontent.com/conan-io/conan-center-index/f401fcc767aa57d691d9e4661ee720605287a35f/recipes/fmt/all/conandata.yml",
+      "sha256": "f5877f18d009e6e5da95b8964a3d0f8e0e943bcd8dce4518d81ae20f5a316405",
+      "local_snapshot": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-source-review-n8o_c258/conan-fmt",
+      "method": "pinned-https-metadata",
+      "families": [
+        "developer_tools"
+      ],
+      "approval": "discovery-only",
+      "rights": {
+        "scope": "metadata inspection",
+        "redistribute": "pending file and upstream review"
+      },
+      "dependencies": null,
+      "tests": null,
+      "examples": null,
+      "documentation": "https://github.com/conan-io/conan-center-index",
+      "reason": "Resolve the original package and review its dependency, harness and licensing scope before execution."
+    },
+    {
+      "id": "qtbase",
+      "family": "Qt6",
+      "upstream": "https://code.qt.io/cgit/qt/qtbase.git/",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "kcoreaddons",
+      "family": "KDE Frameworks",
+      "upstream": "https://invent.kde.org/frameworks/kcoreaddons",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "arch",
+      "family": "official Arch",
+      "upstream": "https://gitlab.archlinux.org/archlinux/packaging/packages",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "debian",
+      "family": "Debian Sources",
+      "upstream": "https://sources.debian.org/",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "aur",
+      "family": "AUR",
+      "upstream": "https://aur.archlinux.org/",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "curl",
+      "family": "specialist library",
+      "upstream": "https://curl.se/",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "gap-upstream",
+      "family": "approved upstream via demonstrated gap",
+      "upstream": null,
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "rights": {
+        "scope": "discovery",
+        "redistribute": "unknown"
+      },
+      "reason": "Needs pinned project, file-level rights, intended scope and job approval.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "families": null
+    },
+    {
+      "id": "kate",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "dolphin",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "gwenview",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "ksystemstats",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "qbittorrent",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "vlc",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "keepassxc",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "obs-studio",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "audacity",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "freecad",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    },
+    {
+      "id": "qgis",
+      "family": "curated application",
+      "discovery": "V5 §4.10 upstream application inventory",
+      "approval": "discovery-only",
+      "revision": null,
+      "sha256": null,
+      "upstream": null,
+      "reason": "Resolve official release and license before execution.",
+      "method": null,
+      "dependencies": null,
+      "documentation": null,
+      "tests": null,
+      "examples": null,
+      "rights": null,
+      "families": null
+    }
+  ],
+  "jobs": [
+    {
+      "source": "gcc-libstdcxx",
+      "route": "api",
+      "target": "reverse_record_bytes",
+      "stream": "foundational",
+      "coverage": 2,
+      "leverage": 3,
+      "cost": 2
+    },
+    {
+      "source": "gnu-lzip",
+      "route": "direct",
+      "target": "number_option_prefix",
+      "stream": "exploratory",
+      "coverage": 1,
+      "leverage": 1,
+      "cost": 2
+    },
+    {
+      "source": "gnu-lzip",
+      "route": "composition",
+      "target": "reverse_discovery_order",
+      "stream": "exploratory",
+      "coverage": 1,
+      "leverage": 2,
+      "cost": 2
+    }
+  ]
+}

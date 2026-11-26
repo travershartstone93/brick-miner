@@ -1,0 +1,13 @@
+#pragma once
+#include <algorithm>
+#include <string>
+#include <vector>
+
+namespace brick_miner {
+inline std::vector<std::string> reverse_record_bytes(std::vector<std::string> records) {
+    for (auto& record : records) {
+        @symbol@(record.begin(), record.end());
+    }
+    return records;
+}
+}

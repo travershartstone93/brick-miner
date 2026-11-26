@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+make --no-print-directory -s -C "$root" .build/package-pilot
+exec "$root/.build/package-pilot" prepare "$@"

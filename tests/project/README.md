@@ -1,6 +1,6 @@
 # Project extraction regression
 
-Run `python3 tests/project/run.py` from brick miner. The test builds a four-translation-unit C++ application using CMake and passes the real compilation database to `mine-project`. One implementation requires a definition from its build command.
+Run `make check-project` from brick miner. The test builds a four-translation-unit C++ application using CMake and passes the real compilation database to `mine-project`. One implementation requires a definition from its build command.
 
 The application exercises the following cases.
 

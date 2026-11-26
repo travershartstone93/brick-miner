@@ -1,0 +1,34 @@
+# V5 reconciliation and handoff
+
+V5 §8 supplies the milestone schedule. Track A owns the miner, with Track E supplying separately specified oracles. The main repository owns B/C/D and production activation.
+
+| Gate | Evidence before transition | Work in the V5 pilot |
+|---|---|---|
+| H0 | The Clang scanner follows cross-file C++ closures under actual compile commands, rejects inaccessible state, and reproduced 63 independent regression outputs. Batches previously qualified API and direct providers with external clients, fixed typed tasks, provider removal, source notices and clean hashes. The 100 manually specified programs are development controls. | Pin the live generation, snapshot the inventory, rerun protected controls, separate prior evidence from new claims. |
+| H1 | Cards, components, provider ports, package locks, planner and emitter already work. Tantivy pack indexing, SQLite shards and Soufflé are installed in the sibling checkout. Their general availability supplies no brick-specific semantic evidence. | Add a compact versioned package view, approved-source jobs, field-level evidence and synchronized projections. Exercise one ordinary emitted program and a discriminatory wrong implementation. |
+| H1a | Several historical candidates have expected outputs and instrumented provider execution. Little independently tested lifecycle or usage knowledge exists. Direct authoring and setup costs were often combined. | Extract an actual caller relationship, preserve its source range, compare routes and report independent trial denominators and cost. Keep transfer, state protocols and unsupported proofs pending until tested. |
+| H1b | Published and staged snapshots include duplicate versions, aliases, distractors and evidence of varying scope. The latest TSV experiment added one binding and no C++ implementation. | Inventory active, archived and staged packages by content and occurrence. Normalize legacy metadata, record unknowns and quarantine unresolved providers from new inference. Test clean projection rebuild and digest mismatch detection before reviewed migration. |
+| H2–H6 | Existing planner composes supported CLI operations. Reports expose missing operations, invalid parameters, missing chains and residual obligations. General application composition has different evidence requirements. | Main owns binding/assembly and protected report behavior. Report actual missing providers separately from parser, planner, emitter or verification failures. Advance the nested catalog sizes only after the corresponding acceptance gate. |
+
+The prior Arch-first discovery order, 5,000-brick target and standalone pilot schedule are superseded. Preserve the Arch/AUR infrastructure and original experiments. The main bottlenecks are reliable source rights and dependency closure, justified semantic annotations, independent behavioral oracles, and ordinary-path verification at controlled cost. A passing fixed recipe measures a different outcome from planner-discovered composition or fresh-English delivery.
+
+## Transition checkpoint
+
+Local commit `9c5de39` preserves the previously uncommitted replay implementation, results and English-construction ledger. No active miner or publication process was found at inspection. Both saved writer bundles and the current active payload manifest passed checksum verification. The writer scored 7/7 and its JSON control 1/7. The cross-file regression passed including relocation and renaming. The sibling has ongoing uncommitted report work and retains ownership of that checkout. The historical 101-card default has since been replaced by the reviewed 127-card bundle at `shared-needs-ot7p54bf/run-1/decisions/bundle`, payload manifest `e4564e3079f0b32b3379a411b170ce9af61ec80ab7938b6a974e724abd538328`, verification hash `08ba00ba1f8e9bb81928357c39ef14161e8c882e9011eb4791097b676271ee0a`. The separate writer staging manifest is `88eff82d2bba78d6049a50be4d625e7bac5b21dda8019c52bca1c6e25ec7d7bc`. Earlier outcomes and defects remain itemized in the [replay results](../replay-gaps/RESULTS.md).
+
+The main-project owner confirmed an optional versioned view over the existing provider format and no existing shared V5 brick schema to duplicate at inspection. Main owns the B63/B64 isolation and the protected report, Lzip and reader baselines in its H0 work. The miner will hand off staged bytes, a reader fixture and digests. Activation requires main-project review.
+
+## Native tooling checkpoint
+
+The conversion uses the sibling's C++ format indexer and protected planner binaries. The complete Lzip pilot ran twice from the local package cache against the reviewed 127-card base. Its two manifests matched at `c686f5095419cdfc5aa0c354afdf8bdad4cef2a87600755cd547db6fbc213f87`. The separate one-brick reproduction retained header `44f3fb45a148317346af936b53539288560f278c0343a38b54d27262cd372a57` and passed five emitted-program checks with both controls losing the plan. See [the clean pair](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/project-mining-XXmxUFOb/run-1/mined/report.json).
+
+The first H1 package has two local staged bindings, one observed caller sketch and zero production activations. Each fixed typed task passed six program probes. Standalone checks include an identity mutant for byte reversal and the prior independent Lzip client. The sketch has one authored transfer probe. Canonical contracts, caller observation, standalone results, emitted-program receipts and the synchronized projection check matched the earlier prototype byte for byte. Two lexical queries used the Rust Tantivy C API, and the Soufflé relations matched SQL. The per-file manifest includes the physical search index, which can have different segment names across clean builds.
+
+Run the native package reader from the miner checkout.
+
+```sh
+make .build/v5-miner
+.build/v5-miner verify /run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-native-XXPmNh3A/stage/package 337370db2fdc2635a11d7b0b1439e63c1031e4cd0a9c6e1e656fd1f9de03bf5c
+```
+
+The original source snapshot is preserved on the corpus disk at `cpp-migration-h1HS2F9w/before.tar.gz`, SHA-256 `89a0f27fb1abace789d9f4934172633b135c40aff1936a0b9eab487f59a2e3e5`. Historical hashes continue to identify their original bytes. The H1 pilot breadth, persistent acquisition scheduler, full migration ledger and H1a experiments remain open.

@@ -1,0 +1,236 @@
+[
+  {
+    "id": "number_option_prefix",
+    "semantic_input": "ordered TSV fields",
+    "semantic_output": "per-row option-prefix flags",
+    "primary_family": "developer_tools",
+    "claims": {
+      "concurrency": {
+        "detail": "Concurrent callers were not exercised",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "effects": {
+        "detail": "Invokes input visitor and returns integer flags. Missing columns and embedded NUL throw.",
+        "evidence": [
+          "evidence/standalone.json#number_option_prefix"
+        ],
+        "status": "observed"
+      },
+      "formal_predicates": {
+        "detail": "No machine-checked predicate or proof",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "invariants": {
+        "detail": "Record multiplicity and order preserved on samples",
+        "evidence": [
+          "evidence/standalone.json#number_option_prefix"
+        ],
+        "status": "observed"
+      },
+      "mathematical_properties": {
+        "detail": "No mathematical law tested",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "ownership": {
+        "detail": "Borrow Rows for synchronous visit and return an owned vector",
+        "evidence": [
+          "evidence/extraction.json"
+        ],
+        "status": "declared"
+      },
+      "postconditions": {
+        "detail": "Test whether each text field starts with an ASCII digit or a dot followed by an ASCII digit, or equals inf, Inf or INF. Return one for true and zero for false.",
+        "evidence": [
+          "evidence/standalone.json#number_option_prefix",
+          "evidence/integration.json#number_option_prefix"
+        ],
+        "status": "observed"
+      },
+      "preconditions": {
+        "detail": "Visitor supplies the selected zero-based field as NUL-free bytes",
+        "evidence": [
+          "evidence/standalone.json#number_option_prefix"
+        ],
+        "status": "declared"
+      },
+      "refinements": {
+        "detail": "Outputs limited to 0 and 1 on samples",
+        "evidence": [
+          "evidence/standalone.json#number_option_prefix"
+        ],
+        "status": "observed"
+      },
+      "specification_question": {
+        "detail": "Which zero-based column contains the option text?",
+        "evidence": [
+          "evidence/integration.json#number_option_prefix"
+        ],
+        "status": "declared"
+      },
+      "state_protocol": {
+        "detail": "Caller supplies a synchronous Rows callback",
+        "evidence": [
+          "evidence/standalone.json#number_option_prefix"
+        ],
+        "status": "declared"
+      },
+      "thread_affinity": {
+        "detail": "No thread-affinity qualification",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "upstream_usage": {
+        "detail": "File-local Lzip arg_parser.cc option-prefix predicate",
+        "evidence": [
+          "evidence/extraction.json"
+        ],
+        "status": "observed"
+      }
+    },
+    "facets": {
+      "abstraction": [
+        "record collection"
+      ],
+      "application": [
+        "command-line tools"
+      ],
+      "construction_role": [
+        "transform"
+      ],
+      "implementation_form": [
+        "extracted implementation with row adapter"
+      ],
+      "platform": [
+        "tested Linux x86_64"
+      ],
+      "resources": [
+        "allocates output; peak per input unknown"
+      ],
+      "technical_hierarchy": [
+        "developer_tools",
+        "option_parsing"
+      ]
+    },
+    "source_id": "gnu-lzip"
+  },
+  {
+    "id": "reverse_record_bytes",
+    "semantic_input": "ordered byte strings",
+    "semantic_output": "per-record reversed bytes",
+    "primary_family": "algorithms",
+    "claims": {
+      "concurrency": {
+        "detail": "Concurrent callers were not exercised",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "effects": {
+        "detail": "Produces a value collection; tested inputs remain unchanged",
+        "evidence": [
+          "evidence/standalone.json#reverse_record_bytes"
+        ],
+        "status": "observed"
+      },
+      "formal_predicates": {
+        "detail": "No machine-checked predicate or proof",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "invariants": {
+        "detail": "Record multiplicity and order preserved on samples",
+        "evidence": [
+          "evidence/standalone.json#reverse_record_bytes"
+        ],
+        "status": "observed"
+      },
+      "mathematical_properties": {
+        "detail": "Involution on sampled byte sequences",
+        "evidence": [
+          "evidence/standalone.json#reverse_record_bytes"
+        ],
+        "status": "observed"
+      },
+      "ownership": {
+        "detail": "Copy of records is mutated and returned",
+        "evidence": [
+          "evidence/sketch.json"
+        ],
+        "status": "declared"
+      },
+      "postconditions": {
+        "detail": "Reverse bytes within each record, preserving record order and multiplicity.",
+        "evidence": [
+          "evidence/standalone.json#reverse_record_bytes",
+          "evidence/integration.json#reverse_record_bytes"
+        ],
+        "status": "observed"
+      },
+      "preconditions": {
+        "detail": "Sequence of byte strings",
+        "evidence": [
+          "evidence/standalone.json#reverse_record_bytes"
+        ],
+        "status": "declared"
+      },
+      "refinements": {
+        "detail": "Byte lengths and row order preserved on samples",
+        "evidence": [
+          "evidence/standalone.json#reverse_record_bytes"
+        ],
+        "status": "observed"
+      },
+      "specification_question": {
+        "detail": "Reverse the bytes within each record?",
+        "evidence": [
+          "evidence/integration.json#reverse_record_bytes"
+        ],
+        "status": "declared"
+      },
+      "state_protocol": {
+        "detail": "One value transformation with no retained session",
+        "evidence": [],
+        "status": "not-applicable"
+      },
+      "thread_affinity": {
+        "detail": "No thread-affinity qualification",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "upstream_usage": {
+        "detail": "Reverse after backward accumulation in Lzip_index",
+        "evidence": [
+          "evidence/sketch.json"
+        ],
+        "status": "observed"
+      }
+    },
+    "facets": {
+      "abstraction": [
+        "record collection"
+      ],
+      "application": [
+        "text utilities"
+      ],
+      "construction_role": [
+        "transform"
+      ],
+      "implementation_form": [
+        "invocation adapter"
+      ],
+      "platform": [
+        "tested Linux x86_64"
+      ],
+      "resources": [
+        "allocates output; peak per input unknown"
+      ],
+      "technical_hierarchy": [
+        "algorithms",
+        "sequence_transform"
+      ]
+    },
+    "source_id": "gcc-libstdcxx"
+  }
+]

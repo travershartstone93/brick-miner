@@ -1,0 +1,22 @@
+{
+  "schema": "brick-miner.development-probes/1",
+  "reverse_record_bytes": {
+    "input_type": "text/plain", "output_type": "text/plain", "parameters": {},
+    "cases": [
+      {"input": "6162630a78790a6162630a", "output": "6362610a79780a6362610a"},
+      {"input": "", "output": ""},
+      {"input": "0a", "output": "0a"},
+      {"input": "ff00410a", "output": "4100ff0a"},
+      {"failure": "missing-input"}, {"failure": "destination-directory"}
+    ]
+  },
+  "number_option_prefix": {
+    "input_type": "text/tab-separated-values", "output_type": "application/json", "parameters": {"column_1":0},
+    "cases": [
+      {"input":"2e356b670a496e660a2b310a","json":[1,1,0]},
+      {"input":"","json":[]}, {"input":"0a","json":[0]},
+      {"input":"3100780a","failure":"invalid-input"}, {"failure":"missing-input"},
+      {"failure":"destination-directory"}
+    ]
+  }
+}

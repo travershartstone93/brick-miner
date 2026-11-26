@@ -1,0 +1,9 @@
+{
+  "id": "unllm.brick-vocabulary/1",
+  "status": ["declared", "observed", "established", "unknown", "not-applicable"],
+  "primary_families": {"algorithms":1400,"gui_desktop":1400,"mathematics_science":1000,"files_storage":1000,"graphics_multimedia":1000,"networking":900,"application_state":800,"system_hardware":800,"concurrency_automation":600,"security_cryptography":400,"developer_tools":400,"document_geographic":300},
+  "facets": ["technical_hierarchy","application","construction_role","abstraction","implementation_form","platform","dependencies","resources","license","qualification"],
+  "claims": ["preconditions","postconditions","effects","refinements","formal_predicates","mathematical_properties","invariants","state_protocol","ownership","concurrency","thread_affinity","upstream_usage","specification_question"],
+  "qualification": ["standalone-tested","ordinary-emission-tested","reviewed-published"],
+  "coverage_dimensions": ["foundation","composition","architecture","application_family","platform","verification"]
+}
