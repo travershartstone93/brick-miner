@@ -162,7 +162,8 @@ J ordinary_trials(const Path &work, const Path &bundle, const J &binding,
   return result;
 }
 } // namespace
-Path qualify_uri_reader(const Path &package, const std::string &pin) {
+Path qualify_uri_reader(const Path &package, const std::string &pin,
+                        const Path &registry, const std::string &registry_pin) {
   verify(package, pin);
   const auto s = sources()["retained-gir-uri-reader"];
   check(s["approval"] == "local-pilot" &&
@@ -195,7 +196,7 @@ Path qualify_uri_reader(const Path &package, const std::string &pin) {
   check(sha(generator_source) == digest(main_repo / s["generator"].asString()),
         "generator source revision mismatch");
   save(stage / "historical-client.cpp", member(s, s["examples"].asString()));
-  fs::copy_file(v5_root() / "sources.json", stage / "sources.json");
+  save_file_registry(stage, s, registry, registry_pin);
   for (auto [f, d] : std::vector<std::pair<std::string, std::string>>{
            {"uri-reader-client.cpp", "client.cpp"},
            {"uri-reader.json", "spec.json"},

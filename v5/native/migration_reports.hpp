@@ -13,8 +13,17 @@ miner::Path seal_file_qualification(const miner::Path &work,
                                     const std::string &pin, miner::J bindings,
                                     Json::ArrayIndex selected,
                                     const miner::J &contract);
+miner::J file_qualification_tools();
+void save_file_registry(const miner::Path &stage, const miner::J &source,
+                        const miner::Path &registry, const std::string &pin);
+miner::Path qualify_recursive_files(const miner::Path &package,
+                                    const std::string &pin,
+                                    const miner::Path &registry,
+                                    const std::string &registry_pin);
 miner::Path qualify_uri_reader(const miner::Path &package,
-                               const std::string &pin);
+                               const std::string &pin,
+                               const miner::Path &registry,
+                               const std::string &registry_pin);
 miner::Path qualify_writer(const miner::Path &package, const std::string &pin);
 miner::J replay_binding_usage(const miner::Path &snapshot,
                               const std::string &pin);

@@ -89,7 +89,7 @@ $(BUILD_DIR)/v5-recovery: tests/v5/recovery.cpp $(addprefix $(BUILD_DIR)/v5/,$(a
 check-v5-queue: $(BUILD_DIR)/v5-miner $(BUILD_DIR)/v5-recovery $(BUILD_DIR)/brick-scan
 	"$(BUILD_DIR)/v5-recovery"
 
-$(BUILD_DIR)/v5-inventory: v5/native/inventory_main.cpp v5/native/replay_usage.cpp v5/native/binding_identity.cpp v5/native/writer.cpp v5/native/uri_reader.cpp v5/native/file_qualification.cpp v5/native/migration_reports.hpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
+$(BUILD_DIR)/v5-inventory: v5/native/inventory_main.cpp v5/native/replay_usage.cpp v5/native/binding_identity.cpp v5/native/writer.cpp v5/native/uri_reader.cpp v5/native/recursive_files.cpp v5/native/file_qualification.cpp v5/native/migration_reports.hpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter-out %.hpp,$^) $(HOST_LIBS) -lsqlite3 -o "$@"
 
 $(BUILD_DIR)/v5-gap-review: v5/native/gap_review.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))

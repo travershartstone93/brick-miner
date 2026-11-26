@@ -2,7 +2,6 @@
 #include "migration_reports.hpp"
 #include "pilot.hpp"
 #include <QByteArray>
-#include <QStandardPaths>
 #include <algorithm>
 #include <sstream>
 
@@ -209,23 +208,6 @@ J integration(const Path &base, const Path &bundle, const J &binding,
               {"emitted_sha256", digest(alt / "component.hpp")}});
   return result;
 }
-J tools_used() {
-  J pins = object();
-  for (const auto *name : {"g++-15", "bwrap", "prlimit", "env", "pkg-config"}) {
-    auto path = QStandardPaths::findExecutable(name).toStdString();
-    pins["tool_sha256"][name] = digest(path);
-  }
-  for (const auto *name : {"brick-provider-plan", "brick-index-formats",
-                           "unllm_logic_worker", "libunllm_native_logic.so"})
-    pins["ordinary_tools"][name] = digest(main_repo / "build/native" / name);
-  auto dir = main_repo / "experiments/boilerplate/integrated";
-  for (const auto *name :
-       {"provider-stage.sh", "effective-contracts.sh", "stage-headers.sh"})
-    pins["ordinary_tools"][name] = digest(dir / name);
-  pins["qt_version"] = run({"pkg-config", "--modversion", "Qt6Core"});
-  pins["qt_flags"] = string_array(flags({"Qt6Core"}));
-  return pins;
-}
 } // namespace
 Path qualify_writer(const Path &package, const std::string &pin) {
   verify(package, pin);
@@ -260,7 +242,7 @@ Path qualify_writer(const Path &package, const std::string &pin) {
   auto work = fresh_run("v5-writer"), stage = work / ".stage",
        scratch = work / ".test-programs";
   fs::create_directory(scratch);
-  auto toolchain = tools_used();
+  auto toolchain = file_qualification_tools();
   auto source = retained_source(stage, source_id, "text-measures-LICENSE");
   source.removeMember("usage");
   source["binding"] = *pos;
@@ -295,7 +277,7 @@ Path qualify_writer(const Path &package, const std::string &pin) {
   }
   check(toolchain.isMember("linked_qt"), "direct client did not link Qt6Core");
   auto linked_qt = toolchain["linked_qt"];
-  auto final_tools = tools_used();
+  auto final_tools = file_qualification_tools();
   final_tools["linked_qt"] =
       object({{"path", linked_qt["path"]},
               {"sha256", digest(linked_qt["path"].asString())}});

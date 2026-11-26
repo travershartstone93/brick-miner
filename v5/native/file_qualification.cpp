@@ -1,6 +1,39 @@
+#include "bundle.hpp"
 #include "migration_reports.hpp"
 #include "pilot.hpp"
+#include <QStandardPaths>
 namespace v5 {
+void save_file_registry(const Path &stage, const J &source,
+                        const Path &registry, const std::string &pin) {
+  auto data = bytes(registry);
+  check(pin.empty() || sha(data) == pin, "source registry pin mismatch");
+  auto rows = parse(data)["sources"];
+  unsigned matches = 0;
+  for (const auto &row : rows)
+    if (row["id"] == source["id"]) {
+      check(row == source, "recorded source differs from current approval");
+      ++matches;
+    }
+  check(matches == 1, "source registry does not uniquely identify the source");
+  save(stage / "sources.json", data);
+}
+J file_qualification_tools() {
+  J pins = object();
+  for (const auto *name : {"g++-15", "bwrap", "prlimit", "env", "pkg-config"}) {
+    auto path = QStandardPaths::findExecutable(name).toStdString();
+    pins["tool_sha256"][name] = digest(path);
+  }
+  for (const auto *name : {"brick-provider-plan", "brick-index-formats",
+                           "unllm_logic_worker", "libunllm_native_logic.so"})
+    pins["ordinary_tools"][name] = digest(main_repo / "build/native" / name);
+  auto dir = main_repo / "experiments/boilerplate/integrated";
+  for (const auto *name :
+       {"provider-stage.sh", "effective-contracts.sh", "stage-headers.sh"})
+    pins["ordinary_tools"][name] = digest(dir / name);
+  pins["qt_version"] = run({"pkg-config", "--modversion", "Qt6Core"});
+  pins["qt_flags"] = string_array(flags({"Qt6Core"}));
+  return pins;
+}
 J file_contract(const Path &stage, const Path &package, const J &record,
                 const J &src, const Path &registry) {
   auto c = load(stage / "annotation.json"), claims = c["claims"];

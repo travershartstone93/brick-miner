@@ -313,15 +313,28 @@ int main(int argc, char **argv) try {
     std::cout << out.string() << '\n' << digest(out) << '\n';
     return 0;
   }
-  if (argc == 4 && std::string(argv[1]) == "--qualify-uri-reader") {
-    auto out = qualify_uri_reader(fs::canonical(argv[2]), argv[3]);
+  if ((argc == 4 || argc == 7) &&
+      (std::string(argv[1]) == "--qualify-recursive-files" ||
+       std::string(argv[1]) == "--qualify-uri-reader")) {
+    auto qualify = std::string(argv[1]) == "--qualify-recursive-files"
+                       ? qualify_recursive_files
+                       : qualify_uri_reader;
+    const bool frozen = argc == 7;
+    check(!frozen || (std::string(argv[4]) == "--source-registry" &&
+                      std::string(argv[6]).size() == 64),
+          "expected --source-registry FILE SHA256");
+    auto out = qualify(fs::canonical(argv[2]), argv[3],
+                       frozen ? Path(argv[5]) : v5_root() / "sources.json",
+                       frozen ? argv[6] : "");
     std::cout << out.string() << '\n' << digest(out) << '\n';
     return 0;
   }
-  check(argc == 3 || (argc == 6 && std::string(argv[3]) == "--frozen"),
-        "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
-        "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
-        "--binding-identity-fixture, --qualify-writer or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
+  check(
+      argc == 3 || (argc == 6 && std::string(argv[3]) == "--frozen"),
+      "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
+      "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
+      "--binding-identity-fixture, --qualify-writer, --qualify-recursive-files "
+      "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);
   std::unique_ptr<Frozen> prior;

@@ -750,6 +750,27 @@
           "usr/lib/libglib-2.0.so.0.9000.1":"ba8385e7df96155348ddd165a202cb0140eb23bb80f7599f377251290d0e13b6"
         }
       }
+    },
+    {
+      "id":"retained-recursive-files",
+      "family":"retained project provider",
+      "upstream":"../unllm-upgrade",
+      "revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a",
+      "method":"reviewed-local-git-archive",
+      "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recursive-source-SoCSUBQs/path-ops.tar",
+      "sha256":"3d29a0d1fb631b652e41bdf1bcc13c260394e41c98a78576a9d21b46c3f1f234",
+      "members":{"headers/path_ops.hpp":["experiments/boilerplate/component-trial/expanded/path_ops.hpp","2e094684f4a73d1f97e8fe6f98ebe82037107ededc32bca91f17f6420cdffee6"]},
+      "symbols":["bricks::tree"],
+      "families":["files_storage"],
+      "documentation":"experiments/boilerplate/component-trial/expanded/operations.tsv",
+      "documentation_sha256":"15459d1462e44736ce30c63c82ded87d5f6188b69390a6e7aaedab6a13316599",
+      "examples":"experiments/boilerplate/component-trial/expanded/behavior-fixtures.json",
+      "examples_sha256":"22cb518edc2902235202a3c8830ddb738d2b5298e6e71bab64e7354f7ffdabe7",
+      "tests":"v5/fixtures/recursive-files.json",
+      "dependencies":["C++17 standard library and filesystem support"],
+      "rights":{"scope":"Local compilation and isolated qualification of the retained project header.","upstream_files":"MIT per the archived project LICENSE. The header declares no separate license.","redistribute":"Local review with the archived MIT notice.","notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"},
+      "approval":"local-pilot",
+      "approval_reference":"V5 H1b local migration of the retained active binding and its project-owned source."
     }
   ],
   "jobs": [

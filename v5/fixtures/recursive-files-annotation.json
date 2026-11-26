@@ -1,0 +1,26 @@
+{
+  "description":"List sorted relative names of regular files beneath a directory using the retained recursive filesystem iterator.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"Path resolving to a readable directory","semantic_output":"Ordered names of regular files relative to the supplied root. JSON transfer was tested on valid UTF-8 path strings.","parameters":{}},
+  "facets":{
+    "technical_hierarchy":["files_storage","directory traversal"],"application":["file inventories","directory tools"],"construction_role":["directory reader"],
+    "abstraction":["synchronous filesystem operation"],"implementation_form":["retained C++ header function"],
+    "platform":["tested Linux x86_64 ext4"],"dependencies":["C++17 std::filesystem"],
+    "resources":["Collects all selected path strings and sorts them in memory. Directory traversal and memory limits are unknown."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"The root must resolve to a traversable directory for successful enumeration.","evidence":["original/headers/path_ops.hpp"]},
+    "postconditions":{"status":"observed","detail":"Returned sorted relative names including hidden, nested and hard-linked entries. Child symlinks, a FIFO and directories were excluded. A directory symlink supplied as the root was traversed.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Child symlink behavior and root resolution have distinct scope. A dangling root and a regular-file root each raised filesystem_error in the direct client.","evidence":["standalone.json"]},
+    "effects":{"status":"observed","detail":"Enumerates filesystem entries. In the ordinary JSON program the three failed input cases preserved a pre-existing destination and left an initially absent destination absent.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Two trees created in different orders produced the same path sequence. A shallow traversal returned a different answer on nested files.","evidence":["standalone.json"]},
+    "formal_predicates":{"status":"unknown","detail":"No universal traversal or error guarantee was proved. JSON round-trip of arbitrary POSIX pathname bytes is unqualified.","evidence":[]},
+    "mathematical_properties":{"status":"unknown","detail":"No general sorting property was independently proved.","evidence":[]},
+    "state_protocol":{"status":"not-applicable","detail":"There is one synchronous invocation and no caller-visible retained object.","evidence":[]},
+    "ownership":{"status":"declared","detail":"Borrows the root C string for the call and returns a vector of owned strings by value.","evidence":["original/headers/path_ops.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent directory changes, permission changes and stable snapshots have not been qualified.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was not tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The pinned project catalog declares recursive_files and an example with a top-level and a nested file.","evidence":["source.json"]},
+    "specification_question":{"status":"not-applicable","detail":"The retained binding exposes only the root path.","evidence":[]}
+  }
+}

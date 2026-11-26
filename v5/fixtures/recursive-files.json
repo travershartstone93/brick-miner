@@ -1,0 +1,13 @@
+{
+  "binding":{"component_id":"x23","binding_id":"recursive_files","from":"in:inode/directory","to":"strings"},
+  "cases":[
+    {"name":"archived-example","dirs":["input/sub"],"files":["input/sub/b.c","input/a.txt"],"expected":["a.txt","sub/b.c"]},
+    {"name":"empty","dirs":["input/empty/nested"],"expected":[]},
+    {"name":"nested-links-and-names","files":["input/z","input/n/é","outside/external","input/n/a\nb","input/.hidden"],"symlinks":{"input/alias":"z","input/dangling":"missing","input/escape":"../outside","input/n/loop":".."},"hardlinks":{"input/n/second-name":"input/z"},"fifos":["input/pipe"],"expected":[".hidden","n/a\nb","n/second-name","n/é","z"]},
+    {"name":"reordered-creation","files":["input/.hidden","input/n/a\nb","input/n/é","input/z"],"hardlinks":{"input/n/second-name":"input/z"},"expected":[".hidden","n/a\nb","n/second-name","n/é","z"]},
+    {"name":"root-is-directory-symlink","files":["actual/deep/leaf","actual/item"],"symlinks":{"input":"actual","actual/child-link":"deep"},"expected":["deep/leaf","item"]},
+    {"name":"missing-root","error":"no_such_file_or_directory"},
+    {"name":"root-is-regular-file","files":["input"],"error":"not_a_directory"},
+    {"name":"dangling-root","symlinks":{"input":"absent"},"error":"no_such_file_or_directory"}
+  ]
+}
