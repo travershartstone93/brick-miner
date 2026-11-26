@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The final inventory and publishing replays close the 19-request prose-obligation cohort with 22 verified supplied roles, 95 saved fixture passes and 110 role outputs. H041's archived XPath also succeeds with the addition of stable exact deduplication. The next reconciliation covers the 15 archived requests with typed conversion gaps. [Cohort replay and evidence](../replay-gaps/RESULTS.md#inventory-and-publishing-close-the-prose-obligation-cohort)
+
 The four URI-list replays exercise reversal, first-three distinct HTTPS selection, adjacent deduplication and last-occurrence order on the retained scalar and correlated readers. The fresh mixed-ending witness preserves URI spelling and distinguishes the archived comment and duplicate-order errors. [URI-list replay and evidence](../replay-gaps/RESULTS.md#uri-list-requests-with-uncovered-prose)
 
 The four archive replays exercise five supplied roles on the retained ZIP readers and writers. Exact saved archives reproduce 25 output artifacts. The fresh ZIP distinguishes stable basename order, distinct folders, empty regular files and both H057 destinations. [ZIP replay and evidence](../replay-gaps/RESULTS.md#zip-requests-with-uncovered-prose)

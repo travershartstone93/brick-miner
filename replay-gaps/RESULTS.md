@@ -691,3 +691,33 @@ The four supplied programs passed all 20 saved fixtures and matched the independ
 The two pinned runs took 138.72 and 122.14 wall seconds. Each contains 50 saved fixture verdicts and 20 fresh executions. The repeat reproduces the plans, program hashes, outputs and verdicts. Timed receipt hashes differ. All 81 file hashes verified in each run, and both released their scratch executables. The primary report SHA-256 is `15dda75f1b9ec6f40dead0e5c304ce6693f92bb14d423a1574323ecab5b6ec70` and the repeat SHA-256 is `235b9ebac28990e32a81a75ceefec2896ee64fef70c472f35e111d7efd7a8bba`. The C++ language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-uri-replay-XXNy7n6G/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-uri-replay-XXRYQm09/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXXqg8LT/controls.json)
 
 Build with `make .build/residual-uri-replay` and run `.build/residual-uri-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## Inventory and publishing close the prose-obligation cohort
+
+H010, H041 and H047 are the final three requests in the 19-request prose-obligation ranking. The four supplied roles use the retained TSV and XML readers and the existing plain-text and JSON writers. H047 runs both outputs in one emitted program. The independent oracle reads TSV fields directly and parses the XML with libxml2, separately from the retained XML reader. [Prose-obligation ranking](#replies-with-uncovered-prose-and-no-typed-gap) · [Native replay and oracles](residual-closure.cpp)
+
+| Request | Behavior checked |
+|---|---|
+| H010 | Reverse scanner rows and select each aisle at its first encounter in that reverse scan. |
+| H041 | Select live articles before keeping the first exact decoded title in document order. |
+| H047 | Report mixed-state sections and draft-only sections separately, both alphabetically. |
+
+The fresh scanner input revisits aisles in a different order from their first appearance. Its result is `X,C,A,B`. The fresh feed includes a title that appears as a draft before its first live article, equivalent XML entities, repeated live titles, separate uppercase and lowercase titles, and sections with each combination of draft and live articles. H041 keeps `Earlier`, `Shared & Name`, `Twin`, `live only` and `twin` in that order. H047's mixed list is `Alpha,beta`. Its draft-only list is `Cold,Dora,Zulu`. A draft-only boundary feed leaves the published-title and mixed-state reports empty and preserves the draft-only section.
+
+The three supplied programs passed 15/15 saved fixtures, reproducing 20 output files byte for byte, including both H047 destinations. H041's archived XPath already selects published titles. Appending only stable exact deduplication gives an alternative that matches the correlated XML route byte for byte on all five saved and two fresh inputs.
+
+| Altered or archived construction | Saved fixtures passed | Difference on the main fresh input |
+|---|---:|---|
+| H010, replay the saved column projection | 2/5 | Outputs all nine aisle readings in forward order. |
+| H010, deduplicate before reversing | 3/5 | Orders the survivor aisles by reversed first positions, yielding `B,C,A,X`. |
+| H041, replay the saved XPath alone | 3/5 | Repeats `Shared & Name`. |
+| H041, deduplicate titles before selecting live articles | 2/5 | Drops `Shared & Name` and `Twin` because each appears earlier as a draft. |
+| H047, keep every section with a draft in the second output | 2/5 | Also includes the mixed sections `Alpha` and `beta`. |
+
+The cohort receipt joins the earlier H058 and H070 evidence, the pinned directory, ZIP and URI-list reports, and these last three results back to the original 19 request IDs. All 22 supplied roles are complete in the credited executions. Their **95 saved fixture passes** cover **110 role outputs**. This measures execution from supplied constructions on fixed inputs. Fresh English interpretation remains unmeasured.
+
+The two pinned runs took 101.30 and 127.58 wall seconds. Each contains 45 saved fixture verdicts and 18 fresh executions. The repeat reproduces the plans, program hashes, outputs, verdicts and cohort ledger. Timed receipt hashes differ. All 70 recorded file hashes verified in each run, and both released their scratch executables. The primary report SHA-256 is `0f4005ba7e35108d88e20c6c67809d038454dc8546cd36813d6f62213da2edf0` and the repeat SHA-256 is `27630909a6b6c7e4253dd99bbdaddd0443ca451f984246078ad0368412bc67dd`. The C++ language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-closure-replay-XXPB76Hi/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-closure-replay-XX3Jhh5i/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXXFzyq3/controls.json)
+
+The shared libxml2 fixture reader reproduces the earlier H009/H042 regression outputs, plans, program hashes and the 32-request cohort ledger. Timed receipt hashes differ. [Zero-operation cohort regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-singletons-replay-XXNJ91C8/report.json)
+
+Build with `make .build/residual-closure-replay` and run `.build/residual-closure-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`. The independent XML oracle links the installed `libxml-2.0` through pkg-config.

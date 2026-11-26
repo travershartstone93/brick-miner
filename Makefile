@@ -85,6 +85,9 @@ $(BUILD_DIR)/directory-count-replay: replay-gaps/directory-count.cpp $(ROW_REPLA
 $(BUILD_DIR)/depot-count-replay: replay-gaps/depot-count.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/residual-closure-replay: replay-gaps/residual-closure.cpp replay-gaps/xml-fixture.hpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(shell pkg-config --cflags libxml-2.0) $(filter %.cpp %.o,$^) $(HOST_LIBS) $(shell pkg-config --libs libxml-2.0) -o "$@"
+
 $(BUILD_DIR)/residual-uri-replay: replay-gaps/residual-uri.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
@@ -97,7 +100,7 @@ $(BUILD_DIR)/residual-directory-replay: replay-gaps/residual-directory.cpp $(ROW
 $(BUILD_DIR)/residual-ranking: replay-gaps/residual-ranking.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
-$(BUILD_DIR)/unordered-singletons-replay: replay-gaps/unordered-singletons.cpp $(ROW_REPLAY_INPUTS)
+$(BUILD_DIR)/unordered-singletons-replay: replay-gaps/unordered-singletons.cpp replay-gaps/xml-fixture.hpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(shell pkg-config --cflags libxml-2.0) $(filter %.cpp %.o,$^) $(HOST_LIBS) $(shell pkg-config --libs libxml-2.0) -o "$@"
 
 $(BUILD_DIR)/unordered-telemetry-replay: replay-gaps/unordered-telemetry.cpp $(ROW_REPLAY_INPUTS)

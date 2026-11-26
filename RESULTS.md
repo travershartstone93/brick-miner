@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H010, H041 and H047 close the 19-request prose-obligation cohort. The combined evidence covers 22 supplied roles, 95 saved fixture passes and 110 output artifacts. [Cohort replay and reproduction](replay-gaps/RESULTS.md#inventory-and-publishing-close-the-prose-obligation-cohort)
+
 The four URI-list replays use the retained readers and preserve exact URI spelling and duplicate order on the fresh mixed input. The replay separates positive comment filtering, case-sensitive scheme matching, adjacency and first-versus-last selection. [URI-list replay and reproduction](replay-gaps/RESULTS.md#uri-list-requests-with-uncovered-prose)
 
 The four remaining ZIP requests passed 20 saved fixtures on their exact archive inputs. Fresh tests distinguish archive order, distinct parent counts and separate root and nested outputs. [ZIP replay and reproduction](replay-gaps/RESULTS.md#zip-requests-with-uncovered-prose)

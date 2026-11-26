@@ -1,9 +1,8 @@
 #include "row-trial.hpp"
+#include "xml-fixture.hpp"
 #include <charconv>
 #include <iostream>
-#include <libxml/parser.h>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <tuple>
@@ -73,33 +72,11 @@ std::string stock_reference(const std::string &data, std::string_view arm) {
   return output;
 }
 
-std::string xml_text(xmlChar *raw) {
-  const std::unique_ptr<xmlChar, decltype(xmlFree)> value(raw, xmlFree);
-  check(value != nullptr, "missing XML field");
-  return reinterpret_cast<const char *>(value.get());
-}
-
 std::string publishing_reference(const std::string &data,
                                  std::string_view arm) {
-  check(data.size() <= 1024 * 1024, "XML oracle fixture too large");
-  const std::unique_ptr<xmlDoc, decltype(&xmlFreeDoc)> doc(
-      xmlReadMemory(data.data(), static_cast<int>(data.size()), "feed.xml",
-                    nullptr, XML_PARSE_NONET),
-      xmlFreeDoc);
-  check(doc != nullptr, "could not parse XML feed");
-  auto *feed = xmlDocGetRootElement(doc.get());
-  check(feed && xmlStrEqual(feed->name, BAD_CAST "feed"), "expected feed root");
   std::map<std::string, std::pair<size_t, size_t>> counts;
   std::set<std::tuple<std::string, std::string, std::string>> seen;
-  for (auto *article = xmlFirstElementChild(feed); article;
-       article = xmlNextElementSibling(article)) {
-    check(xmlStrEqual(article->name, BAD_CAST "article"), "expected article");
-    const auto editor = xml_text(xmlGetProp(article, BAD_CAST "editor"));
-    const auto state = xml_text(xmlGetProp(article, BAD_CAST "state"));
-    const auto *title_node = xmlFirstElementChild(article);
-    check(title_node && xmlStrEqual(title_node->name, BAD_CAST "title"),
-          "expected title");
-    const auto title = xml_text(xmlNodeGetContent(title_node));
+  for (const auto &[editor, section, state, title] : read_feed(data)) {
     if (arm == "deduplicate-titles" &&
         !seen.emplace(editor, state, title).second)
       continue;
