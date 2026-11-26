@@ -37,9 +37,9 @@ Both programs used the existing line reader and JSON writer. Each ablation retai
 
 ## Reproduce and hand off
 
-Run `./pilot.py --fixture` here to repeat both clean runs against the active catalog. Each run used the existing provider stage, planner and emitter, published into private memory, and read back all 50 manifest entries. [First run](evidence/pilot/run-1.json) · [Repeat](evidence/pilot/run-2.json)
+Run `./pilot --fixture` here to repeat both clean runs against the active catalog. Each run used the existing provider stage, planner and emitter, published into private memory, and read back all 50 manifest entries. [First run](evidence/pilot/run-1.json) · [Repeat](evidence/pilot/run-2.json)
 
-Run `./pilot.py` to save a fresh pair on the corpus drive. Both disk runs completed in 99.7 seconds total and reproduced the manifest below. All 50 payload checksums verified in each saved bundle. The review copy contains 103 entries and the active catalog contains 101. [Saved candidate bundle](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-6gdh6gpv/run-1/bundle) · [First disk run](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-6gdh6gpv/run-1/report.json) · [Clean disk repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-6gdh6gpv/run-2/report.json)
+Run `./pilot` to save a fresh pair on the corpus drive. Both disk runs completed in 99.7 seconds total and reproduced the manifest below. All 50 payload checksums verified in each saved bundle. The review copy contains 103 entries and the active catalog contains 101. [Saved candidate bundle](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-6gdh6gpv/run-1/bundle) · [First disk run](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-6gdh6gpv/run-1/report.json) · [Clean disk repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-6gdh6gpv/run-2/report.json)
 
 The pilot issued its own qualification receipts. The main project's B30/B31 admission script currently has a fixed list of supported operations and origins.
 
