@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The nine finance requests are the largest family among the 32 archived replies with zero ordered operations. Correcting CSV input and supplying retained operations passed all 45 saved fixtures using the staged TSV writer where required. A new signed-amount fixture exposed and verified corrections for two reference recipes. [Finance replay and frequency ranking](replay-gaps/RESULTS.md#archived-replies-with-no-ordered-operations-and-the-finance-cohort)
+
 H080 completed the audits of the 13 disconnected archived chains. The retained URI route passed all five fixtures. A fresh input caught a lowercase-only filter that passes the archived suite and verified exact URI spelling, fragment presence, deduplication and sorting. [URI fragment export and reproduction](replay-gaps/RESULTS.md#disconnected-uri-fragment-export-h080)
 
 H030's retained SQLite row and count operations passed all five fixtures with the staged TSV writer. The independent query and fresh database distinguish counting scans from counting parcels and preserve the zero-delivered condition. [SQLite count and reproduction](replay-gaps/RESULTS.md#disconnected-sqlite-depot-counts-h030)

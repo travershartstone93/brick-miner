@@ -85,6 +85,9 @@ $(BUILD_DIR)/directory-count-replay: replay-gaps/directory-count.cpp $(ROW_REPLA
 $(BUILD_DIR)/depot-count-replay: replay-gaps/depot-count.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/unordered-finance-replay: replay-gaps/unordered-finance.cpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
+
 $(BUILD_DIR)/uri-fragment-replay: replay-gaps/uri-fragments.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 

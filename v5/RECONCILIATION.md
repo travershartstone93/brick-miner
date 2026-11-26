@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The replay follow-up ranks the 32 replies that supplied zero ordered operations. Finance has nine requests, and room bookings are next with seven. The finance audit verified 45 original fixture results after correcting the MIME and supplying operations. The detached TSV writer covers eight saved outputs. H011's direct FIFO route still has an integer-to-text sink gap, while the supplied row-position route passes. Signed numeric key corrections also pass on fresh input and all corresponding original fixtures. [Finance diagnosis and reproduction](../replay-gaps/RESULTS.md#archived-replies-with-no-ordered-operations-and-the-finance-cohort)
+
 H080 closes the audit of the 13 archived no-chain requests. The retained URI projection and existing string operations produced the expected original URI array on the archived and mixed-case inputs. The fresh controls distinguish folded scheme matching, fragment presence, exact spelling, deduplication and bytewise order. [H080 replay and controls](../replay-gaps/RESULTS.md#disconnected-uri-fragment-export-h080)
 
 The H030 SQLite-chain audit reuses the retained depot and state projection with both counts computed per depot. It verifies five exact saved databases, the staged TSV writer and a fresh scan-order and count witness. [H030 diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-sqlite-depot-counts-h030)
