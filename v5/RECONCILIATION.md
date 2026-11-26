@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H063 directory-chain audit covers the retained `top` projection. The ordinary recipe counts every regular file under the corresponding immediate child, excludes root files and uses the staged TSV writer. It passed five archived fixtures and exact-tree comparisons. [H063 diagnostics and fresh tree](../replay-gaps/RESULTS.md#disconnected-directory-count-h063)
+
 The disconnected ZIP audit covers `top,size`, `ext,size` and `parent,path,size` on the retained input kernel. All 15 fixed fixtures pass. H059 and H060 use the existing TSV registration. The two scalar name and size views differ in length when the name view includes directory entries. [ZIP chain diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-zip-size-chains-h054-h059-h060)
 
 The seven XML chain failures replayed through the retained article projection and appropriate row operations. The fixed recipes passed all 35 fixtures, with the staged TSV binding for four reports. Three single-XPath alternatives also passed. [XML chain diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-xml-article-chains-seven-requests)

@@ -1,4 +1,4 @@
-#include "bundle.hpp"
+#include "row-trial.hpp"
 #include <iostream>
 
 using namespace miner;
@@ -38,19 +38,6 @@ J fixtures(const Path &trial) {
 
 J operation(const std::string &effect, const J &parameters = object()) {
   return object({{"outcome", effect}, {"parameters", parameters}});
-}
-
-std::string fixed_output(const Path &dest, const Path &input, const Path &exe,
-                         const Path &bundle) {
-  fs::create_directories(dest);
-  auto argv = sandbox(exe, dest);
-  argv.pop_back();
-  auto runtime = bundle / "runtime/duckdb/lib";
-  append(argv, {"--ro-bind", input, "/case/input", "--ro-bind", runtime,
-                "/runtime", "--setenv", "LD_LIBRARY_PATH", "/runtime", "/probe",
-                "input", "result.txt"});
-  run(argv, {.seconds = 8, .probe_limits = true});
-  return bytes(dest / "result.txt");
 }
 
 J trial(const Path &work, const std::string &arm, const std::string &id,
@@ -136,7 +123,7 @@ J trial(const Path &work, const std::string &arm, const std::string &id,
       if (zip) {
         auto fixed = dir / "fixed-bytes" / name;
         auto source = case_folder(original_fixtures, name) / "input/backup.zip";
-        auto fixed_bytes = fixed_output(fixed, source, exe, bundle);
+        auto fixed_bytes = row_replay::path_output(fixed, source, exe, bundle);
         check(fixed_bytes == bytes(output),
               "exact archived ZIP bytes produced different output");
         report["cases"][name]["generated_inputs"] = generated[name];
@@ -220,9 +207,9 @@ int main() try {
           result.isMember("placeholder_sha256"))
         programs.push_back(dir / "run/project/converter");
       if (arm == "correlated" || arm == "exact-extension") {
-        const auto output =
-            fixed_output(dir / "root-check", id == "H058" ? top_zip : root_tree,
-                         dir / "run/project/converter", bundle);
+        const auto output = row_replay::path_output(
+            dir / "root-check", id == "H058" ? top_zip : root_tree,
+            dir / "run/project/converter", bundle);
         auto expected = id == "H058" ? ".\n" : ".\nnotes\n";
         check(output == (arm == "exact-extension" ? "\n" : expected),
               "unexpected dot-root counterexample");

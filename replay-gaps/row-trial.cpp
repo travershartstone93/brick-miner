@@ -204,6 +204,19 @@ J extra_case(const Path &dir, const Path &exe, const Path &bundle,
   return evidence;
 }
 
+std::string path_output(const Path &dest, const Path &input, const Path &exe,
+                        const Path &bundle) {
+  fs::create_directories(dest);
+  auto argv = sandbox(exe, dest);
+  argv.pop_back();
+  append(argv,
+         {"--ro-bind", input, "/case/input", "--ro-bind",
+          bundle / "runtime/duckdb/lib", "/runtime", "--setenv",
+          "LD_LIBRARY_PATH", "/runtime", "/probe", "input", "result.txt"});
+  run(argv, {.seconds = 8, .probe_limits = true});
+  return bytes(dest / "result.txt");
+}
+
 void verify_bundle(const Path &bundle, const std::string &expected) {
   check(hash(bundle / "SHA256SUMS") == expected, "changed replay bundle");
   run({"sha256sum", "--strict", "--quiet", "-c", "SHA256SUMS"},

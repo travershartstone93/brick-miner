@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H063's directory count passed all five fixtures with the retained `top` projection and staged TSV writer. Independent counting matched every saved tree and a fresh tree with hidden files, empty files and nested-only children. [Directory count and reproduction](replay-gaps/RESULTS.md#disconnected-directory-count-h063)
+
 Three disconnected ZIP chains pass all 15 fixtures with retained correlated path and size projections. On the new archive the all-member reader returned 27 names and the size reader returned 21 values, demonstrating the directory-entry mismatch. [ZIP chains and reproduction](replay-gaps/RESULTS.md#disconnected-zip-size-chains-h054-h059-h060)
 
 All seven disconnected XML routes stopped at incompatible operations in their saved plans. The complete row recipes passed 35/35. Three scalar XPath alternatives also passed, and the existing staged TSV writer covered four reports. [XML chains and reproduction](replay-gaps/RESULTS.md#disconnected-xml-article-chains-seven-requests)

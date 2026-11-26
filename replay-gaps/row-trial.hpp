@@ -24,6 +24,8 @@ miner::J exact_row(const miner::Path &bundle, const std::string &id,
 miner::J extra_case(const miner::Path &dir, const miner::Path &exe,
                     const miner::Path &bundle, const std::string &input,
                     const miner::J &expected, int expected_exit = 0);
+std::string path_output(const miner::Path &dest, const miner::Path &input,
+                        const miner::Path &exe, const miner::Path &bundle);
 void verify_bundle(const miner::Path &bundle, const std::string &expected);
 miner::J verify_json_records_scope(const miner::Path &bundle,
                                    const miner::Path &stage,
