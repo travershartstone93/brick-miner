@@ -4,14 +4,20 @@
 #include <QScopeGuard>
 #include <QStandardPaths>
 #include <sstream>
+#include <sys/stat.h>
 
 namespace v5 {
 namespace {
-const std::string effect = "zip_file_records";
 const std::string source_id = "retained-zip-records";
 const std::string library = "libbrick_shared_inputs.so";
 const Path history = "qualifications/shared/inputs";
 const Path runtime = "runtime/duckdb/lib";
+
+struct Projection {
+  std::string binding, input_type, fields, request, fixture;
+  J chain;
+  bool directory;
+};
 
 void verify_materials(const Path &stage, const Path &bundle, const Path &base,
                       const J &src, const J &binding) {
@@ -94,7 +100,7 @@ void verify_materials(const Path &stage, const Path &bundle, const Path &base,
   fs::copy_file(bundle / history / "contracts.json",
                 stage / "legacy-contracts.json");
   fs::copy_file(bundle / "headers" / binding["header"].asString(),
-                stage / "original/miner_zip_file_records.hpp");
+                stage / "original" / binding["header"].asString());
   save(stage / "notices/provider-abi-MIT", notice);
   for (const auto *name : {"BSD-2-Clause.txt", "BSD-4-Clause-UC.txt"}) {
     std::string path = "usr/share/licenses/libarchive/" + std::string(name);
@@ -117,7 +123,7 @@ void verify_materials(const Path &stage, const Path &bundle, const Path &base,
   write(stage / "source.json", source);
 }
 
-void make_inputs(const Path &work, const Path &stage, const J &spec) {
+void make_zip_inputs(const Path &work, const Path &stage, const J &spec) {
   auto members = work / "members", tar = work / "input.tar";
   save(members / "d/UP.CsV", "data");
   save(members / "TOP.csv", "");
@@ -163,6 +169,62 @@ void make_inputs(const Path &work, const Path &stage, const J &spec) {
   }
 }
 
+void make_tree_input(const Path &dir, const J &fixture) {
+  auto input = dir / "in";
+  const auto kind = fixture["kind"].asString();
+  if (kind == "missing")
+    return;
+  if (kind == "file") {
+    save(input, "regular file");
+    return;
+  }
+  if (kind == "symlink") {
+    save(dir / "target/hidden.TXT", "regular file behind link");
+    fs::create_symlink("target", input);
+    return;
+  }
+  check(kind == "directory", "unknown directory fixture kind");
+  fs::create_directories(input);
+  for (const auto &folder : fixture["directories"])
+    fs::create_directories(input / folder.asString());
+  for (const auto &name : fixture["files"])
+    save(input / name.asString(), "data");
+  const auto links = fixture.get("symlinks", object());
+  for (const auto &name : links.getMemberNames())
+    fs::create_symlink(links[name].asString(), input / name);
+  for (const auto &name : fixture["fifos"])
+    check(::mkfifo((input / name.asString()).c_str(), 0600) == 0,
+          "cannot create tree fixture FIFO");
+}
+
+J fixture_inventory(const Path &dir, bool directory) {
+  if (!directory)
+    return tree_hashes(dir);
+  J files = object();
+  for (const auto &entry : fs::recursive_directory_iterator(dir)) {
+    const auto key = entry.path().lexically_relative(dir).generic_string();
+    const auto type = entry.symlink_status().type();
+    switch (type) {
+    case fs::file_type::regular:
+      files[key] = digest(entry.path());
+      break;
+    case fs::file_type::directory:
+      files[key] = object({{"directory", true}});
+      break;
+    case fs::file_type::symlink:
+      files[key] =
+          object({{"symlink", fs::read_symlink(entry.path()).string()}});
+      break;
+    case fs::file_type::fifo:
+      files[key] = object({{"fifo", true}});
+      break;
+    default:
+      throw std::runtime_error("unexpected tree fixture entry: " + key);
+    }
+  }
+  return files;
+}
+
 Strings invoke(const Path &exe, const Path &dir, const Path &bundle) {
   auto cmd = sandbox(exe, dir);
   cmd.pop_back();
@@ -171,10 +233,9 @@ Strings invoke(const Path &exe, const Path &dir, const Path &bundle) {
   return cmd;
 }
 
-J repeated_calls(const Path &exe, const Path &stage, const Path &bundle,
-                 const J &spec) {
-  const auto fixtures = stage / "fixtures";
-  const auto before = tree_hashes(fixtures);
+J repeated_calls(const Path &exe, const Path &fixtures, const Path &bundle,
+                 const J &spec, const Projection &projection) {
+  const auto before = fixture_inventory(fixtures, projection.directory);
   J observed = array();
   auto probe = [&](const std::string &path, const std::string &fields) {
     auto cmd = invoke(exe, fixtures, bundle);
@@ -188,7 +249,9 @@ J repeated_calls(const Path &exe, const Path &stage, const Path &bundle,
     return first;
   };
   for (const auto &c : spec["cases"]) {
-    auto seen = probe(c["format"].asString(), "ext,parent");
+    auto input = projection.directory ? c["name"].asString() + "/in"
+                                      : c["format"].asString();
+    auto seen = probe(input, projection.fields);
     J rows = array();
     int pos = 0;
     for (const auto &r : c["rows"])
@@ -196,21 +259,28 @@ J repeated_calls(const Path &exe, const Path &stage, const Path &bundle,
     check(seen["rows"] == rows &&
               seen["phase"].asString() == c.get("error", "").asString() &&
               seen["exception"] ==
-                  (c.isMember("error") ? J("runtime_error") : J()),
-          "ZIP row observation differs for " + c["name"].asString() + ": " +
-              dump(seen));
+                  (c.isMember("error") ? J("runtime_error") : J()) &&
+              (!projection.directory || c.isMember("error") ||
+               seen["same_instance_repeat"] == true),
+          projection.binding + " row observation differs for " +
+              c["name"].asString() + ": " + dump(seen));
     observed.append(object({{"name", c["name"]}, {"observation", seen}}));
   }
-  auto reorder = probe("top-level", "parent,ext");
-  check(reorder["phase"] == "" &&
-            reorder["rows"] ==
-                array({object(
-                    {{"position", 1}, {"fields", array({".", "csv"})}})}),
+  auto control_input = projection.directory ? "bare-root/in" : "top-level";
+  auto reorder =
+      probe(control_input, projection.directory ? "ext,parent" : "parent,ext");
+  const auto expected_control =
+      projection.directory
+          ? array({object({{"position", 1}, {"fields", array({"txt", "."})}}),
+                   object({{"position", 2}, {"fields", array({"", "."})}})})
+          : array({object({{"position", 1}, {"fields", array({".", "csv"})}})});
+  check(reorder["phase"] == "" && reorder["rows"] == expected_control,
         "reordered projection did not preserve field semantics");
-  auto invalid = probe("top-level", "ext,unknown");
+  auto invalid = probe(control_input, "ext,unknown");
   check(invalid["phase"] == "select" &&
             invalid["exception"] == "invalid_argument" &&
-            invalid["rows"] == array() && tree_hashes(fixtures) == before,
+            invalid["rows"] == array() &&
+            fixture_inventory(fixtures, projection.directory) == before,
         "unexpected projection rejection or fixture mutation");
   return object({{"processes_per_case", 2},
                  {"cases", observed},
@@ -220,30 +290,29 @@ J repeated_calls(const Path &exe, const Path &stage, const Path &bundle,
 }
 
 J ordinary(const Path &work, const Path &stage, const Path &bundle,
-           const Path &base, const J &row, const J &suite) {
+           const Path &base, const J &row, const J &suite,
+           const Projection &projection) {
   auto recipes = root / "shared/request-recipes.json";
   check(digest(recipes) ==
             "768676cbc34ef7db9d869520bd3d26d86123f49a3c9803901eb5653de3a6f49b",
-        "changed H058 operation recipe");
+        "changed retained operation recipes");
   const auto tasks = load(recipes);
   J ops = array();
-  for (const auto &step : tasks["H058"][0])
+  for (const auto &step : tasks[projection.request][0])
     ops.append(object({{"outcome", step[0]}, {"parameters", step[1]}}));
-  check(ops[0]["outcome"] == effect &&
+  check(ops[0]["outcome"] == projection.binding &&
             ops[0]["parameters"] == suite["parameters"],
-        "H058 does not request the qualified projection");
+        "reference recipe does not request the qualified projection");
   const auto spec =
-      spec_for("application/zip", "text/plain",
+      spec_for(projection.input_type, "text/plain",
                object({{"operations", ops}, {"uncovered", array()}}));
-  const auto chain =
-      array({"op_0_zip_file_records", "op_1_filter_records", "op_2_column",
-             "op_3_unique_lines", "op_4_sort_lines", "write_lines"});
-  auto report = object(
-      {{"spec", spec}, {"chain", chain}, {"recipe_sha256", digest(recipes)}});
+  auto report = object({{"spec", spec},
+                        {"chain", projection.chain},
+                        {"recipe_sha256", digest(recipes)}});
   for (const std::string arm : {"baseline", "staged"}) {
     auto dest = work / arm, exe = work / ".test-programs" / arm;
     auto p = complete_file_plan(arm == "baseline" ? base : bundle, dest, spec,
-                                chain);
+                                projection.chain);
     build_emission(p, dest, exe, "g++-15");
     J observations = array();
     for (const auto &c : suite["cases"])
@@ -251,21 +320,27 @@ J ordinary(const Path &work, const Path &stage, const Path &bundle,
         auto dir =
             dest / c["name"].asString() / (exists ? "existing" : "absent");
         fs::create_directories(dir);
-        auto fixture = stage / "fixtures" / c["format"].asString();
-        if (fs::exists(fixture))
-          fs::copy_file(fixture, dir / "in");
+        if (projection.directory)
+          make_tree_input(dir, c);
+        else {
+          auto fixture = stage / "fixtures" / c["format"].asString();
+          if (fs::exists(fixture))
+            fs::copy_file(fixture, dir / "in");
+        }
         if (exists)
           save(dir / "out", "sentinel");
-        auto before = tree_hashes(dir), after = before;
+        auto before = fixture_inventory(dir, projection.directory),
+             after = before;
         auto cmd = invoke(exe, dir, bundle);
         append(cmd, {"in", "out"});
         auto result = execute(cmd, {.seconds = 8, .probe_limits = true});
         const bool fails = c.isMember("error");
         if (!fails)
           after["out"] = sha(c["output"].asString());
-        check(result.status == (fails ? 1 : 0) && tree_hashes(dir) == after,
-              "unexpected CLI ZIP result for " + c["name"].asString() + " " +
-                  result.err);
+        check(result.status == (fails ? 1 : 0) &&
+                  fixture_inventory(dir, projection.directory) == after,
+              "unexpected CLI file record result for " + c["name"].asString() +
+                  " " + result.err);
         observations.append(object({{"case", c["name"]},
                                     {"exit", result.status},
                                     {"destination_existed", exists},
@@ -277,66 +352,82 @@ J ordinary(const Path &work, const Path &stage, const Path &bundle,
                           {"emitted_sha256", digest(dest / "component.hpp")}});
   }
   check(report["baseline"] == report["staged"],
-        "retained ZIP recipe differs between arms");
+        "retained file record recipe differs between arms");
   auto cut = work / "control-bundle";
   write_tree(cut, remove_binding(read_tree(bundle), row));
   auto absent = plan(cut, spec, work / "removed");
   check(absent["providers"].isArray() && absent["providers"].empty() &&
             absent["interpretation_errors"].empty() &&
             absent["clarifications"].empty() &&
-            absent["gaps"]["r"].asString().find(effect) != std::string::npos,
-        "removal did not isolate the correlated ZIP binding");
+            absent["gaps"]["r"].asString().find(projection.binding) !=
+                std::string::npos,
+        "removal did not isolate the file record binding");
   report["removed"] = object({{"gaps", absent["gaps"]},
                               {"bundle_sha256", digest(cut / "SHA256SUMS")}});
   return report;
 }
-} // namespace
 
-Path qualify_zip_records(const Path &package, const std::string &pin,
-                         const Path &registry,
-                         const std::string &registry_pin) {
+Path qualify_records(const Path &package, const std::string &pin,
+                     const Path &registry, const std::string &registry_pin,
+                     const Projection &projection) {
   verify(package, pin);
   auto src = sources()[source_id];
-  const auto job = retained_binding_job(v5_root() / "sources.json", effect);
+  const auto job =
+      retained_binding_job(v5_root() / "sources.json", projection.binding);
   check(src["approval"] == "local-pilot" &&
             src["method"] == "signed-local-package" &&
             job["source"] == source_id && job["route"] == "api" &&
             job["stream"] == "foundational" &&
-            job["tests"] == "v5/fixtures/zip-records.json" &&
-            job["parameter"] == object({{"fields", "ext,parent"}}),
-        "no reviewed local ZIP projection job");
-  const auto work = fresh_run("v5-zip-records"), stage = work / ".stage",
-             scratch = work / ".test-programs", bundle = package / "bundle",
-             base = verified_base();
+            job["tests"] == "v5/fixtures/" + projection.fixture + ".json" &&
+            job["parameter"] == object({{"fields", projection.fields}}) &&
+            (!projection.directory ||
+             !job["approval_reference"].asString().empty()),
+        "no reviewed local file record projection job");
+  const auto work = fresh_run("v5-" + projection.fixture),
+             stage = work / ".stage", scratch = work / ".test-programs",
+             bundle = package / "bundle", base = verified_base();
   fs::create_directory(scratch);
   save_file_registry(stage, src, registry, registry_pin);
-  check(retained_binding_job(stage / "sources.json", effect) == job,
-        "changed ZIP projection job");
+  check(retained_binding_job(stage / "sources.json", projection.binding) == job,
+        projection.directory ? "changed tree projection job"
+                             : "changed ZIP projection job");
   auto defs = load(bundle / "providers/contracts.json");
-  auto raw = select_binding(defs["providers"], effect, "miner_zip_file_records",
-                            "in:application/zip", "rows");
+  auto raw = select_binding(defs["providers"], projection.binding,
+                            "miner_" + projection.binding,
+                            "in:" + projection.input_type, "rows");
   auto record = file_binding_identity(raw, bundle);
-  auto legacy = load(bundle / history / "contracts.json")[effect];
-  check(raw["id"] == effect &&
-            raw["call"] == "brick_miner::shared::zip_file_records" &&
+  auto legacy = load(bundle / history / "contracts.json")[projection.binding];
+  check(raw["id"] == projection.binding &&
+            raw["call"] == "brick_miner::shared::" + projection.binding &&
             raw["args"] == array({"fields"}) && raw["from"] == legacy["from"] &&
             raw["to"] == legacy["to"] &&
             legacy["args"] == object({{"fields", "text"}}) &&
-            defs["outcomes"][effect]["parameters"] == legacy["args"],
-        "ZIP reader binding differs from retained declaration");
+            defs["outcomes"][projection.binding]["parameters"] ==
+                legacy["args"],
+        "file record binding differs from retained declaration");
   verify_materials(stage, bundle, base, src, raw);
   const auto source = load(stage / "source.json");
   for (const auto &[from, to] :
        std::vector<std::pair<std::string, std::string>>{
-           {"zip-records.json", "spec.json"},
-           {"zip-records-client.cpp", "client.cpp"},
-           {"zip-records-annotation.json", "annotation.json"}})
+           {projection.fixture + ".json", "spec.json"},
+           {projection.fixture + "-client.cpp", "client.cpp"},
+           {projection.fixture + "-annotation.json", "annotation.json"}})
     fs::copy_file(v5_root() / "fixtures" / from, stage / to);
   const auto spec = load(stage / "spec.json");
   check(spec["binding"] == record["key"] &&
             spec["parameters"] == job["parameter"],
         "qualification scope differs from reviewed binding or parameter");
-  make_inputs(work, stage, spec);
+  auto fixtures = stage / "fixtures";
+  if (projection.directory) {
+    fixtures = work / "directories";
+    for (const auto &fixture : spec["cases"]) {
+      const auto dir = fixtures / fixture["name"].asString();
+      fs::create_directories(dir);
+      make_tree_input(dir, fixture);
+    }
+  } else {
+    make_zip_inputs(work, stage, spec);
+  }
 
   auto old_path = qgetenv("PKG_CONFIG_PATH");
   const auto restore = qScopeGuard([&] {
@@ -356,9 +447,13 @@ Path qualify_zip_records(const Path &package, const std::string &pin,
                "-Wl,-rpath-link," + (bundle / runtime).string()});
   run(cmd);
   auto tools = file_qualification_tools(), env = tools;
-  for (const auto *name : {"tar", "bsdtar", "unzip", "gpgv", "ldd"})
+  const auto tool_names =
+      projection.directory ? Strings{"bsdtar", "gpgv", "ldd"}
+                           : Strings{"tar", "bsdtar", "unzip", "gpgv", "ldd"};
+  for (const auto &name : tool_names)
     env["tool_sha256"][name] =
-        digest(QStandardPaths::findExecutable(name).toStdString());
+        digest(QStandardPaths::findExecutable(QString::fromStdString(name))
+                   .toStdString());
   env["client_flags"] = string_array(options);
   env["target"] = run({"g++-15", "-dumpmachine"});
   env["runtime_files"] = source["runtime_files"];
@@ -381,37 +476,72 @@ Path qualify_zip_records(const Path &package, const std::string &pin,
             "standalone client linked the wrong retained runtime");
   }
   write(stage / "environment.json", env);
-  write(stage / "standalone.json", repeated_calls(exe, stage, bundle, spec));
+  write(stage / "standalone.json",
+        repeated_calls(exe, fixtures, bundle, spec, projection));
   write(stage / "integration.json",
-        ordinary(work, stage, bundle, base, raw, spec));
+        ordinary(work, stage, bundle, base, raw, spec, projection));
   check(file_qualification_tools() == tools, "qualification tools changed");
   auto contract =
       file_contract(stage, package, record, src, stage / "sources.json");
   contract["source"]["implementation_sha256"] = source["kernel_sha256"];
   contract["qualification"]["scope"] =
-      "Detached local evidence for one exact fields selector, ext,parent, on "
-      "the pinned archived runtime and recorded ZIP fixtures.";
+      "Detached local evidence for one exact fields selector, " +
+      projection.fields + ", on the pinned archived runtime and recorded " +
+      (projection.directory ? "directory" : "ZIP") + " fixtures.";
   validate(contract, load(package / "contract.schema.json"));
   write(stage / "contract.json", contract);
-  write(stage / "domain.json",
-        object({{"schema", "unllm.scoped-file-evidence-domain/1"},
-                {"binding_key", record["key"]},
-                {"raw_binding_sha256", record["binding_sha256"]},
-                {"logical_id", record["logical_id"]},
-                {"implementation_sha256", source["kernel_sha256"]},
-                {"header_sha256", record["header_sha256"]},
-                {"contract_sha256", digest(stage / "contract.json")},
-                {"environment_sha256", digest(stage / "environment.json")},
-                {"call", raw["call"]},
-                {"argument_index", 1},
-                {"argument_type", "const std::string&"},
-                {"quantifier", "argument"},
-                {"all_of", array({object({{"id", "exact_text"},
-                                          {"value", "ext,parent"}})})},
-                {"scope",
-                 "Evidence applies to the named parameter projection. "
-                 "Use this detached domain record for review only."}}));
+  write(
+      stage / "domain.json",
+      object({{"schema", "unllm.scoped-file-evidence-domain/1"},
+              {"binding_key", record["key"]},
+              {"raw_binding_sha256", record["binding_sha256"]},
+              {"logical_id", record["logical_id"]},
+              {"implementation_sha256", source["kernel_sha256"]},
+              {"header_sha256", record["header_sha256"]},
+              {"contract_sha256", digest(stage / "contract.json")},
+              {"environment_sha256", digest(stage / "environment.json")},
+              {"call", raw["call"]},
+              {"argument_index", 1},
+              {"argument_type", "const std::string&"},
+              {"quantifier", "argument"},
+              {"all_of", array({object({{"id", "exact_text"},
+                                        {"value", projection.fields}})})},
+              {"scope", "Evidence applies to the named parameter projection. "
+                        "Use this detached domain record for review only."}}));
   return finish_file_stage(work, package, pin, record["logical_id"].asString(),
                            "unllm.scoped-file-evidence/1");
+}
+} // namespace
+
+Path qualify_zip_records(const Path &package, const std::string &pin,
+                         const Path &registry,
+                         const std::string &registry_pin) {
+  const Projection projection{
+      "zip_file_records",
+      "application/zip",
+      "ext,parent",
+      "H058",
+      "zip-records",
+      array({"op_0_zip_file_records", "op_1_filter_records", "op_2_column",
+             "op_3_unique_lines", "op_4_sort_lines", "write_lines"}),
+      false};
+  return qualify_records(package, pin, registry, registry_pin, projection);
+}
+
+Path qualify_tree_records(const Path &package, const std::string &pin,
+                          const Path &registry,
+                          const std::string &registry_pin) {
+  const Projection projection{
+      "tree_file_records",
+      "inode/directory",
+      "parent,ext",
+      "H070",
+      "tree-records",
+      array({"op_0_tree_file_records", "op_1_annotate_group_measure",
+             "op_2_annotate_group_measure", "op_3_filter_records",
+             "op_4_filter_records", "op_5_column", "op_6_unique_lines",
+             "op_7_sort_lines", "write_lines"}),
+      true};
+  return qualify_records(package, pin, registry, registry_pin, projection);
 }
 } // namespace v5

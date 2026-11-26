@@ -833,6 +833,15 @@
     {
       "source":"retained-zip-records",
       "route":"api",
+      "target":"tree_file_records",
+      "stream":"foundational",
+      "parameter":{"fields":"parent,ext"},
+      "tests":"v5/fixtures/tree-records.json",
+      "approval_reference":"Local H1b backfill of the existing directory reader from the same historically approved shared input library, archive and notices. Qualification scope is parent,ext on private fixture trees."
+    },
+    {
+      "source":"retained-zip-records",
+      "route":"api",
       "target":"zip_file_records",
       "stream":"foundational",
       "parameter":{"fields":"ext,parent"},

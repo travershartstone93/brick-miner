@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The retained directory metadata reader passed seven direct cases in two processes for the exact `parent,ext` projection. The fixed H070 program passed 14/14 executions on each bundle. Removing the reader blocked its recipe. A clean repeat reproduced the 23-file evidence package. [Directory qualification and reproduction](v5/RECONCILIATION.md#h1b-correlated-directory-parent-and-extension-projection)
+
 The retained ZIP metadata reader passed seven direct cases in two processes and 14 ordinary checks on each bundle for the exact `ext,parent` projection. Removing it blocked the fixed H058 recipe. A detached stage reproduced all 29 files and pins the packaged libarchive runtime, adapter, parameter scope and observations. [ZIP qualification and reproduction](v5/RECONCILIATION.md#h1b-correlated-zip-extension-and-parent-projection)
 
 The miner qualified the retained case-sensitive extension filter in a detached fifteen-file stage. It passed nine direct fixtures in each of two processes and ten ordinary file cases on each bundle. The existing correlated ZIP and directory readers raised two fixed path reports from 1/5 each to 5/5, including separate dot-root probes. Removing the exact reader blocked each report. [Filter qualification](v5/RECONCILIATION.md#h1b-exact-filename-extension-filter) · [Path replay and reproduction](replay-gaps/RESULTS.md#correlated-file-metadata-and-dot-root-controls-h058-h070)

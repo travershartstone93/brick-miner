@@ -1,0 +1,32 @@
+{
+  "binding": {"component_id":"miner_tree_file_records","binding_id":"tree_file_records","from":"in:inode/directory","to":"rows"},
+  "parameters": {"fields":"parent,ext"},
+  "cases": [
+    {
+      "name":"nested-and-special-entries","kind":"directory",
+      "directories":["empty","dir.TXT"],
+      "files":["z/R.TXT","p/x.","nested/deep/noext","left/README","right/XT.TxT","notes/a.tXt","notes/README","ROOT.TxT",".profile","nested/S.TXT","a.tar.GZ","cache/base.GZ"],
+      "symlinks":{"alias":"notes","broken":"missing","left/fake.TXT":"../ROOT.TxT","right/fake":"../.profile","nested/deep/loop":"../.."},
+      "fifos":["right/notafile"],
+      "rows":[[".",""],[".","txt"],[".","gz"],["cache","gz"],["left",""],["nested","txt"],["nested/deep",""],["notes",""],["notes","txt"],["p",""],["right","txt"],["z","txt"]],
+      "output":".\nnotes\n"
+    },
+    {
+      "name":"bare-root","kind":"directory","files":["README","A.TXT"],
+      "rows":[[".","txt"],[".",""]],"output":".\n"
+    },
+    {
+      "name":"different-parents","kind":"directory",
+      "files":["x/y/note.TXT","x/.rc"],
+      "rows":[["x",""],["x/y","txt"]],"output":""
+    },
+    {
+      "name":"no-regular-files","kind":"directory",
+      "directories":["deep/empty"],"symlinks":{"broken":"missing"},"fifos":["deep/channel"],
+      "rows":[],"output":""
+    },
+    {"name":"missing-root","kind":"missing","error":"visit"},
+    {"name":"regular-file-root","kind":"file","error":"visit"},
+    {"name":"symlink-root","kind":"symlink","error":"visit"}
+  ]
+}

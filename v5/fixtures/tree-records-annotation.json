@@ -1,0 +1,26 @@
+{
+  "description":"Project each recursively discovered regular file's relative parent and ASCII-folded final extension.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"A local directory input path and the exact parent,ext selector.","semantic_output":"One-based ordered rows of parent label and extension from the same regular file.","parameters":{"fields":"text"}},
+  "facets":{
+    "technical_hierarchy":["files_storage","directory metadata","path selection"],"application":["project inventories","file reports"],"construction_role":["reader"],
+    "abstraction":["ordered row visitor"],"implementation_form":["authored C++ adapter over a signed native library"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_inputs","Arch libarchive 3.8.9-1","C++17"],
+    "resources":["The adapter retains projected rows for sorting. Qualification uses small local trees. Peak memory, large or concurrent directory changes and scaling are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Use a local directory and the exact parent,ext selector. Tests assume a stable tree during visitation.","evidence":["original/adapter.cpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The reader emitted one correlated row per regular entry, ordered by relative path. Repeated row values retained separate positions. Nested paths were visited. Directory entries, symlinks and FIFOs produced no row in the tested trees.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Bare names yielded parent dot. Other parents stayed relative. The final extension lost its leading dot and folded ASCII case. A lone leading dot and a trailing dot produced empty extensions.","evidence":["standalone.json"]},
+    "effects":{"status":"observed","detail":"The recorded input inventory held the same node types, link targets and regular-file bytes. The emitted CLI preserved a pre-existing destination and left an absent one absent when missing, file and symlink roots failed.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Positions began at one and reset on a second visit to the same producer. Reversing the selector reversed fields on a fixed tree and preserved positions.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"No proof over arbitrary directory names, encodings or graph structure was performed.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The exact argument predicate describes the tested projection. No verified filesystem predicate was established.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"The producer supported two successive visits to the same stable fixture, resetting row positions. Root type rejection occurred on visiting. An unknown field failed before visitation.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures the absolute normalized root and selector strings. Each visitor borrows a row for the duration of the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent calls and mutation during traversal were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter uses archive_read_disk_set_symlink_physical and archive_read_next_header. H070 groups file extensions on each immediate parent before filtering.","evidence":["source.json","integration.json","original/adapter.cpp"]},
+    "specification_question":{"status":"declared","detail":"Should each report group use the immediate relative parent and display the root as dot? Use this evidence for parent,ext.","evidence":["spec.json","integration.json"]}
+  }
+}
