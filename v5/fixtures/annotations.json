@@ -783,5 +783,105 @@
         "cardinality_status": "observed"
       }
     }
+  },
+  {
+    "id": "sort_lines",
+    "source_id": "retained-text-measures",
+    "binding": {"brick":"x09","from":"strings","to":"strings"},
+    "probe_suite": "sequence-probes.json",
+    "semantic_input": "ordered string records",
+    "semantic_output": "Order records in ascending bytewise string order and retain duplicates.",
+    "primary_family": "algorithms",
+    "facets": {"technical_hierarchy":["algorithms","sequence_transform"],"application":["text utilities","report generation"],"construction_role":["transform"],"abstraction":["ordered record sequence"],"implementation_form":["retained C++ source"],"platform":["tested Linux x86_64"],"resources":["allocates a result collection; peak per input unqualified"]},
+    "claims": {
+      "preconditions": {"status":"declared","detail":"An in-memory vector of strings is available to the callable.","evidence":["evidence/measure-source.json"]},
+      "postconditions": {"status":"observed","detail":"Order records in ascending bytewise string order and retain duplicates.","evidence":["evidence/standalone.json#sort_lines","evidence/integration.json#sort_lines"]},
+      "effects": {"status":"observed","detail":"Produced an output sequence for each input sequence on the fixed and bounded probes.","evidence":["evidence/standalone.json#sort_lines"]},
+      "invariants": {"status":"observed","detail":"Ascending order and input multiset matched on the bounded probes.","evidence":["evidence/standalone.json#sort_lines"]},
+      "mathematical_properties": {"status":"observed","detail":"Idempotence on the finite test set. Domain: sequences of up to four elements over empty string, a and z.","evidence":["evidence/standalone.json#sort_lines"]},
+      "refinements": {"status":"unknown","detail":"No additional input or output refinement qualified.","evidence":[]},
+      "formal_predicates": {"status":"unknown","detail":"No formal proof for arbitrary sequences.","evidence":[]},
+      "state_protocol": {"status":"not-applicable","detail":"A single synchronous collection operation has no separate lifecycle.","evidence":[]},
+      "ownership": {"status":"declared","detail":"Input and result by value for this string-vector instantiation.","evidence":["evidence/measure-source.json"]},
+      "concurrency": {"status":"unknown","detail":"Concurrent execution was not qualified.","evidence":[]},
+      "thread_affinity": {"status":"unknown","detail":"No affinity claim was tested.","evidence":[]},
+      "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this string specialization to bricks::sorted.","evidence":["evidence/measure-source.json"]},
+      "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
+    }
+  },
+  {
+    "id": "reverse_order",
+    "source_id": "retained-text-measures",
+    "binding": {"brick":"x10","from":"strings","to":"strings"},
+    "probe_suite": "sequence-probes.json",
+    "semantic_input": "ordered string records",
+    "semantic_output": "Reverse the outer string sequence and preserve the bytes of every record.",
+    "primary_family": "algorithms",
+    "facets": {"technical_hierarchy":["algorithms","sequence_transform"],"application":["text utilities","report generation"],"construction_role":["transform"],"abstraction":["ordered record sequence"],"implementation_form":["retained C++ source"],"platform":["tested Linux x86_64"],"resources":["allocates a result collection; peak per input unqualified"]},
+    "claims": {
+      "preconditions": {"status":"declared","detail":"An in-memory vector of strings is available to the callable.","evidence":["evidence/measure-source.json"]},
+      "postconditions": {"status":"observed","detail":"Reverse the outer string sequence and preserve the bytes of every record.","evidence":["evidence/standalone.json#reverse_order","evidence/integration.json#reverse_order"]},
+      "effects": {"status":"observed","detail":"Produced an output sequence for each input sequence on the fixed and bounded probes.","evidence":["evidence/standalone.json#reverse_order"]},
+      "invariants": {"status":"observed","detail":"Reversed element order and repetitions matched on the bounded probes.","evidence":["evidence/standalone.json#reverse_order"]},
+      "mathematical_properties": {"status":"observed","detail":"Two reversals reproduced the input on the finite test set. Domain: sequences of up to four elements over empty string, a and z.","evidence":["evidence/standalone.json#reverse_order"]},
+      "refinements": {"status":"unknown","detail":"No additional input or output refinement qualified.","evidence":[]},
+      "formal_predicates": {"status":"unknown","detail":"No formal proof for arbitrary sequences.","evidence":[]},
+      "state_protocol": {"status":"not-applicable","detail":"A single synchronous collection operation has no separate lifecycle.","evidence":[]},
+      "ownership": {"status":"declared","detail":"Input and result by value for this string-vector instantiation.","evidence":["evidence/measure-source.json"]},
+      "concurrency": {"status":"unknown","detail":"Concurrent execution was not qualified.","evidence":[]},
+      "thread_affinity": {"status":"unknown","detail":"No affinity claim was tested.","evidence":[]},
+      "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this string specialization to bricks::reversed.","evidence":["evidence/measure-source.json"]},
+      "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
+    }
+  },
+  {
+    "id": "unique_lines",
+    "source_id": "retained-text-measures",
+    "binding": {"brick":"x11","from":"strings","to":"strings"},
+    "probe_suite": "sequence-probes.json",
+    "semantic_input": "ordered string records",
+    "semantic_output": "Keep the first occurrence of each distinct record in encounter order.",
+    "primary_family": "algorithms",
+    "facets": {"technical_hierarchy":["algorithms","sequence_transform"],"application":["text utilities","report generation"],"construction_role":["transform"],"abstraction":["ordered record sequence"],"implementation_form":["retained C++ source"],"platform":["tested Linux x86_64"],"resources":["allocates a result collection; peak per input unqualified"]},
+    "claims": {
+      "preconditions": {"status":"declared","detail":"An in-memory vector of strings is available to the callable.","evidence":["evidence/measure-source.json"]},
+      "postconditions": {"status":"observed","detail":"Keep the first occurrence of each distinct record in encounter order.","evidence":["evidence/standalone.json#unique_lines","evidence/integration.json#unique_lines"]},
+      "effects": {"status":"observed","detail":"Produced an output sequence for each input sequence on the fixed and bounded probes.","evidence":["evidence/standalone.json#unique_lines"]},
+      "invariants": {"status":"observed","detail":"Exactly the earliest occurrence of each record survived on the bounded probes.","evidence":["evidence/standalone.json#unique_lines"]},
+      "mathematical_properties": {"status":"observed","detail":"Idempotence on the finite test set. Domain: sequences of up to four elements over empty string, a and z.","evidence":["evidence/standalone.json#unique_lines"]},
+      "refinements": {"status":"unknown","detail":"No additional input or output refinement qualified.","evidence":[]},
+      "formal_predicates": {"status":"unknown","detail":"No formal proof for arbitrary sequences.","evidence":[]},
+      "state_protocol": {"status":"not-applicable","detail":"A single synchronous collection operation has no separate lifecycle.","evidence":[]},
+      "ownership": {"status":"declared","detail":"Input by const reference and result by value.","evidence":["evidence/measure-source.json"]},
+      "concurrency": {"status":"unknown","detail":"Concurrent execution was not qualified.","evidence":[]},
+      "thread_affinity": {"status":"unknown","detail":"No affinity claim was tested.","evidence":[]},
+      "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this string specialization to bricks::unique.","evidence":["evidence/measure-source.json"]},
+      "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
+    }
+  },
+  {
+    "id": "adjacent_unique",
+    "source_id": "retained-text-measures",
+    "binding": {"brick":"x12","from":"strings","to":"strings"},
+    "probe_suite": "sequence-probes.json",
+    "semantic_input": "ordered string records",
+    "semantic_output": "Replace each maximal run of adjacent equal records with one copy.",
+    "primary_family": "algorithms",
+    "facets": {"technical_hierarchy":["algorithms","sequence_transform"],"application":["text utilities","report generation"],"construction_role":["transform"],"abstraction":["ordered record sequence"],"implementation_form":["retained C++ source"],"platform":["tested Linux x86_64"],"resources":["allocates a result collection; peak per input unqualified"]},
+    "claims": {
+      "preconditions": {"status":"declared","detail":"An in-memory vector of strings is available to the callable.","evidence":["evidence/measure-source.json"]},
+      "postconditions": {"status":"observed","detail":"Replace each maximal run of adjacent equal records with one copy.","evidence":["evidence/standalone.json#adjacent_unique","evidence/integration.json#adjacent_unique"]},
+      "effects": {"status":"observed","detail":"Produced an output sequence for each input sequence on the fixed and bounded probes.","evidence":["evidence/standalone.json#adjacent_unique"]},
+      "invariants": {"status":"observed","detail":"Inputs with separated equal records kept both runs on the distinguishing probes.","evidence":["evidence/standalone.json#adjacent_unique"]},
+      "mathematical_properties": {"status":"observed","detail":"Idempotence on the finite test set. Domain: sequences of up to four elements over empty string, a and z.","evidence":["evidence/standalone.json#adjacent_unique"]},
+      "refinements": {"status":"unknown","detail":"No additional input or output refinement qualified.","evidence":[]},
+      "formal_predicates": {"status":"unknown","detail":"No formal proof for arbitrary sequences.","evidence":[]},
+      "state_protocol": {"status":"not-applicable","detail":"A single synchronous collection operation has no separate lifecycle.","evidence":[]},
+      "ownership": {"status":"declared","detail":"Input and result by value for this string-vector instantiation.","evidence":["evidence/measure-source.json"]},
+      "concurrency": {"status":"unknown","detail":"Concurrent execution was not qualified.","evidence":[]},
+      "thread_affinity": {"status":"unknown","detail":"No affinity claim was tested.","evidence":[]},
+      "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this string specialization to bricks::consecutive.","evidence":["evidence/measure-source.json"]},
+      "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
+    }
   }
 ]

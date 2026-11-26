@@ -16,23 +16,33 @@ void extract_measures(const Path &out) {
   check(sha(doc) == s["documentation_sha256"].asString(),
         "operation documentation digest mismatch");
   auto bindings = load(verified_base() / "providers/contracts.json");
-  J descriptors = object();
+  J selectors = object(), descriptors = object();
+  for (const auto &a : load(v5_root() / "fixtures/annotations.json"))
+    if (a["source_id"] == source)
+      selectors[a["id"].asString()] = a["binding"];
   std::istringstream lines(doc);
   for (std::string line; std::getline(lines, line);)
-    for (const auto &key : measures) {
+    for (const auto &key : selectors.getMemberNames()) {
       if (!line.starts_with(key + "|"))
         continue;
-      check(!descriptors.isMember(key), "duplicate measurement definition");
-      auto row = select_binding(bindings["providers"], key,
-                                key == "byte_lengths" ? "x19" : "x20",
-                                "strings", "integers");
-      check(line == key + "|strings|integers|" + row["call"].asString() + "||" +
-                        bindings["outcomes"][key]["meaning"].asString(),
+      check(!descriptors.isMember(key),
+            "duplicate retained operation definition");
+      const auto &sel = selectors[key];
+      auto row =
+          select_binding(bindings["providers"], key, sel["brick"].asString(),
+                         sel["from"].asString(), sel["to"].asString());
+      check(std::count(s["symbols"].begin(), s["symbols"].end(), row["call"]) ==
+                    1 &&
+                line == key + "|" + row["from"].asString() + "|" +
+                            row["to"].asString() + "|" +
+                            row["call"].asString() + "||" +
+                            bindings["outcomes"][key]["meaning"].asString(),
             "upstream documentation differs from planner declaration");
       descriptors[key] =
           object({{"documentation_line", line}, {"binding", row}});
     }
-  check(descriptors.size() == measures.size(),
+  check(descriptors.size() == selectors.size() &&
+            descriptors.size() == s["symbols"].size(),
         "incomplete upstream documentation");
   receipt["operations"] = descriptors;
   receipt["documentation_sha256"] = sha(doc);
@@ -87,6 +97,7 @@ void qualify_measures(const Path &extracted, const Path &out) {
                 {"rejected_cases", rejected},
                 {"coincident_cases", coincident}});
   }
+  qualify_sequences(extracted, out, report);
   write(out / "standalone.json", report);
 }
 J semantic_ports(const J &c, const J &binding, const J &annotation) {

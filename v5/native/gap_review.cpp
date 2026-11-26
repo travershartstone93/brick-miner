@@ -13,13 +13,6 @@ J pinned(const Path &file, const std::string &pin) {
   check(sha(raw) == pin, "handoff file pin mismatch");
   return parse(raw);
 }
-std::string compact_hash(const J &j) {
-  Json::StreamWriterBuilder builder;
-  builder["indentation"] = "";
-  builder["emitUTF8"] = true;
-  builder["commentStyle"] = "None";
-  return sha(Json::writeString(builder, j));
-}
 void fields(const J &record, const Strings &required,
             const Strings &optional = {}) {
   check(record.isObject(), "expected handoff object");

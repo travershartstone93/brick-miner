@@ -1,6 +1,6 @@
 # V5 reconciliation and handoff
 
-The [current H1 handoff](#h1-documented-xxh32-api-and-h1b-historical-requalification) has six qualified row providers, one qualified class, independent consumer evidence and commands for package verification and recovery.
+The [current H1b handoff](#h1b-retained-sequence-operations) has ten qualified row providers and one qualified class. The [restricted XML study](#h1a-restricted-xml-adapter) has a separate opt-in interchange fixture.
 
 V5 §8 supplies the milestone schedule. Track A owns the miner, with Track E supplying separately specified oracles. The main repository owns B/C/D and production activation.
 
@@ -216,3 +216,33 @@ Run `make check-v5-xml-domain` to verify the archive, source and build context, 
 The main project independently tested the XML input facts with cvc5 and direct C++ implication. Both agreed on the seven proposed cases and five additional single-predicate controls. Six malformed inputs were rejected. This covers predicate discharge for the tested target. [Consumer fact experiment](../../unllm-upgrade/docs/evidence/v5-h1a/input-domain.json)
 
 For the opt-in interchange experiment, run `make .build/v5-xml-domain && .build/v5-xml-domain --restricted-fixture`. Its detached manifest pins a payload, the qualification receipt and a compiled ABI witness for the exact callable and target. The payload binds argument 0 of the historical adapter, quantifies over every input record, and requires both predicates together. The producer rejected ten changes to the interface major, external pin, provider, ABI, port, quantifier, predicates, bound and implementation. The fixture contains no executable provider and is outside all regular staged indexes. It references the seven-provider control. A future consumer must negotiate the supported version and bind the complete contract to the implementation before this restricted capability can be considered for selection. [Fixture manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-domain-XXBGX5Vr/restricted-fixture/manifest.json) · [Producer controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-xml-domain-XXBGX5Vr/interchange-controls.json)
+
+## H1b retained sequence operations
+
+Four active string-sequence bindings share the already-pinned MIT project header and its documented operation table. The miner qualified the exact string specialization of each binding. The implementation bytes, 127-card active generation and executable stage bundle stayed the same. The verified stage now has ten row providers and one class, within the H1 pilot's 10–20-provider range. The held interpretation already succeeded on the active generation for all four, so these backfills add four qualified contracts and zero newly passing constructions.
+
+| Binding | Observed behavior | Bounded reapplication check |
+|---|---|---|
+| x09 / sort_lines | Kept the input multiset and produced ascending order | Idempotent |
+| x10 / reverse_order | Reversed the outer collection, including duplicates | Two applications restored the input |
+| x11 / unique_lines | Kept the first occurrence of each distinct record | Idempotent |
+| x12 / adjacent_unique | Kept one record per consecutive run | Idempotent |
+
+Each original callable ran twice on every sequence of length zero through four over the alphabet consisting of the empty string, “a” and “z” (121 inputs). The client checked each output against an independent reference and checked reapplication. Every ordered substitution among the four callables disagreed on 48 to 117 of the 121 inputs. Six additional frozen cases exercised byte strings including NUL and UTF-8. Each ordinary baseline and staged file program passed eight cases. Removing only its selected binding blocked the task. These are bounded observations. General proofs and concurrency remain unknown. [Independent C++ client](fixtures/sequence-client.cpp) · [Fixed examples](fixtures/sequence-probes.json)
+
+Each binding matched the earlier consumer profile's six inputs and binding digest, for 24 matched observations. That profile's SHA-256 is `502a2131baf38808460599cb8a41d2e83bd67e9f150137847cb3625b5a6e8a08`. Its earlier binary and context hashes accompany the comparisons. New qualification comes from the successor's compiled standalone and ordinary-path trials. The sibling layer specialization `reverse_groups` and the `read_lines` usage of x09 both remain pending in the migration ledger. Seven of the active 105 row bindings are now qualified in staging, with 98 pending. [Earlier consumer profile](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-fingerprints-4PgG6aKZ/accepted/observations.json) · [H1b ledger](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XXurOVli/snapshot/summary.json)
+
+The first sealed batch has manifest SHA-256 `19f4fb21077ad3fc9c3696b807afdb3b36e35f3aadf01bb7581ee94a18e7a786` with 1,223 pinned files. An earlier attempt stopped during private verification because its JSON checker distinguished signed and unsigned encodings of the same nonnegative witness count. Comparing the canonical JSON fixed readback. The failed attempt produced no sealed stage. [First sealed batch](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXnKdnvL/stage/package/manifest.json)
+
+The final clean stage checked actual Tantivy retrieval for all four operations. Queries “ascending”, “outer”, “occurrence” and “maximal” returned the corresponding providers first. Its row and class contracts, SQLite, semantic ports, emitted integration verdicts and executable bundle were byte-identical to the first sealed sequence batch. All four acquisitions are retained-provider requalifications. Source selection, reference cases and bounded property checks were authored for this pilot. The native workers used 88.17 CPU seconds and 98.19 summed wall seconds, with peak process RSS of 315,584 KiB, 143,576,745 peak sampled bytes on disk and zero source downloads. Shared extraction and standalone qualification for the six operations in this header took 9.77 CPU seconds. Human time was unmetered. [Final stage](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXtVEvtF/stage/package/manifest.json) · [Index checks](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXtVEvtF/stage/package/cross-check.json)
+
+```sh
+make .build/v5-miner .build/v5-inventory
+pkg=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXtVEvtF/stage/package
+pin=d352c5d8330ba8db3a4331093009fb0225880921444f100d40620e71773e7d8e
+.build/v5-miner verify "$pkg" "$pin"
+.build/v5-miner pilot
+make check check-v5-queue check-v5-gap
+```
+
+The final interrupted run completed 18 jobs in 19 attempts. Its 14 queue controls, 11 semantic controls and two sequence-specific controls passed. The clean and recovered runs matched all 38 disposable executable digests, contract and semantic views, SQLite, standalone and ordinary-program verdicts, and the executable bundle manifest. Each recovered worker retained its receipt before releasing the programs, totalling 18,442,480 bytes. The final migration snapshot reused 59,232 historical row observations and retained the seven qualified and 98 pending active bindings. Its SQLite ledger SHA-256 is `321c4d69a950e29b554712f67c26adcb1f15c7e6bf7bd9f8c7ba7b4054a7021e`. [Recovery controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recovery-XXeeokBq/recovery.json) · [Final migration snapshot](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XXieNCL8/snapshot/summary.json)

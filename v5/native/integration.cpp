@@ -97,6 +97,9 @@ void integrate(const Path &extracted, const Path &dest) {
   auto draft = dest / ".bundle";
   write_tree(draft, stage);
   auto requirements = load(v5_root() / "fixtures/requirements.json");
+  auto sequence_cases = load(v5_root() / "fixtures/sequence-probes.json");
+  for (const auto &key : sequence_keys)
+    requirements[key] = sequence_requirements(sequence_cases, key);
   J report = object();
   const auto staged_rows =
       parse(stage.at("providers/contracts.json"))["providers"];

@@ -9,6 +9,13 @@
 #include <sstream>
 
 namespace v5 {
+std::string compact_hash(const J &j) {
+  Json::StreamWriterBuilder builder;
+  builder["indentation"] = "";
+  builder["emitUTF8"] = true;
+  builder["commentStyle"] = "None";
+  return sha(Json::writeString(builder, j));
+}
 std::string digest(const Path &file) {
   QFile in(QString::fromStdString(file.string()));
   check(in.open(QIODevice::ReadOnly), "cannot open " + file.string());

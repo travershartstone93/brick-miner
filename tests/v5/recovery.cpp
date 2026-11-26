@@ -114,7 +114,7 @@ J semantic_controls(const Path &pack, Database &db) {
         "crossed semantic constraints passed");
   check(db.query("SELECT provider FROM semantic_port WHERE direction='output' "
                  "AND unit_status='unknown' AND unit IS NULL ORDER BY provider")
-                    .size() == 3 &&
+                    .size() == 7 &&
             db.query("SELECT provider FROM semantic_port WHERE "
                      "direction='input' AND unit_status='not-applicable' AND "
                      "unit IS NULL ORDER BY provider") ==
@@ -248,7 +248,8 @@ int main() try {
   check(verify(q / "stage/package", hash) ==
             array({"number_option_prefix", "reverse_record_bytes",
                    "threshold_entries", "byte_lengths", "item_count",
-                   "line_xxh32", "u84"}),
+                   "line_xxh32", "sort_lines", "reverse_order", "unique_lines",
+                   "adjacent_unique", "u84"}),
         "unexpected distinct qualifications");
   Json::UInt64 released = 0;
   unsigned programs = 0;
@@ -287,6 +288,36 @@ int main() try {
         "class retrieval or type coverage missing");
   Database catalog(pack / "contracts.sqlite", true);
   report["semantic_controls"] = semantic_controls(pack, catalog);
+  const auto contract_rows = load(pack / "contracts.json");
+  const auto binding_rows =
+      load(pack / "bundle/providers/contracts.json")["providers"];
+  for (auto c : contract_rows) {
+    if (c["capability_id"] != "reverse_order")
+      continue;
+    const auto wrong = select_binding(binding_rows, "reverse_order", "x10",
+                                      "layers", "layers");
+    bool rejected = false;
+    try {
+      check_sequence_evidence(pack, c, wrong);
+    } catch (const std::runtime_error &) {
+      rejected = true;
+    }
+    check(rejected,
+          "shared templated implementation qualified an untested binding");
+    auto right = select_binding(binding_rows, "reverse_order", "x10", "strings",
+                                "strings");
+    c["claims"]["formal_predicates"]["status"] = "established";
+    rejected = false;
+    try {
+      check_sequence_evidence(pack, c, right);
+    } catch (const std::runtime_error &) {
+      rejected = true;
+    }
+    check(rejected, "finite observations promoted to formal proof");
+  }
+  report["sequence_controls"] =
+      array({"layers specialization excluded",
+             "finite observations cannot establish a general proof"});
   check(catalog.query(
             "SELECT provider FROM class_binding JOIN property USING(provider) "
             "WHERE name='state_protocol' AND status='observed'") ==

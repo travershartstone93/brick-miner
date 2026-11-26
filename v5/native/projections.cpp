@@ -138,7 +138,9 @@ J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
                            digest(v5_root() / "sources.json")}})},
        {"fingerprint",
         object(
-            {{"suite_sha256", digest(v5_root() / "fixtures/requirements.json")},
+            {{"suite_sha256",
+              digest(v5_root() / "fixtures" /
+                     a.get("probe_suite", "requirements.json").asString())},
              {"observations_sha256",
               sha(dump(integration["staged"]["probes"]))},
              {"scope", "fixed development probes on this Linux toolchain"}})},
@@ -415,7 +417,11 @@ void project(const Path &package, const Path &scratch, const J &contracts,
                                           {"oldest", "u84"},
                                           {"octet", "byte_lengths"},
                                           {"dimensionless", "item_count"},
-                                          {"checksum", "line_xxh32"}}) {
+                                          {"checksum", "line_xxh32"},
+                                          {"ascending", "sort_lines"},
+                                          {"outer", "reverse_order"},
+                                          {"occurrence", "unique_lines"},
+                                          {"maximal", "adjacent_unique"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},
@@ -485,7 +491,8 @@ void assemble(const Path &work, const Path &dest) {
   fs::copy_file(root / "contracts/tasks.json", e / "xxhash-tasks.json");
   fs::copy_file(v5_root() / "semantic-vocabulary.json",
                 package / "semantic-vocabulary.json");
-  for (const auto *name : {"measure-client.cpp", "measure-probes.json"})
+  for (const auto *name : {"measure-client.cpp", "measure-probes.json",
+                           "sequence-client.cpp", "sequence-probes.json"})
     fs::copy_file(v5_root() / "fixtures" / name, e / name);
   fs::copy_file(work / "integration/fifo/fifo-integration.json",
                 e / "fifo-integration.json");
@@ -617,6 +624,9 @@ J verify(const Path &package, const std::string &expected) {
     check(digest(package / "sources.json") ==
               c["source"]["source_registry_sha256"].asString(),
           "stale source record");
+    if (std::find(sequence_keys.begin(), sequence_keys.end(),
+                  c["capability_id"].asString()) != sequence_keys.end())
+      check_sequence_evidence(package, c, binding);
     ids.append(c["capability_id"]);
     auto events = lifecycle(package, c, binding);
     if (!events.steps.empty()) {

@@ -149,6 +149,10 @@ J environment_pins() {
       Path arc = s["archive"].asString();
       check(digest(arc) == s["sha256"].asString(),
             "changed source archive " + arc.string());
+      if (s.isMember("prior_profile"))
+        check(digest(s["prior_profile"]["file"].asString()) ==
+                  s["prior_profile"]["sha256"].asString(),
+              "changed upstream consumer profile");
       if (s["method"] == "signed-local-package")
         p["package_signatures"][s["id"].asString()] =
             digest(arc.string() + ".sig");
@@ -332,6 +336,8 @@ Result launch(const Job &job, const Path &work, const Path &out,
     if (s["approval"] == "local-pilot") {
       Path arc = s["archive"].asString();
       ro(arc);
+      if (s.isMember("prior_profile"))
+        ro(s["prior_profile"]["file"].asString());
       if (s["method"] == "signed-local-package")
         ro(arc.string() + ".sig");
     }

@@ -1,6 +1,6 @@
 # Brick-mining pilot, 23 November 2026
 
-The November 25 V5 stage recovers the previously mined XXH32 adapter on the 127-card baseline. Its emitted program passed seven file cases. Main independently selected it by meaning and passed five fresh fixtures. The stage now has six qualified row providers and one qualified class. The [current handoff](v5/RECONCILIATION.md#h1-documented-xxh32-api-and-h1b-historical-requalification) records the package pin, migration counts, resource measurements and reproduction commands.
+The V5 stage contains ten qualified row providers and one qualified class. The latest H1b batch verified sorting, reversal, first-occurrence deduplication and adjacent deduplication over 121 bounded inputs, with ordinary program and removal controls. Seven of the active catalog's 105 row bindings have matching staged qualification evidence. The [current handoff](v5/RECONCILIATION.md#h1b-retained-sequence-operations) records the package pin, qualifications and reproduction commands. The [XXH32 handoff](v5/RECONCILIATION.md#h1-documented-xxh32-api-and-h1b-historical-requalification) records an additional staged construction and its independent transfer.
 
 The [replay gap ranking](replay-gaps/RESULTS.md) covers all 100 archived interpretations on the 127-card bundle. Eight requests exposed a missing TSV output conversion. Registering the existing writer closed ten output holes and gained eleven fixture passes. Zero additional requests passed all five fixtures.
 

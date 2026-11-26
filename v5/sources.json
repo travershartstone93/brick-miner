@@ -672,13 +672,17 @@
       },
       "symbols": [
         "bricks::lengths",
-        "bricks::count"
+        "bricks::count",
+        "bricks::sorted",
+        "bricks::reversed",
+        "bricks::unique",
+        "bricks::consecutive"
       ],
       "families": [
         "algorithms"
       ],
       "documentation": "experiments/boilerplate/component-trial/expanded/operations.tsv",
-      "tests": "Independent current qualification in v5/fixtures/measure-probes.json and measure-client.cpp",
+      "tests": "v5/fixtures/measure-probes.json, measure-client.cpp, sequence-probes.json and sequence-client.cpp",
       "examples": "experiments/boilerplate/stress/brick-learning/evidence/published-transfer.json",
       "dependencies": [
         "C++17 standard library",
@@ -704,6 +708,11 @@
         }
       ],
       "documentation_sha256": "15459d1462e44736ce30c63c82ded87d5f6188b69390a6e7aaedab6a13316599",
+      "prior_profile": {
+        "file": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-fingerprints-4PgG6aKZ/accepted/observations.json",
+        "sha256": "502a2131baf38808460599cb8a41d2e83bd67e9f150137847cb3625b5a6e8a08",
+        "scope": "Six archived ASCII development observations for exact binding lineage and comparison only."
+      },
       "example_scope": "Historical byte_lengths use only; no upstream item_count example asserted."
     }
   ],

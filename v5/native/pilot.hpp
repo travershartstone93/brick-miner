@@ -15,6 +15,12 @@ const inline std::string api = "reverse_record_bytes",
                          direct = "number_option_prefix";
 const inline std::string base_hash =
     "e4564e3079f0b32b3379a411b170ce9af61ec80ab7938b6a974e724abd538328";
+std::string compact_hash(const J &j);
+const inline Strings sequence_keys = {"sort_lines", "reverse_order",
+                                      "unique_lines", "adjacent_unique"};
+void qualify_sequences(const Path &extracted, const Path &out, J &report);
+J sequence_requirements(const J &cases, const std::string &key);
+void check_sequence_evidence(const Path &pack, const J &c, const J &binding);
 Path probe_program(const Path &logical_output);
 std::string digest(const Path &file);
 J tree_hashes(const Path &base);
