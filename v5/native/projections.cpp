@@ -223,7 +223,7 @@ Lifecycle lifecycle(const Path &package, const J &c, const J &binding) {
   return result;
 }
 void project(const Path &package, const Path &scratch, const J &contracts,
-             const J &bindings, const J &classes) {
+             const J &bindings, const J &classes, const J &ports) {
   Database db(package / "contracts.sqlite");
   db.script(R"sql(
         CREATE TABLE provider(capability TEXT, provider TEXT PRIMARY KEY, contract_hash TEXT, family TEXT, level TEXT);
@@ -255,6 +255,7 @@ void project(const Path &package, const Path &scratch, const J &contracts,
            {"passages", std::to_string(contracts.size() + classes.size())},
            {"version", "1"}})
     search.insert("INSERT INTO meta VALUES(?,?)", row);
+  auto port_terms = index_semantic_ports(package, db, ports);
   int pid = 0;
   auto entries = contracts;
   for (const auto &c : classes)
@@ -280,6 +281,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
                     port["semantic_input"].asString(),
                     port["semantic_output"].asString()};
     append(text, strings(c["facets"]["technical_hierarchy"]));
+    if (port_terms.contains(id))
+      append(text, port_terms.at(id));
     Lifecycle events;
     if (port["kind"] == "library-class") {
       db.insert("INSERT INTO class_binding VALUES(?,?,?,?,?)",
@@ -340,6 +343,12 @@ void project(const Path &package, const Path &scratch, const J &contracts,
             "SELECT * FROM lifecycle ORDER BY provider,trace,step"},
            {"ComponentInput",
             "SELECT * FROM component_input ORDER BY provider,event"},
+           {"SemanticPort",
+            "SELECT "
+            "provider,binding,direction,COALESCE(role,'__absent'),role_status,"
+            "COALESCE(unit,'__absent'),unit_status,COALESCE(cardinality,'__"
+            "absent'),cardinality_status FROM semantic_port ORDER BY "
+            "provider,binding,direction"},
            {"ClassBinding", "SELECT provider,type,header,level FROM "
                             "class_binding ORDER BY provider"},
            {"ClassMethod",
@@ -361,6 +370,12 @@ void project(const Path &package, const Path &scratch, const J &contracts,
            {"TestedTransform",
             "SELECT DISTINCT capability,input,output FROM provider JOIN port "
             "USING(provider) WHERE level='ordinary-emission-tested'"},
+           {"MeasuredOutput",
+            "SELECT s.provider,binding,role,unit,cardinality FROM "
+            "semantic_port s JOIN provider p USING(provider) WHERE "
+            "direction='output' AND level='ordinary-emission-tested' AND "
+            "role_status='observed' AND unit_status='observed' AND "
+            "cardinality_status='observed'"},
            {"Observed",
             "SELECT DISTINCT capability,name FROM provider JOIN property "
             "USING(provider) WHERE status='observed'"},
@@ -396,22 +411,26 @@ void project(const Path &package, const Path &scratch, const J &contracts,
        std::map<std::string, std::string>{{"digit", direct},
                                           {"multiplicity", api},
                                           {"rearm", "threshold_entries"},
-                                          {"oldest", "u84"}}) {
+                                          {"oldest", "u84"},
+                                          {"octet", "byte_lengths"},
+                                          {"dimensionless", "item_count"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},
           "Rust Tantivy retrieval mismatch");
     results[q] = want;
   }
-  write(package / "cross-check.json",
-        object({{"logical", logical},
-                {"tantivy", results},
-                {"contract_set_sha256", digest(package / "contracts.json")},
-                {"class_contracts_sha256",
-                 digest(package / "class-contracts.json")},
-                {"tantivy_binary", digest(rust / "unllm_index")},
-                {"query_library", digest(rust / "libunllm_search.a")},
-                {"queries", "fixed development terms"}}));
+  write(
+      package / "cross-check.json",
+      object(
+          {{"logical", logical},
+           {"tantivy", results},
+           {"semantic_ports_sha256", digest(package / "semantic-ports.json")},
+           {"contract_set_sha256", digest(package / "contracts.json")},
+           {"class_contracts_sha256", digest(package / "class-contracts.json")},
+           {"tantivy_binary", digest(rust / "unllm_index")},
+           {"query_library", digest(rust / "libunllm_search.a")},
+           {"queries", "fixed development terms"}}));
 }
 } // namespace
 void validate(const J &c, const J &schema) {
@@ -443,6 +462,7 @@ void assemble(const Path &work, const Path &dest) {
            {"extract", "sketch.json"},
            {"extract", "latch-source.json"},
            {"extract", "fifo-source.json"},
+           {"extract", "measure-source.json"},
            {"standalone", "lifecycle.json"},
            {"standalone", "standalone.json"},
            {"integration", "integration.json"}})
@@ -458,6 +478,10 @@ void assemble(const Path &work, const Path &dest) {
            fs::copy_options::recursive);
   fs::copy_file(v5_root() / "fixtures/requirements.json",
                 e / "requirements.json");
+  fs::copy_file(v5_root() / "semantic-vocabulary.json",
+                package / "semantic-vocabulary.json");
+  for (const auto *name : {"measure-client.cpp", "measure-probes.json"})
+    fs::copy_file(v5_root() / "fixtures" / name, e / name);
   fs::copy_file(work / "integration/fifo/fifo-integration.json",
                 e / "fifo-integration.json");
   for (const auto *name :
@@ -469,13 +493,22 @@ void assemble(const Path &work, const Path &dest) {
   auto registry = sources(),
        bindings = load(package / "bundle/providers/contracts.json"),
        schema = load(package / "contract.schema.json");
-  auto contracts = array();
+  auto contracts = array(), ports = array();
   for (const auto &a : load(v5_root() / "fixtures/annotations.json")) {
     auto c = contract(a, work, registry, bindings);
     validate(c, schema);
     contracts.append(c);
+    const auto &iface = c["interface"];
+    auto binding = select_binding(
+        bindings["providers"], c["capability_id"].asString(),
+        c["provider_id"].asString(), iface["structural_input"].asString(),
+        iface["structural_output"].asString());
+    for (const auto &p : semantic_ports(c, binding, a))
+      ports.append(p);
   }
   write(package / "contracts.json", contracts);
+  check_semantic_ports(package, ports, contracts, bindings["providers"]);
+  write(package / "semantic-ports.json", ports);
   auto cs = class_schema(schema,
                          load(v5_root() / "class-interface.schema.json")),
        klass = class_contract(package);
@@ -488,7 +521,7 @@ void assemble(const Path &work, const Path &dest) {
                 {"qualification", array({klass["qualification"]["level"]})}}));
   write(package / "class-contract.schema.json", cs);
   write(package / "class-contracts.json", classes);
-  project(package, dest, contracts, bindings["providers"], classes);
+  project(package, dest, contracts, bindings["providers"], classes, ports);
   auto guide = load(package / "vocabulary.json")["primary_families"],
        families = object();
   for (const auto &family : guide.getMemberNames()) {
@@ -527,7 +560,11 @@ void assemble(const Path &work, const Path &dest) {
               {"baseline_sha256", base_hash},
               {"contract_version", "unllm.brick-contract/1"},
               {"interfaces",
-               object({{"library_class",
+               object({{"semantic_ports",
+                        object({{"version", "unllm.semantic-ports/1"},
+                                {"contracts", "semantic-ports.json"},
+                                {"vocabulary", "semantic-vocabulary.json"}})},
+                       {"library_class",
                         object({{"version", "unllm.library-class/1"},
                                 {"contracts", "class-contracts.json"},
                                 {"vocabulary", "class-vocabulary.json"},
@@ -690,6 +727,18 @@ J verify(const Path &package, const std::string &expected) {
             load(package / "cross-check.json")["class_contracts_sha256"] ==
                 digest(package / "class-contracts.json"),
         "stale structured class projection");
+  }
+  if (m["interfaces"].isMember("semantic_ports")) {
+    auto view = m["interfaces"]["semantic_ports"];
+    check(view["version"] == "unllm.semantic-ports/1" &&
+              view["contracts"] == "semantic-ports.json" &&
+              view["vocabulary"] == "semantic-vocabulary.json" &&
+              load(package / "cross-check.json")["semantic_ports_sha256"] ==
+                  digest(package / "semantic-ports.json"),
+          "semantic view mismatch");
+    auto ports = load(package / "semantic-ports.json");
+    check_semantic_ports(package, ports, contracts, bindings);
+    verify_semantic_index(db, ports);
   }
   return ids;
 }

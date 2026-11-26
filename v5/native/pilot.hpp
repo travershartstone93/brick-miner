@@ -3,6 +3,10 @@
 
 namespace v5 {
 using namespace miner;
+class Database;
+std::map<std::string, Strings> index_semantic_ports(const Path &, Database &,
+                                                    const J &);
+void verify_semantic_index(Database &, const J &);
 inline Path v5_root() { return root / "v5"; }
 inline Path sample_application() {
   return runs / "project-mining-780_n3ro/run-1/application";
@@ -25,6 +29,11 @@ void extract_latch(const Path &dest);
 J retained_source(const Path &dest, const std::string &id,
                   const std::string &notice);
 void extract_fifo(const Path &dest);
+void extract_measures(const Path &dest);
+void qualify_measures(const Path &extracted, const Path &dest);
+J semantic_ports(const J &contract, const J &binding, const J &annotation);
+void check_semantic_ports(const Path &package, const J &ports,
+                          const J &contracts, const J &bindings);
 void qualify_fifo(const Path &extracted, const Path &dest);
 void emit_fifo(const Path &base, const Path &bundle, const Path &dest);
 J class_contract(const Path &package);

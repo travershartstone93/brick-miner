@@ -71,7 +71,8 @@ std::vector<Job> pilot_jobs(const J &registry) {
       {"lzip-number-prefix", {"gnu-lzip", "direct"}},
       {"lzip-index-reverse", {"gnu-lzip", "composition"}},
       {"retained-keyed-latch", {"retained-keyed-latch", "direct"}},
-      {"retained-unique-fifo", {"retained-unique-fifo", "direct"}}};
+      {"retained-unique-fifo", {"retained-unique-fifo", "direct"}},
+      {"retained-text-measures", {"retained-text-measures", "direct"}}};
   std::set<std::string> selected;
   for (const auto &source : registry["sources"]) {
     if (!source.isMember("jobs"))
@@ -107,6 +108,8 @@ std::vector<Job> pilot_jobs(const J &registry) {
         unit = "latch";
       if (selector == "retained-unique-fifo")
         unit = "fifo";
+      if (selector == "retained-text-measures")
+        unit = "measures";
       jobs.push_back(
           {"extract-" + unit, id, route, stream, score, {"inventory"}});
       jobs.push_back(
@@ -158,6 +161,7 @@ J environment_pins() {
            v5_root() / "contract.schema.json", v5_root() / "vocabulary.json",
            v5_root() / "facts.dl", main_repo / ".deps/bin/souffle",
            v5_root() / "class-interface.schema.json",
+           v5_root() / "semantic-vocabulary.json",
            main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
            main_repo / ".deps/native/usr/bin/souffle",
            main_repo / "reasoning/prolog/rules.pl",
@@ -188,6 +192,10 @@ J worker_step(const std::string &name, const Path &work, const Path &out) {
     extract_fifo(out);
   else if (name == "test-fifo")
     qualify_fifo(work / "extract-fifo", out);
+  else if (name == "extract-measures")
+    extract_measures(out);
+  else if (name == "test-measures")
+    qualify_measures(work / "extract-measures", out);
   else if (name.starts_with("extract-"))
     extract(out, name.substr(8));
   else if (name.starts_with("test-"))

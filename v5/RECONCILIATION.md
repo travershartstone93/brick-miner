@@ -1,6 +1,6 @@
 # V5 reconciliation and handoff
 
-The [current H1 handoff](#h1-class-qualification-and-consumer-handoff) has three qualified row providers, one qualified class, consumer transfer evidence and commands for package verification, mining and migration inventory.
+The [current H1 handoff](#h1-semantic-roles-units-and-cardinality) has five qualified row providers, one qualified class, consumer transfer evidence and commands for package verification, mining and migration inventory.
 
 V5 §8 supplies the milestone schedule. Track A owns the miner, with Track E supplying separately specified oracles. The main repository owns B/C/D and production activation.
 
@@ -125,6 +125,33 @@ pin=b26709e391a033fe4a472b6aa94d37177848f73cc210fce73e258f54c08fe960
 .build/v5-miner verify "$pkg" "$pin"
 ../unllm-upgrade/build/native/v5-class-lookup "$pkg" "$pin" \
   /run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XX9hlImk/integration/fifo/integer.json state_protocol
+.build/v5-inventory "$pkg" "$pin"
+.build/v5-miner pilot
+make check check-v5-queue
+```
+
+## H1 semantic roles, units and cardinality
+
+The November 25 successor qualifies two retained functions with the same compiled signature, `const vector<string>& → vector<int64_t>`. Both live in the same archived project header. The source, original operation descriptions and provider ABI were pinned at local MIT-licensed revision `6ba6c9245392545fd6f685538ebece88e96ee28c`. The archive SHA-256 is `5732484bb1e453a06a1a77f9498f24840e08fde96d90e577ed724e0affd5e94f`. Selection, vocabulary and expected measurements were authored for this pilot. The C++ worker compiled the original functions and checked the outputs and ordinary programs without a model.
+
+| Provider | Output role | Unit | Cardinality |
+|---|---|---|---|
+| `x19` / `byte_lengths` | `record_byte_length` | `byte` | `per_input_item` |
+| `x20` / `item_count` | `sequence_item_count` | `unitless` | `singleton` |
+
+The two functions agreed on a single one-byte record. Substituting one for the other failed six of seven frozen cases per direction, including empty input, embedded NUL, and multibyte UTF-8. All seven observations repeated in fresh processes. Baseline and staged emitted programs each passed nine checks per provider. Removing only the selected binding blocked its task while the same-signature alternative stayed available. Main's independent development comparison used six fresh inputs per program and eleven semantic controls. Both outputs and compiled executables matched their ordinary legacy references on the first semantic stage. [Frozen component oracle](fixtures/measure-probes.json) · [Standalone observations](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXkyvO7O/stage/package/evidence/standalone.json) · [Independent transfer](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-semantic-fVfGorYZ/projected/summary.json)
+
+The versioned `interfaces.semantic_ports` view covers both directions of all five row contracts. Each entry references the exact provider, binding, parent-contract hash, evidence and vocabulary. The shared string input has a known role and sequence cardinality. Its unit is inapplicable. A prior port with no assessment has unknown fields. Both statuses have a null unit identifier in SQL. The item count has the positive identifier `unitless`. The native verifier compares observations with both reference columns and rejects swapped annotations even when all identifiers and source hashes are valid. Two SQLite rows matched the Soufflé measured-output relation. Tantivy returned `byte_lengths` first for “octet” and `item_count` first for “dimensionless”. The compact class view remains separate. [Port contracts](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXkyvO7O/stage/package/semantic-ports.json)
+
+The stage has five qualified row providers, one qualified class and one separate usage sketch. These two semantic backfills add zero executable capabilities to the active catalog. The clean and interrupted runs matched contracts, port metadata, SQLite, facts, deductions, probe receipts, search verdicts and executable bundle manifests. The recovery run completed 16 jobs in 17 attempts and passed twelve queue controls and nine semantic control groups. The clean workers used 33.87 CPU seconds and 36.12 summed wall seconds, with peak single-process RSS of 292,624 KiB, 142,958,347 peak sampled disk bytes and zero download bytes. Shared extraction and standalone checks for the pair used 2.41 CPU seconds. Human time was unmetered. [Recovery receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recovery-XXay4iDs/recovery.json)
+
+The H1b ledger now links an exact admitted contract and direction to its assessed role, unit and cardinality statuses. Among 105 active row bindings, two have observed output units, one qualified binding has an explicitly unknown unit, and 102 await qualification. The snapshot reconciled 901 unpacked metadata documents at 251 locations. Sealed evaluation directories are excluded from discovery. [Migration counts](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XXG8fd3d/snapshot/summary.json)
+
+```sh
+make .build/v5-miner .build/v5-inventory
+pkg=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XXkyvO7O/stage/package
+pin=4f87953e1e215409febd74393e3f319c7732b78cbd3f628d2412c05d2e2d3bd4
+.build/v5-miner verify "$pkg" "$pin"
 .build/v5-inventory "$pkg" "$pin"
 .build/v5-miner pilot
 make check check-v5-queue

@@ -26,3 +26,8 @@ ObservedEvent(c,e,r) :- Provider(c,p,_), Property(p,"state_protocol","observed")
 .decl TestedMethod(provider:symbol, operation:symbol, value_type:symbol)
 TestedMethod(p,o,t) :- ClassBinding(p,_,_,"ordinary-header-tested"), ClassMethod(p,o,_,_,_), ClassValue(p,t,_).
 .output TestedMethod
+.decl SemanticPort(provider:symbol,binding:symbol,direction:symbol,role:symbol,rs:symbol,unit:symbol,us:symbol,card:symbol,cs:symbol)
+.input SemanticPort
+.decl MeasuredOutput(provider:symbol,binding:symbol,role:symbol,unit:symbol,card:symbol)
+MeasuredOutput(p,b,r,u,c) :- Provider(_,p,"ordinary-emission-tested"), SemanticPort(p,b,"output",r,"observed",u,"observed",c,"observed").
+.output MeasuredOutput

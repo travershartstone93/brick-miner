@@ -1,0 +1,9 @@
+[
+ {"name":"empty collection","records":[],"byte_lengths":[],"item_count":[0]},
+ {"name":"one empty record","records":[""],"byte_lengths":[0],"item_count":[1]},
+ {"name":"indistinguishable witness","records":["a"],"byte_lengths":[1],"item_count":[1]},
+ {"name":"multibyte single code point","records":["é"],"byte_lengths":[2],"item_count":[1]},
+ {"name":"embedded zero byte","records":["a\u0000b"],"byte_lengths":[3],"item_count":[1]},
+ {"name":"mixed lengths and duplicates","records":["","π","π","abcd"],"byte_lengths":[0,2,2,4],"item_count":[4]},
+ {"name":"different UTF-8 encodings","records":["é","🙂"],"byte_lengths":[3,4],"item_count":[2]}
+]

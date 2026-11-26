@@ -363,5 +363,286 @@
         "status": "declared"
       }
     }
+  },
+  {
+    "id": "byte_lengths",
+    "source_id": "retained-text-measures",
+    "binding": {
+      "brick": "x19",
+      "from": "strings",
+      "to": "integers"
+    },
+    "semantic_input": "ordered string records",
+    "semantic_output": "vector of corresponding record sizes in bytes",
+    "primary_family": "algorithms",
+    "facets": {
+      "technical_hierarchy": [
+        "algorithms",
+        "sequence_measurement"
+      ],
+      "application": [
+        "text processing",
+        "reporting"
+      ],
+      "construction_role": [
+        "typed measurement"
+      ],
+      "abstraction": [
+        "collection transformation"
+      ],
+      "implementation_form": [
+        "retained C++ inline function"
+      ],
+      "platform": [
+        "tested Linux x86_64"
+      ],
+      "resources": [
+        "One integer output per input record; peak memory unknown"
+      ]
+    },
+    "claims": {
+      "preconditions": {
+        "status": "declared",
+        "detail": "A const reference to an ordered vector of strings. Results must be representable as signed 64-bit integers.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "postconditions": {
+        "status": "observed",
+        "detail": "Returned the stored byte count for each string, in order, on the specified probes.",
+        "evidence": [
+          "evidence/standalone.json#byte_lengths",
+          "evidence/integration.json#byte_lengths"
+        ]
+      },
+      "effects": {
+        "status": "observed",
+        "detail": "The client received an owned integer vector on the tested inputs.",
+        "evidence": [
+          "evidence/standalone.json#byte_lengths"
+        ]
+      },
+      "invariants": {
+        "status": "observed",
+        "detail": "Cardinality followed the input on the tested empty, repeated and multibyte records.",
+        "evidence": [
+          "evidence/standalone.json#byte_lengths",
+          "evidence/integration.json#byte_lengths"
+        ]
+      },
+      "ownership": {
+        "status": "declared",
+        "detail": "Borrows the input by const reference and returns a vector by value.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "state_protocol": {
+        "status": "not-applicable",
+        "detail": "The selected function declares no receiver and uses no retained state in the original definition.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "refinements": {
+        "status": "unknown",
+        "detail": "Representability outside the tested range has no machine-checked proof.",
+        "evidence": []
+      },
+      "formal_predicates": {
+        "status": "unknown",
+        "detail": "No formal predicate has been verified.",
+        "evidence": []
+      },
+      "mathematical_properties": {
+        "status": "unknown",
+        "detail": "No unbounded law has been qualified.",
+        "evidence": []
+      },
+      "concurrency": {
+        "status": "unknown",
+        "detail": "Concurrent invocation was not exercised.",
+        "evidence": []
+      },
+      "thread_affinity": {
+        "status": "unknown",
+        "detail": "Thread affinity was not tested.",
+        "evidence": []
+      },
+      "upstream_usage": {
+        "status": "declared",
+        "detail": "The archived transfer requirement names byte_lengths.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "specification_question": {
+        "status": "declared",
+        "detail": "Does the requested result measure each record's byte length or the number of records in the collection?",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      }
+    },
+    "port_semantics": {
+      "input": {
+        "role": "ordered_text_records",
+        "role_status": "observed",
+        "unit": null,
+        "unit_status": "not-applicable",
+        "cardinality": "sequence",
+        "cardinality_status": "observed"
+      },
+      "output": {
+        "role": "record_byte_length",
+        "role_status": "observed",
+        "unit": "byte",
+        "unit_status": "observed",
+        "cardinality": "per_input_item",
+        "cardinality_status": "observed"
+      }
+    }
+  },
+  {
+    "id": "item_count",
+    "source_id": "retained-text-measures",
+    "binding": {
+      "brick": "x20",
+      "from": "strings",
+      "to": "integers"
+    },
+    "semantic_input": "ordered string records",
+    "semantic_output": "singleton vector of dimensionless collection cardinality",
+    "primary_family": "algorithms",
+    "facets": {
+      "technical_hierarchy": [
+        "algorithms",
+        "sequence_measurement"
+      ],
+      "application": [
+        "text processing",
+        "reporting"
+      ],
+      "construction_role": [
+        "typed measurement"
+      ],
+      "abstraction": [
+        "collection transformation"
+      ],
+      "implementation_form": [
+        "retained C++ inline function"
+      ],
+      "platform": [
+        "tested Linux x86_64"
+      ],
+      "resources": [
+        "One integer result; allocation characteristics unmeasured"
+      ]
+    },
+    "claims": {
+      "preconditions": {
+        "status": "declared",
+        "detail": "A const reference to an ordered vector of strings. Results must be representable as signed 64-bit integers.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "postconditions": {
+        "status": "observed",
+        "detail": "Returned a one-element vector containing the number of records, including zero for an empty input.",
+        "evidence": [
+          "evidence/standalone.json#item_count",
+          "evidence/integration.json#item_count"
+        ]
+      },
+      "effects": {
+        "status": "observed",
+        "detail": "The client received an owned integer vector on the tested inputs.",
+        "evidence": [
+          "evidence/standalone.json#item_count"
+        ]
+      },
+      "invariants": {
+        "status": "observed",
+        "detail": "Output cardinality remained one across all tested collections.",
+        "evidence": [
+          "evidence/standalone.json#item_count",
+          "evidence/integration.json#item_count"
+        ]
+      },
+      "ownership": {
+        "status": "declared",
+        "detail": "Borrows the input by const reference and returns a vector by value.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "state_protocol": {
+        "status": "not-applicable",
+        "detail": "The selected function declares no receiver and uses no retained state in the original definition.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "refinements": {
+        "status": "unknown",
+        "detail": "Representability outside the tested range has no machine-checked proof.",
+        "evidence": []
+      },
+      "formal_predicates": {
+        "status": "unknown",
+        "detail": "No formal predicate has been verified.",
+        "evidence": []
+      },
+      "mathematical_properties": {
+        "status": "unknown",
+        "detail": "No unbounded law has been qualified.",
+        "evidence": []
+      },
+      "concurrency": {
+        "status": "unknown",
+        "detail": "Concurrent invocation was not exercised.",
+        "evidence": []
+      },
+      "thread_affinity": {
+        "status": "unknown",
+        "detail": "Thread affinity was not tested.",
+        "evidence": []
+      },
+      "upstream_usage": {
+        "status": "declared",
+        "detail": "The pinned registration table maps item_count to bricks::count.",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      },
+      "specification_question": {
+        "status": "declared",
+        "detail": "Does the requested result measure each record's byte length or the number of records in the collection?",
+        "evidence": [
+          "evidence/measure-source.json"
+        ]
+      }
+    },
+    "port_semantics": {
+      "input": {
+        "role": "ordered_text_records",
+        "role_status": "observed",
+        "unit": null,
+        "unit_status": "not-applicable",
+        "cardinality": "sequence",
+        "cardinality_status": "observed"
+      },
+      "output": {
+        "role": "sequence_item_count",
+        "role_status": "observed",
+        "unit": "unitless",
+        "unit_status": "observed",
+        "cardinality": "singleton",
+        "cardinality_status": "observed"
+      }
+    }
   }
+
 ]

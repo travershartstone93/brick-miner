@@ -7,12 +7,13 @@
 using namespace v5;
 namespace {
 std::map<Path, std::set<std::string>> locations() {
-  auto paths = run({"rg", "--files", "--hidden", "--no-ignore", "--null", "-g",
-                    "catalog.json", "-g", "components.json", "-g",
-                    "**/providers/contracts.json", "-g",
-                    "**/providers/library.json", "-g", "!**/.git/**",
-                    volume / "unllm", main_repo / "experiments/boilerplate"},
-                   {.seconds = 180});
+  auto paths =
+      run({"rg", "--files", "--hidden", "--no-ignore", "--null", "-g",
+           "catalog.json", "-g", "components.json", "-g",
+           "**/providers/contracts.json", "-g", "**/providers/library.json",
+           "-g", "!**/.git/**", "-g", "!**/v5-eval-private-*/**",
+           volume / "unllm", main_repo / "experiments/boilerplate"},
+          {.seconds = 180});
   std::istringstream input(paths);
   std::map<Path, std::set<std::string>> dirs;
   for (std::string f; std::getline(input, f, '\0');) {
@@ -229,12 +230,22 @@ int main(int argc, char **argv) try {
       CREATE TABLE input(path TEXT PRIMARY KEY,generation TEXT REFERENCES generation,bytes_sha256 TEXT,kind TEXT,entries INTEGER,issue TEXT,legacy_version TEXT);
       CREATE TABLE revision(key TEXT PRIMARY KEY,kind TEXT,id TEXT,brick TEXT,effect TEXT,inport TEXT,outport TEXT,row_sha256 TEXT,header_sha256 TEXT,legacy_row TEXT);
       CREATE TABLE occurrence(input TEXT REFERENCES input,ordinal INTEGER,revision TEXT REFERENCES revision,disposition TEXT,reason TEXT,contract_hash TEXT,new_contract_version TEXT,claim_status TEXT,qualification TEXT,activated INTEGER,PRIMARY KEY(input,ordinal));
+      CREATE TABLE port_assessment(contract_hash TEXT,direction TEXT,role_status TEXT,unit_status TEXT,cardinality_status TEXT,record_sha256 TEXT,PRIMARY KEY(contract_hash,direction));
       CREATE INDEX by_version ON occurrence(revision);
       CREATE INDEX by_binding ON revision(kind,id,brick,effect,inport,outport);
       CREATE VIEW inventory AS SELECT g.role,i.generation,i.path,i.bytes_sha256 AS legacy_document_sha256,i.legacy_version,o.*,r.kind,r.id,r.brick,r.effect,r.inport,r.outport,r.header_sha256,
         CASE WHEN o.contract_hash='' THEN 'pending' ELSE 'classified in staged contract' END AS classification
         FROM occurrence o JOIN input i ON i.path=o.input JOIN generation g ON g.path=i.generation JOIN revision r ON r.key=o.revision;
+      CREATE VIEW output_assessment AS SELECT i.generation,i.role,i.id,i.revision,i.contract_hash,p.record_sha256,
+          COALESCE(p.role_status,'pending') AS role_status,COALESCE(p.unit_status,'pending') AS unit_status,COALESCE(p.cardinality_status,'pending') AS cardinality_status
+          FROM inventory i LEFT JOIN port_assessment p ON p.contract_hash=i.contract_hash AND p.direction='output' WHERE i.kind='binding';
     )sql");
+    if (load(pack / "manifest.json")["interfaces"].isMember("semantic_ports"))
+      for (const auto &p : load(pack / "semantic-ports.json"))
+        db.insert("INSERT INTO port_assessment VALUES(?,?,?,?,?,?)",
+                  {p["contract_hash"].asString(), p["direction"].asString(),
+                   p["role_status"].asString(), p["unit_status"].asString(),
+                   p["cardinality_status"].asString(), sha(dump(p))});
     Snapshot snap{db, base, pack, out, admitted(pack)};
     for (const auto &[d, files] : dirs) {
       auto role = d == base              ? "active legacy"
@@ -279,6 +290,9 @@ int main(int argc, char **argv) try {
               db,
               "SELECT disposition,COUNT(*) FROM inventory WHERE role='active "
               "legacy' AND kind='binding' GROUP BY disposition")},
+         {"active_output_unit_status",
+          count_by(db, "SELECT unit_status,COUNT(*) FROM output_assessment "
+                       "WHERE role='active legacy' GROUP BY unit_status")},
          {"occurrences",
           count_by(db, "SELECT kind,COUNT(*) FROM inventory GROUP BY kind")},
          {"distinct_metadata_and_header_versions",
@@ -294,7 +308,8 @@ int main(int argc, char **argv) try {
           "Unpacked catalog.json, components.json, providers/library.json and "
           "providers/contracts.json "
           "under the corpus unllm directory and sibling "
-          "experiments/boilerplate; symlinked trees are not traversed. Raw "
+          "experiments/boilerplate; sealed V5 evaluation directories and "
+          "symlinked trees are excluded. Raw "
           "documents frozen by hash. Compressed archives and nonstandard "
           "formats require separate review. Revision identity covers the full "
           "row and resolved header where available. Identical bytes in other "

@@ -595,6 +595,60 @@
           "cost_units": 2
         }
       ]
+    },
+    {
+      "id": "retained-text-measures",
+      "family": "retained project provider",
+      "upstream": "../unllm-upgrade",
+      "revision": "6ba6c9245392545fd6f685538ebece88e96ee28c",
+      "method": "reviewed-local-git-archive",
+      "archive": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-text-measures-source-rCfec6LO/text-measures.tar",
+      "sha256": "5732484bb1e453a06a1a77f9498f24840e08fde96d90e577ed724e0affd5e94f",
+      "members": {
+        "headers/text_ops.hpp": [
+          "experiments/boilerplate/component-trial/expanded/text_ops.hpp",
+          "aa4f5de8ed2779d6ec3592f3178fe0a6a4926fc0c455f03c32436a547bcc5ccc"
+        ],
+        "providers/provider_types.hpp": [
+          "experiments/boilerplate/component-trial/providers/provider_types.hpp",
+          "70f9703c46cfa989382bda5322ec4c0b92c27f701abcf7da1f06678eb93122b8"
+        ]
+      },
+      "symbols": [
+        "bricks::lengths",
+        "bricks::count"
+      ],
+      "families": [
+        "algorithms"
+      ],
+      "documentation": "experiments/boilerplate/component-trial/expanded/operations.tsv",
+      "tests": "Independent current qualification in v5/fixtures/measure-probes.json and measure-client.cpp",
+      "examples": "experiments/boilerplate/stress/brick-learning/evidence/published-transfer.json",
+      "dependencies": [
+        "C++17 standard library",
+        "Qt6Core headers in the original header unit",
+        "brick_data provider_types.hpp"
+      ],
+      "rights": {
+        "scope": "local compilation, qualification and staged review of the retained project source",
+        "upstream_files": "MIT per the pinned project LICENSE; the two retained headers and operation descriptions declare no different notice.",
+        "redistribute": "Local stage only; retain copyright and permission notice.",
+        "notice_sha256": "8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"
+      },
+      "approval": "local-pilot",
+      "approval_reference": "V5 §4.5 retained-provider migration; approved local source and corpus staging in this workspace.",
+      "jobs": [
+        {
+          "route": "direct",
+          "selector": "retained-text-measures",
+          "stream": "foundational",
+          "coverage_gain": 1,
+          "reuse": 2,
+          "cost_units": 2
+        }
+      ],
+      "documentation_sha256": "15459d1462e44736ce30c63c82ded87d5f6188b69390a6e7aaedab6a13316599",
+      "example_scope": "Historical byte_lengths use only; no upstream item_count example asserted."
     }
   ],
   "jobs": [
@@ -628,7 +682,7 @@
   ],
   "queue_policy": {
     "version": "unllm.pilot-queue/1",
-    "scope": "H1 local staging on the two approved sources. Estimates order these reviewed jobs only.",
+    "scope": "H1 local staging on registry entries with reviewed selectors. Estimates order only those jobs.",
     "stream_weights": {
       "foundational": 2,
       "demand-driven": 1,

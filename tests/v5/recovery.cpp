@@ -94,6 +94,76 @@ void mapping() {
   }
   check(ambiguous, "accepted ambiguous provider binding");
 }
+J semantic_controls(const Path &pack, Database &db) {
+  auto sql = "SELECT provider FROM semantic_port WHERE direction='output' AND "
+             "role=? AND unit=? AND cardinality=? AND role_status='observed' "
+             "AND unit_status='observed' AND cardinality_status='observed'";
+  auto match = [&](const Strings &constraints) {
+    return db.query(sql, constraints);
+  };
+  check(match({"record_byte_length", "byte", "per_input_item"}) ==
+                std::vector<Strings>{{"x19"}} &&
+            match({"sequence_item_count", "unitless", "singleton"}) ==
+                std::vector<Strings>{{"x20"}},
+        "typed measurement lookup mismatch");
+  check(match({"record_byte_length", "unitless", "per_input_item"}).empty() &&
+            match({"sequence_item_count", "byte", "singleton"}).empty() &&
+            match({"sequence_item_count", "unitless", "per_input_item"})
+                .empty() &&
+            match({"record_byte_length", "unknown", "per_input_item"}).empty(),
+        "crossed semantic constraints passed");
+  check(db.query("SELECT provider FROM semantic_port WHERE direction='output' "
+                 "AND unit_status='unknown' AND unit IS NULL ORDER BY provider")
+                    .size() == 3 &&
+            db.query("SELECT provider FROM semantic_port WHERE "
+                     "direction='input' AND unit_status='not-applicable' AND "
+                     "unit IS NULL ORDER BY provider") ==
+                std::vector<Strings>{{"x19"}, {"x20"}},
+        "unknown, inapplicable and explicit dimensionless were conflated");
+  auto canonical = load(pack / "semantic-ports.json"),
+       contracts = load(pack / "contracts.json"),
+       bindings = load(pack / "bundle/providers/contracts.json")["providers"];
+  auto reject = [&](J changed) {
+    bool rejected = false;
+    try {
+      check_semantic_ports(pack, changed, contracts, bindings);
+    } catch (const std::exception &) {
+      rejected = true;
+    }
+    check(rejected, "invalid semantic view accepted");
+  };
+  auto changed = canonical;
+  changed[0]["contract_hash"] = std::string(64, '0');
+  reject(changed);
+  changed = canonical;
+  changed[0]["unit_status"] = "unknown";
+  changed[0]["unit"] = "unitless";
+  reject(changed);
+  changed = canonical;
+  changed.append(canonical[0]);
+  reject(changed);
+  changed = canonical;
+  J ignored;
+  changed.removeIndex(0, &ignored);
+  reject(changed);
+  changed = canonical;
+  changed[0]["evidence"] = array({"evidence/standalone.json#missing"});
+  reject(changed);
+  changed = canonical;
+  for (auto &p : changed)
+    if (p["provider"] == "x19" && p["direction"] == "output") {
+      p["role"] = "sequence_item_count";
+      p["unit"] = "unitless";
+      p["cardinality"] = "singleton";
+    }
+  reject(changed);
+  return array({"same-representation exact matches",
+                "role/unit/cardinality mismatch rejection",
+                "null versus explicit unitless", "stale parent contract",
+                "unknown positive identifier", "duplicate port",
+                "missing direction", "broken evidence link",
+                "valid identifiers contradict the observed callable"});
+}
 } // namespace
 int main() try {
   auto evidence = fresh_run("v5-recovery");
@@ -155,7 +225,7 @@ int main() try {
   auto hash = final["manifest_sha256"].asString();
   check(verify(q / "stage/package", hash) ==
             array({"number_option_prefix", "reverse_record_bytes",
-                   "threshold_entries", "u84"}),
+                   "threshold_entries", "byte_lengths", "item_count", "u84"}),
         "unexpected distinct qualifications");
   auto pack = q / "stage/package";
   auto pins = load(pack / "cross-check.json");
@@ -163,6 +233,7 @@ int main() try {
             pins["logical"]["TestedMethod"].size() == 6,
         "class retrieval or type coverage missing");
   Database catalog(pack / "contracts.sqlite", true);
+  report["semantic_controls"] = semantic_controls(pack, catalog);
   check(catalog.query(
             "SELECT provider FROM class_binding JOIN property USING(provider) "
             "WHERE name='state_protocol' AND status='observed'") ==

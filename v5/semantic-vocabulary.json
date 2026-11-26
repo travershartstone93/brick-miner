@@ -1,0 +1,13 @@
+{
+  "id":"unllm.semantic-ports/1",
+  "roles":{"ordered_text_records":"Encounter-ordered collection of string records","record_byte_length":"Length of each record as stored bytes","sequence_item_count":"Cardinality of the input collection"},
+  "units":{"byte":"One octet of the stored record","unitless":"Dimensionless integer count of collection members"},
+  "cardinalities":{"sequence":"A collection of input records","per_input_item":"One output for each input item in corresponding order","singleton":"Exactly one output, including on empty input"},
+  "statuses":["observed","unknown","not-applicable"],
+  "measurement_oracles":[
+    {"column":"byte_lengths","role":"record_byte_length","unit":"byte","cardinality":"per_input_item"},
+    {"column":"item_count","role":"sequence_item_count","unit":"unitless","cardinality":"singleton"}
+  ],
+  "unknown":"No positive identifier. Cannot discharge a requested role, unit or cardinality.",
+  "not-applicable":"This dimension has no applicable identifier for the port. Cannot satisfy a requested concrete identifier."
+}

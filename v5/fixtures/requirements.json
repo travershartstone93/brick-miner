@@ -62,5 +62,118 @@
         "failure": "destination-directory"
       }
     ]
+  },
+  "byte_lengths": {
+    "input_type": "text/plain",
+    "output_type": "application/json",
+    "parameters": {},
+    "cases": [
+      {
+        "input": "",
+        "json": []
+      },
+      {
+        "input": "0a",
+        "json": [
+          0
+        ]
+      },
+      {
+        "input": "610a",
+        "json": [
+          1
+        ]
+      },
+      {
+        "input": "c3a90a",
+        "json": [
+          2
+        ]
+      },
+      {
+        "input": "6100620a",
+        "json": [
+          3
+        ]
+      },
+      {
+        "input": "0acf800acf800a616263640a",
+        "json": [
+          0,
+          2,
+          2,
+          4
+        ]
+      },
+      {
+        "input": "65cc810af09f99820a",
+        "json": [
+          3,
+          4
+        ]
+      },
+      {
+        "failure": "missing-input"
+      },
+      {
+        "failure": "destination-directory"
+      }
+    ]
+  },
+  "item_count": {
+    "input_type": "text/plain",
+    "output_type": "application/json",
+    "parameters": {},
+    "cases": [
+      {
+        "input": "",
+        "json": [
+          0
+        ]
+      },
+      {
+        "input": "0a",
+        "json": [
+          1
+        ]
+      },
+      {
+        "input": "610a",
+        "json": [
+          1
+        ]
+      },
+      {
+        "input": "c3a90a",
+        "json": [
+          1
+        ]
+      },
+      {
+        "input": "6100620a",
+        "json": [
+          1
+        ]
+      },
+      {
+        "input": "0acf800acf800a616263640a",
+        "json": [
+          4
+        ]
+      },
+      {
+        "input": "65cc810af09f99820a",
+        "json": [
+          2
+        ]
+      },
+      {
+        "failure": "missing-input"
+      },
+      {
+        "failure": "destination-directory"
+      }
+    ]
   }
+
 }

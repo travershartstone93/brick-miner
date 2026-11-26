@@ -64,7 +64,8 @@ void integrate(const Path &extracted, const Path &dest) {
       parse(original.at("providers/contracts.json"))["providers"];
   for (const auto &a : anchors) {
     auto key = a["id"].asString();
-    if (a["source_id"] == "retained-keyed-latch")
+    if (registry[a["source_id"].asString()]["method"] ==
+        "reviewed-local-git-archive")
       continue;
     bool is_api = key == api;
     auto src = a["source_id"].asString();
