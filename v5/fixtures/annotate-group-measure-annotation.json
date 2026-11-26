@@ -1,0 +1,32 @@
+{
+  "description":"Append a partition-wide measurement to each original positioned row.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite ordered positioned rows with fields for the selected keys and measure.",
+    "semantic_output":"Each original row in encounter order with its original position and one appended decimal measurement.",
+    "parameters":{"keys":"Comma-separated zero-based input fields or all","column":"Zero-based measured field","measure":"count_equal, min, max or lower_median","value":"Text target for count_equal. Empty for numeric measures."}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","partition measurement"],
+    "application":["tabular reports","threshold comparisons","per-group summaries"],
+    "construction_role":["transform"],"abstraction":["positioned rows to annotated positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB window kernel"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_analytics","DuckDB 1.5.6-1","C++17"],
+    "resources":["Materializes input and query results. The retained adapter configures one DuckDB thread and a DuckDB memory setting of 64MB, which is not a measured process memory ceiling."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply existing key and measure columns, or all for one partition. Numeric operands must be signed decimal int64 text and numeric modes take an empty value.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested cases preserved encounter order, positions and fields and appended the expected conditional count, minimum, maximum or discrete lower median to every input row.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Conditional counts distinguished case, empty and embedded-NUL text in the tested cases. Numeric fixtures covered signed extrema, leading zeros and an even partition.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"In the surrounding TSV programs, measured-field failures preserved the existing destination or left it absent. The annotation provider does not perform the surrounding file I/O.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Interleaved and duplicate-position rows kept their original visits. Each tested compound-key partition carried one consistent measurement.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"No general equivalence or complexity proof is established.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"This detached scope records bounded executable observations.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"The tested malformed selectors failed during construction without visiting input. Tested bad operand values failed at visitation before emitting any row. A second successful visit consumed the input again.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The result captures the source producer by value. The source producer must keep its own captures valid at visitation.","evidence":["original/table.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent construction and visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter builds a DuckDB window query. The extracted evaluation symbol and signed source unit are pinned. Aggregate implementations are supplied through the retained linked runtime.","evidence":["original/adapter.cpp","original/table.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which grouping fields, measurement and measured field should be attached to each original row?","evidence":["spec.json"]}
+  }
+}

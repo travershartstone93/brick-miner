@@ -1,0 +1,68 @@
+{
+  "binding":{"component_id":"miner_annotate_group_measure","binding_id":"annotate_group_measure","from":"rows","to":"rows"},
+  "rows":[
+    [40,["a","w","8",""]],
+    [-2,["a","e","11",""]],
+    [40,["a","w","-4","O'Neil"]],
+    [7,["b","w","-10","o'neil"]],
+    [1,["a","w","+02","O'Neil"]],
+    [0,["a","w","6","O'Neil\u0000"]]
+  ],
+  "direct":[
+    {"name":"compound-exact-count","keys":"0,1","column":3,"measure":"count_equal","value":"O'Neil","expected":["2","0","2","0","2","2"]},
+    {"name":"embedded-nul-count","keys":"0,1","column":3,"measure":"count_equal","value":"O'Neil\u0000","expected":["1","0","1","0","1","1"]},
+    {"name":"empty-target-count","keys":"0,1","column":3,"measure":"count_equal","value":"","expected":["1","1","1","0","1","1"]},
+    {"name":"partition-minimum","keys":"0,1","column":2,"measure":"min","value":"","expected":["-4","11","-4","-10","-4","-4"]},
+    {"name":"partition-maximum","keys":"0,1","column":2,"measure":"max","value":"","expected":["8","11","8","-10","8","8"]},
+    {"name":"even-lower-median","keys":"0,1","column":2,"measure":"lower_median","value":"","expected":["2","11","2","-10","2","2"]},
+    {"name":"all-lower-median","keys":"all","column":2,"measure":"lower_median","value":"","expected":["2","2","2","2","2","2"]},
+    {"name":"extrema","keys":"all","column":0,"measure":"min","value":"","expected":["-9223372036854775808","-9223372036854775808"],"rows":[[4,["9223372036854775807"]],[-1,["-9223372036854775808"]]]},
+    {"name":"empty-input","keys":"0","column":2,"measure":"lower_median","value":"","expected":[],"rows":[]}
+  ],
+  "errors":[
+    {"name":"unknown-measure","keys":"0","column":2,"measure":"sum","value":"","error":"argument"},
+    {"name":"numeric-with-value","keys":"0","column":2,"measure":"min","value":"2","error":"argument"},
+    {"name":"missing-key-specification","keys":"","column":2,"measure":"max","value":"","error":"argument"},
+    {"name":"invalid-key-index","keys":"0,-1","column":2,"measure":"lower_median","value":"","error":"argument"},
+    {"name":"argument-index-limit","keys":"0","column":2147483647,"measure":"count_equal","value":"","error":"argument"},
+    {"name":"absent-key","keys":"0,4","column":2,"measure":"min","value":"","error":"missing column"},
+    {"name":"absent-value","keys":"0","column":4,"measure":"count_equal","value":"","error":"missing column"},
+    {"name":"malformed-number","keys":"0","column":1,"measure":"max","value":"","error":"invalid integer","rows":[[5,["a","0"]],[4,["a","3e0"]]]},
+    {"name":"integer-out-of-range","keys":"all","column":1,"measure":"lower_median","value":"","error":"Could not convert","rows":[[5,["a","9223372036854775808"]]]}
+  ],
+  "controls":[
+    {"name":"ignore-partition-column","witness":"compound-exact-count","field":"keys","value":"1"},
+    {"name":"ignore-case-and-exact-target","witness":"compound-exact-count","field":"value","value":"o'neil"},
+    {"name":"maximum-instead-of-minimum","witness":"partition-minimum","field":"measure","value":"max"},
+    {"name":"maximum-instead-of-median","witness":"even-lower-median","field":"measure","value":"max"}
+  ],
+  "ordinary":[
+    {"name":"compound-exact-count","fields":"pos,0,1,2,3,4","parameters":{"keys":"0,1","column":3,"measure":"count_equal","value":"O'Neil"},
+     "cases":[
+       {"name":"interleaved-groups","input":"a\tw\t8\t\na\te\t11\t\na\tw\t-4\tO'Neil\nb\tw\t-10\to'neil\na\tw\t+02\tO'Neil\na\tw\t6\tother\n","output":"1\ta\tw\t8\t\t2\n2\ta\te\t11\t\t0\n3\ta\tw\t-4\tO'Neil\t2\n4\tb\tw\t-10\to'neil\t0\n5\ta\tw\t+02\tO'Neil\t2\n6\ta\tw\t6\tother\t2\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"missing-value-field","input":"a\tw\t8\tO'Neil\na\tw\t-4\n","error":true}
+     ]},
+    {"name":"partition-minimum","fields":"pos,0,1,2,3,4","parameters":{"keys":"0,1","column":2,"measure":"min","value":""},
+     "cases":[
+       {"name":"interleaved-groups","input":"a\tw\t8\t\na\te\t11\t\na\tw\t-4\tO'Neil\nb\tw\t-10\to'neil\na\tw\t+02\tO'Neil\na\tw\t6\tother\n","output":"1\ta\tw\t8\t\t-4\n2\ta\te\t11\t\t11\n3\ta\tw\t-4\tO'Neil\t-4\n4\tb\tw\t-10\to'neil\t-10\n5\ta\tw\t+02\tO'Neil\t-4\n6\ta\tw\t6\tother\t-4\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"missing-value-field","input":"a\tw\t8\tok\na\tw\n","error":true},
+       {"name":"malformed-operand","input":"a\tw\t8\tok\na\tw\t2.5\tbad\n","error":true}
+     ]},
+    {"name":"partition-maximum","fields":"pos,0,1,2,3,4","parameters":{"keys":"0,1","column":2,"measure":"max","value":""},
+     "cases":[
+       {"name":"interleaved-groups","input":"a\tw\t8\t\na\te\t11\t\na\tw\t-4\tO'Neil\nb\tw\t-10\to'neil\na\tw\t+02\tO'Neil\na\tw\t6\tother\n","output":"1\ta\tw\t8\t\t8\n2\ta\te\t11\t\t11\n3\ta\tw\t-4\tO'Neil\t8\n4\tb\tw\t-10\to'neil\t-10\n5\ta\tw\t+02\tO'Neil\t8\n6\ta\tw\t6\tother\t8\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"missing-value-field","input":"a\tw\t8\tok\na\tw\n","error":true},
+       {"name":"malformed-operand","input":"a\tw\t8\tok\na\tw\t2.5\tbad\n","error":true}
+     ]},
+    {"name":"even-lower-median","fields":"pos,0,1,2,3,4","parameters":{"keys":"0,1","column":2,"measure":"lower_median","value":""},
+     "cases":[
+       {"name":"interleaved-groups","input":"a\tw\t8\t\na\te\t11\t\na\tw\t-4\tO'Neil\nb\tw\t-10\to'neil\na\tw\t+02\tO'Neil\na\tw\t6\tother\n","output":"1\ta\tw\t8\t\t2\n2\ta\te\t11\t\t11\n3\ta\tw\t-4\tO'Neil\t2\n4\tb\tw\t-10\to'neil\t-10\n5\ta\tw\t+02\tO'Neil\t2\n6\ta\tw\t6\tother\t2\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"missing-value-field","input":"a\tw\t8\tok\na\tw\n","error":true},
+       {"name":"malformed-operand","input":"a\tw\t8\tok\na\tw\t2.5\tbad\n","error":true}
+     ]}
+  ]
+}

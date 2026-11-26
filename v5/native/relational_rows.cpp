@@ -21,15 +21,25 @@ struct RowScope {
   bool groups() const { return operation == "group_rows"; }
   bool selects() const { return operation == "select_group_row"; }
   bool aggregates() const { return operation == "aggregate_groups"; }
+  bool annotates() const { return operation == "annotate_group_measure"; }
   bool group_transform() const { return selects() || aggregates(); }
   bool row_kernels() const { return groups() || group_transform(); }
-  bool filter() const { return !report() && !row_kernels(); }
+  bool renders_rows() const { return row_kernels() || annotates(); }
+  bool filter() const { return !report() && !renders_rows(); }
+  Path origin() const {
+    if (row_kernels())
+      return group_history;
+    return annotates() ? Path("qualifications/shared/analytics") : history;
+  }
   std::string kernel() const {
-    return row_kernels() ? "libbrick_row_kernels.so"
-                         : "libbrick_shared_relational.so";
+    if (row_kernels())
+      return "libbrick_row_kernels.so";
+    return "lib" + pkg_config() + ".so";
   }
   std::string pkg_config() const {
-    return row_kernels() ? "brick-row-kernels" : "brick_shared_relational";
+    if (row_kernels())
+      return "brick-row-kernels";
+    return annotates() ? "brick_shared_analytics" : "brick_shared_relational";
   }
 };
 
@@ -186,7 +196,8 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
     return result;
   }
 
-  const auto provenance = load(bundle / history / "source.json");
+  const auto origin = scope.origin();
+  const auto provenance = load(bundle / origin / "source.json");
   const auto symbol = src["symbols"][0].asString();
   const auto unit = provenance["source_units"][symbol].asString();
   const auto definition = provenance["definitions"][symbol];
@@ -206,11 +217,14 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
        "usr/src/debug/duckdb/duckdb/" + unit},
       {.output = source});
   const auto source_pin = digest(source);
-  check(source_pin == src["source_unit_sha256"].asString(),
+  check(source_pin == src["source_unit_sha256"].asString() &&
+            (!scope.annotates() ||
+             source_pin == provenance["headers"][unit].asString()),
         "signed relational source member differs");
-  retain_adapter(stage, bundle, history, src, row, provenance,
-                 "shared/relational/adapter.cpp");
-  const auto table = bytes(bundle / history / "table.hpp");
+  retain_adapter(stage, bundle, origin, src, row, provenance,
+                 scope.annotates() ? "shared/analytics/adapter.cpp"
+                                   : "shared/relational/adapter.cpp");
+  const auto table = bytes(bundle / origin / "table.hpp");
   check(table ==
             run({"git", "-C", root, "show",
                  src["adapter_revision"].asString() + ":shared/table.hpp"}),
@@ -231,7 +245,7 @@ J goal(const RowScope &scope, const J &trial, bool tsv = false) {
   if (scope.filter()) {
     steps.append(object({{"outcome", "ordered_column"},
                          {"parameters", object({{"column", 0}})}}));
-  } else if (scope.row_kernels()) {
+  } else if (scope.renders_rows()) {
     if (scope.groups() && trial["count"].asBool())
       steps.append(
           object({{"outcome", "aggregate_groups"},
@@ -254,7 +268,7 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
                      : array({"tab_records", "op_0_filter_records",
                               "op_1_column", "write_lines"});
   auto report = object({{"trials", array()}});
-  if (!scope.row_kernels())
+  if (!scope.renders_rows())
     report["chain"] = chain;
   std::map<std::string, Path> arms{{"baseline", base}, {"staged", bundle}};
   auto tsv_chain = chain;
@@ -280,6 +294,10 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
     } else if (scope.group_transform()) {
       expected = array({"tab_records", "op_0_group_rows", "op_1_" + scope.operation,
                         "op_2_report_fields", "write_lines"});
+      result["chain"] = expected;
+    } else if (scope.annotates()) {
+      expected = array({"tab_records", "op_0_annotate_group_measure",
+                        "op_1_report_fields", "write_lines"});
       result["chain"] = expected;
     }
     for (const auto &[arm, catalog] : arms) {
@@ -418,9 +436,11 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
             parse(run(cmd, {.seconds = 30, .probe_limits = true})) == first,
         "standalone relational suite failed to reproduce");
   if (!scope.filter()) {
-    const auto cases = scope.aggregates() ? "aggregates" :
+    const auto cases = scope.annotates() ? "annotations" :
+                       scope.aggregates() ? "aggregates" :
                        scope.selects() ? "selections" : scope.groups() ? "groupings" : "reports";
-    const auto calls = scope.selects() ? "calls_per_selection" :
+    const auto calls = scope.annotates() ? "calls_per_annotation" :
+                       scope.selects() ? "calls_per_selection" :
                        scope.groups() ? "calls_per_grouping" :
                        scope.aggregates() ? "calls_per_aggregate" : "calls_per_report";
     check(first[cases].size() ==
@@ -648,7 +668,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
   check(src["approval"] == "local-pilot" &&
             src["method"] == "signed-local-package" &&
             job["source"] == scope.source_id.c_str() &&
-            job["route"] == (scope.row_kernels() ? "direct" : "api") &&
+            job["route"] == (scope.renders_rows() ? "direct" : "api") &&
             job["stream"] == "foundational" &&
             job["tests"].asString() == "v5/fixtures/" + scope.fixture + ".json",
         "unapproved retained relational job");
@@ -673,8 +693,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
   const auto record = file_binding_identity(row, bundle);
   const auto selection = select_ranked_scope(package, pin, priority, job);
   const auto &selected = selection["selected"];
-  const auto legacy = load(bundle / (scope.row_kernels() ? group_history : history) /
-                           "contracts.json")[scope.operation];
+  const auto legacy = load(bundle / scope.origin() / "contracts.json")[scope.operation];
   check(selected["binding_id"] == scope.operation.c_str() &&
             selected["binding_sha256"] == record["binding_sha256"] &&
             selected["header_sha256"] == record["header_sha256"] &&
@@ -703,7 +722,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
                 {"bundle_sha256", tsv_manifest["files"]["bundle/SHA256SUMS"]},
                 {"writer", writer}});
     write(stage / "selection.json", qualified_selection);
-  } else if (scope.row_kernels()) {
+  } else if (scope.renders_rows()) {
     write(stage / "selection.json", selection);
   }
   const auto source = verify_materials(stage, bundle, base, src, row, scope);
@@ -752,8 +771,9 @@ Path qualify_rows(const Path &package, const std::string &pin,
   if (!scope.filter()) {
     domain["selector_fixture_sha256"] = digest(stage / "spec.json");
     domain["selection_sha256"] = digest(stage / "selection.json");
-    if (scope.row_kernels()) {
-      const auto kind = scope.aggregates() ? "group_aggregation" :
+    if (scope.renders_rows()) {
+      const auto kind = scope.annotates() ? "group_measure_annotation" :
+                        scope.aggregates() ? "group_aggregation" :
                         scope.selects() ? "row_selection" : "grouping";
       domain[kind] = object(
           {{"arguments", scope.arguments}, {"direct_cases", spec["direct"]}});
@@ -831,5 +851,16 @@ Path qualify_aggregate_groups(const Path &package, const std::string &pin,
        array({"measure", "value_column", "result_order"}),
        "Detached count, distinct byte count and checked signed sum fixtures on the pinned DuckDB row kernels.",
        "Exact group keys, decimal results, output positions, value order and failure outcomes."});
+}
+
+Path qualify_annotate_group_measure(const Path &package, const std::string &pin,
+                                   const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"annotate_group_measure", "retained-annotate-group-measure",
+       "annotate-group-measure", "rows", "src/function/window/window_aggregate_function.cpp",
+       array({"keys", "column", "measure", "value"}),
+       "Detached count-equal, min, max and lower-median fixtures on the pinned DuckDB window adapter.",
+       "Exact original fields and positions, encounter order, appended partition measures and failure outcomes."});
 }
 } // namespace v5
