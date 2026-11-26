@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The five parcel-dispatch zero-operation replies were replayed with retained SQLite row and history operations. The follow-up separates scan ID order from row insertion order with matching logical data in two fresh databases. [Parcel-dispatch replay and reproduction](replay-gaps/RESULTS.md#archived-parcel-dispatch-with-no-ordered-operations)
+
 The seven room-booking replies with zero operations use the retained JSON reader and interval operations in their supplied constructions. Fresh controls distinguish half-open intervals, departure-first occupancy and summing each canceled duration. [Room-booking replay and reproduction](replay-gaps/RESULTS.md#archived-room-bookings-with-no-ordered-operations)
 
 The nine finance requests are the largest family among the 32 archived replies with zero ordered operations. Correcting CSV input and supplying retained operations passed all 45 saved fixtures using the staged TSV writer where required. A new signed-amount fixture exposed and verified corrections for two reference recipes. [Finance replay and frequency ranking](replay-gaps/RESULTS.md#archived-replies-with-no-ordered-operations-and-the-finance-cohort)
