@@ -1,0 +1,50 @@
+{
+  "binding":{"component_id":"miner_filter_records","binding_id":"filter_records","from":"rows","to":"rows"},
+  "comparisons":["eq","ne","lt","le","gt","ge"],
+  "modes":[
+    {"type":"int","column":0,"value":"10"},
+    {"type":"int_field","column":0,"value":"1"},
+    {"type":"text","column":2,"value":"m"},
+    {"type":"text_field","column":2,"value":"3"}
+  ],
+  "rows":[
+    [30,["2","10","z","a","kept as supplied"]],
+    [-4,["10","2","a","z","mixed position"]],
+    [8,["+010","10","m","m","signed spelling"]],
+    [8,["+010","10","m","m","signed spelling"]],
+    [1,["-0","0","M","m","case distinction"]],
+    [75,["-9223372036854775808","9223372036854775807","","a","minimum"]],
+    [2,["9223372036854775807","-9223372036854775808","é","z","maximum"]],
+    [50,["0","-0","O'Neil","O'Neil","quoted spelling"]]
+  ],
+  "errors":[
+    {"name":"invalid-comparison","phase":"create","type":"int","comparison":"invalid","column":0,"value":"0","rows":[]},
+    {"name":"invalid-type","phase":"create","type":"float","comparison":"eq","column":0,"value":"0","rows":[]},
+    {"name":"invalid-field-selector","phase":"create","type":"int_field","comparison":"eq","column":0,"value":"-1","rows":[]},
+    {"name":"missing-column","phase":"visit","type":"text_field","comparison":"eq","column":0,"value":"1","rows":[[9,["first"]]]},
+    {"name":"noninteger-column","phase":"visit","type":"int","comparison":"gt","column":0,"value":"0","rows":[[1,["4"]],[2,["4.5"]]]},
+    {"name":"empty-integer","phase":"visit","type":"int","comparison":"eq","column":0,"value":"0","rows":[[2,[""]]]},
+    {"name":"overflow-integer","phase":"visit","type":"int","comparison":"le","column":0,"value":"0","rows":[[4,["9223372036854775808"]]]},
+    {"name":"invalid-literal","phase":"visit","type":"int","comparison":"eq","column":0,"value":"x","rows":[[1,["1"]]]}
+  ],
+  "ordinary":[
+    {
+      "name":"compare-two-integer-columns",
+      "parameters":{"column":1,"type":"int_field","comparison":"gt","value":"2"},
+      "cases":[
+        {"name":"signed-order","input":"z\t2\t10\nx\t10\t2\nsame\t-0\t+0\ny\t-2\t-10\nx\t10\t2\n","output":"x\ny\nx\n"},
+        {"name":"empty","input":"","output":""},
+        {"name":"late-bad-integer","input":"good\t2\t1\nbad\tn/a\t1\n","error":true},
+        {"name":"short-row","input":"no-comparison-columns\n","error":true}
+      ]
+    },
+    {
+      "name":"compare-text-literal",
+      "parameters":{"column":1,"type":"text","comparison":"eq","value":"O'Neil"},
+      "cases":[
+        {"name":"case-and-duplicates","input":"first\tO'Neil\nsecond\tO'neil\nthird\tO'Neil\nfirst\tO'Neil\n","output":"first\nthird\nfirst\n"},
+        {"name":"no-match","input":"a\tOther\n","output":""}
+      ]
+    }
+  ]
+}

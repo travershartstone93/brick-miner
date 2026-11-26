@@ -1,0 +1,32 @@
+{
+  "description":"Select full rows by one typed comparison while keeping original positions and encounter order.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"An ordered producer of finite rows with UTF-8 text fields and source positions. Integer operands in this scope are signed decimal texts in the signed 64-bit range.",
+    "semantic_output":"An encounter-ordered subsequence of full input rows, with unchanged fields and source positions.",
+    "parameters":{"column":"column","type":"text","comparison":"text","value":"text"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","conditional selection"],
+    "application":["tabular reports","measurements","inventory","ledger reports"],
+    "construction_role":["filter"],"abstraction":["ordered row visitor"],
+    "implementation_form":["retained authored adapter over DuckDB comparison query"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_relational","DuckDB 1.5.6-1","C++17"],
+    "resources":["The visited producer is materialized into a local in-memory table before row delivery. The configured DuckDB memory limit is 64 MB. Process memory and scaling remain unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply valid zero-based columns, a supported typed comparison, and valid UTF-8 text in this scope. Field mode interprets the value as a column index. Integer comparisons require signed decimal operands in range.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"Across four operand modes and six comparators, outputs kept exactly the selected full rows, including duplicates and their original positions in encounter order.","evidence":["standalone.json"]},
+    "refinements":{"status":"observed","detail":"The fixtures distinguish text from integer ordering, signed decimal spellings, range endpoints, operand order and case-sensitive text equality.","evidence":["standalone.json","spec.json"]},
+    "effects":{"status":"observed","detail":"The typed CLI wrote outputs on success. Its tested missing-column and invalid-integer failures preserved a pre-existing destination and left an absent destination absent.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Two sequential visits to the same producer agreed on the tested input. No read occurred during filter construction.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"No universal subsequence proof or rewrite law was established.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The fixture domain describes tested operand modes and representation. No formal proof over all rows is claimed.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Invalid comparison, type or index syntax failed at creation. Tested missing fields and malformed or out-of-range integer operands failed during visitation, before any emitted row.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The result captures the source closure by value. A visitor borrows delivered field storage during its callback.","evidence":["original/adapter.cpp","original/table.hpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits and arbitrary side effects of upstream producers were not tested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread-affinity requirements were not investigated.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter submits a SELECT with a typed predicate and encounter order to DuckDB. The retained kernel exports the extracted PhysicalFilter symbol.","evidence":["original/adapter.cpp","source.json"]},
+    "specification_question":{"status":"declared","detail":"Which column, comparison and operand should decide which rows remain? Should the operand be interpreted as text, an integer, or another column?","evidence":["spec.json"]}
+  }
+}

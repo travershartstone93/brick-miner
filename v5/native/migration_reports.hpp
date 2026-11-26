@@ -4,6 +4,16 @@
 namespace v5 {
 miner::J retained_binding_job(const miner::Path &registry, const std::string &target);
 std::string archive_member(const miner::J &source, const std::string &name);
+miner::Path arch_keyring(const miner::Path &stage);
+std::string signed_build_info(const miner::J &src, const miner::Path &recipe,
+                              const miner::Path &ring);
+std::string package_info(const miner::J &src, const std::string &name);
+miner::J runtime_files(const miner::Path &bundle, const miner::Path &base,
+                       const miner::Strings &files);
+void retain_adapter(const miner::Path &stage, const miner::Path &bundle,
+                    const miner::Path &origin, const miner::J &src,
+                    const miner::J &binding, const miner::J &provenance,
+                    const std::string &git_adapter);
 std::string verified_runtime_package(const miner::Path &work,
                                      const miner::J &source);
 miner::J complete_file_plan(const miner::Path &bundle, const miner::Path &out,
@@ -70,6 +80,12 @@ miner::Path qualify_tsv_writer(const miner::Path &package,
                                const std::string &registry_pin);
 miner::J replay_binding_usage(const miner::Path &snapshot,
                               const std::string &pin);
+miner::J rank_supplied_usage(const miner::Path &audit, const std::string &audit_pin,
+                            const miner::Path &snapshot, const std::string &ledger_pin);
+miner::Path qualify_filter_records(const miner::Path &package,
+                                   const std::string &pin,
+                                   const miner::Path &registry,
+                                   const std::string &registry_pin);
 miner::Path binding_identity_fixture(const miner::Path &package,
                                      const std::string &pin);
 } // namespace v5

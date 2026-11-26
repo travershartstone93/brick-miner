@@ -21,6 +21,7 @@ struct Projection {
   bool directory() const { return input_type == "inode/directory"; }
   bool json() const { return input_type == "application/json"; }
 };
+} // namespace
 
 Path arch_keyring(const Path &stage) {
   auto ring = stage.parent_path() / "arch.gpg";
@@ -97,6 +98,7 @@ void retain_adapter(const Path &stage, const Path &bundle, const Path &origin,
   save(stage / "notices/provider-abi-MIT", notice);
 }
 
+namespace {
 void verify_archive_materials(const Path &stage, const Path &bundle,
                               const Path &base, const J &src,
                               const J &binding) {

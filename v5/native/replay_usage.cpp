@@ -182,4 +182,68 @@ J replay_binding_usage(const Path &snapshot, const std::string &pin) {
         "interpretations. Slot completion measures only that role. This report "
         "grants no acquisition or qualification status."}});
 }
+
+J rank_supplied_usage(const Path &audit, const std::string &audit_pin,
+                      const Path &snapshot, const std::string &ledger_pin) {
+  check_corpus(audit);
+  check_corpus(snapshot);
+  const auto ledger = project_file(snapshot, "ledger.sqlite");
+  const auto audit_bytes = bytes(audit);
+  check(sha(audit_bytes) == audit_pin && digest(ledger) == ledger_pin,
+        "coverage audit or migration ledger pin mismatch");
+  const auto coverage = parse(audit_bytes);
+  check(coverage["schema"] == "unllm.archived-construction-audit/1" &&
+            coverage["verified_supplied_requests"] == 100,
+        "unexpected supplied route coverage scope");
+  Database db(ledger, true);
+  db.script("PRAGMA trusted_schema=OFF; BEGIN");
+  check(db.query("SELECT path,legacy_manifest_sha256 FROM generation "
+                 "WHERE role='active legacy'") ==
+            std::vector<Strings>{{verified_base(), base_hash}},
+        "migration ledger refers to a different active generation");
+  const std::string pending = "structural inventory pending qualification";
+  auto ranking = array();
+  J first;
+  unsigned detached = 0, upper = 101;
+  std::set<std::string> seen;
+  for (auto row : coverage["supplied_binding_usage"]) {
+    const auto id = row["binding_id"].asString();
+    const auto pin = row["binding_sha256"].asString();
+    const auto count = row["request_count"].asUInt();
+    check(count > 0 && count <= upper && count == row["requests"].size() &&
+              seen.insert(pin).second,
+          "invalid binding rank or repeated row");
+    upper = count;
+    const auto matched = db.query(
+        "SELECT i.disposition,i.header_sha256,i.revision,r.legacy_row "
+        "FROM inventory i JOIN revision r ON r.key=i.revision "
+        "WHERE i.role='active legacy' AND i.kind='binding' AND i.id=? "
+        "AND i.brick=? AND i.inport=? AND i.outport=?",
+        {id, row["component_id"].asString(), row["from"].asString(),
+         row["to"].asString()});
+    if (matched.empty()) {
+      check(id == "write_tsv_lines" &&
+                pin == "f7642be622fe5e4af8ac8adbf788472f58017b444a0db3f24fcceff0bae13bf8",
+            "unaccounted binding outside the active ledger: " + id);
+      row["disposition"] = "detached existing implementation registration";
+      ++detached;
+    } else {
+      check(matched.size() == 1 && compact_hash(parse(matched[0][3])) == pin,
+            "ranked binding row differs from exact ledger revision " + id);
+      row["disposition"] = matched[0][0];
+      row["header_sha256"] = matched[0][1];
+      row["ledger_revision"] = matched[0][2];
+      if (first.isNull() && row["disposition"] == pending.c_str())
+        first = row;
+    }
+    ranking.append(row);
+  }
+  check(!first.isNull() && ranking.size() == 40 && detached == 1,
+        "incomplete ranked migration join");
+  return object({{"schema", "unllm.h1b-supplied-priority/1"},
+                 {"active_manifest_sha256", base_hash},
+                 {"audit_sha256", audit_pin},
+                 {"ledger_sha256", ledger_pin},
+                 {"first_pending", first}, {"bindings", ranking}});
+}
 } // namespace v5

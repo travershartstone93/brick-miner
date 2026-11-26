@@ -296,6 +296,13 @@ J count_by(Database &db, const std::string &sql) {
 }
 } // namespace
 int main(int argc, char **argv) try {
+  if (argc == 6 && std::string(argv[1]) == "--rank-supplied") {
+    auto report = rank_supplied_usage(argv[2], argv[3], argv[4], argv[5]);
+    auto out = fresh_run("v5-supplied-priority") / "priority.json";
+    write(out, report);
+    std::cout << out.string() << '\n' << digest(out) << '\n';
+    return 0;
+  }
   if (argc == 4 && std::string(argv[1]) == "--replay-usage") {
     auto report = replay_binding_usage(fs::canonical(argv[2]), argv[3]);
     auto out = fresh_run("v5-replay-usage") / "usage.json";
@@ -322,6 +329,7 @@ int main(int argc, char **argv) try {
       {"--qualify-zip-records", qualify_zip_records},
       {"--qualify-tree-records", qualify_tree_records},
       {"--qualify-json-records", qualify_json_records},
+      {"--qualify-filter-records", qualify_filter_records},
       {"--qualify-filter-extension", qualify_filter_extension},
       {"--qualify-json-writer", qualify_json_writer}};
   if ((argc == 4 || argc == 7) && file_trials.contains(argv[1])) {
@@ -339,12 +347,13 @@ int main(int argc, char **argv) try {
   check(
       argc == 3 || (argc == 6 && std::string(argv[3]) == "--frozen"),
       "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
-      "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
+      "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256, "
+      "--rank-supplied AUDIT AUDIT_SHA256 SNAPSHOT LEDGER_SHA256 or "
       "--binding-identity-fixture, --qualify-writer, --qualify-tsv-writer, "
       "--qualify-recursive-files "
       "--qualify-parent-paths, --qualify-archive-names, --qualify-zip-records, "
       "--qualify-tree-records, --qualify-json-records, --qualify-filter-extension, "
-      "--qualify-json-writer "
+      "--qualify-json-writer, --qualify-filter-records "
       "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);

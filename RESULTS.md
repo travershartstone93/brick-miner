@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The supplied-use ranking joined 39 exact bindings to the frozen migration ledger and accounted separately for the staged TSV registration. The highest pending binding, `filter_records`, passed scoped direct and ordinary program checks. [Qualification and reproduction](v5/RECONCILIATION.md#h1b-typed-row-filter)
+
 The joined audit verifies all 100 supplied constructions across 110 output roles and 500 saved fixture passes. The original reference harness used plain text in place of 47 requested TSV output roles. The two documented fresh-English trials failed. The audit ranks retained bindings by request use for V5 backfill. [100-request audit](replay-gaps/RESULTS.md#joined-audit-of-all-100-requests)
 
 H016 and H065 close the 15-request typed-conversion cohort. The supplied constructions have verified execution for all 20 roles and 75 saved fixtures. H016 needs the CSV input label and staged TSV writer. H065 uses the retained exact directory-component test and the same writer. [Typed-conversion closure and reproduction](replay-gaps/RESULTS.md#csv-and-directory-constructions-close-the-typed-conversion-cohort)

@@ -815,6 +815,31 @@
       "approval_reference":"Historical approved DuckDB source and readers batch recorded in row-ops/mined/source/arch.json and SHARED-NEEDS.md."
     },
     {
+      "id":"retained-relational-filter","family":"Official Arch packages","upstream":"https://www.duckdb.org",
+      "revision":"sha256:05015ebf87a5845696664df279b0cb932174e8f7be4c51eb0f09db913463b28a",
+      "release":"1.5.6-1","method":"signed-local-package",
+      "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/duckdb-input-GHUYik9e/duckdb-1.5.6-1-x86_64.pkg.tar.zst",
+      "sha256":"05015ebf87a5845696664df279b0cb932174e8f7be4c51eb0f09db913463b28a",
+      "signature_sha256":"21589d9df07d95e12b5d3eebe46a04e1d647e7bd073e75e3c25e85cb36c35a4b",
+      "debug_archive":"duckdb-debug-1.5.6-1-x86_64.pkg.tar.zst",
+      "debug_sha256":"02dc053e5f9d40be5d2a6ff8533e7111df92d5ce875fb31aa4d12fd5d950d2db",
+      "debug_signature_sha256":"c82bfbad7ae428c6892dc553769c37d5beffadc6ee56a549bd2edfa5b43119a5",
+      "signer":"E75CD4814A77AD943C7AB5A3E0959FEA8B550539","recipe_sha256":"61f49a0cb04cdf273818fab07fc702c7fef3d80f7e4e30c07ae806e3a8e02790",
+      "upstream_tag":"v1.5.6","upstream_source_id":"069cc9f9b5",
+      "symbols":["PhysicalFilter::ExecuteInternal"],"families":["algorithms"],
+      "source_unit_sha256":"a7d9310111714507663ca3876d1d61af613ca50392256abf01731522a34bde4c",
+      "adapter_revision":"b4e51bf11e1fe9494d5770734af982f89ad9158b",
+      "provider_abi_revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a",
+      "provider_abi_notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e",
+      "documentation":"qualifications/shared/relational/contracts.json","examples":"shared/relational/cases.json","tests":"v5/fixtures/filter-records.json",
+      "dependencies":["brick_shared_relational","DuckDB 1.5.6-1","C++17 standard library"],
+      "rights":{"scope":"Reuse the previously approved cached packages and retained relational runtime for a detached local filter qualification.",
+                "upstream_files":"DuckDB MIT per signed binary package. Preserve original MIT notice and C++ provider ABI notice.",
+                "redistribute":"Local evidence review only. A separate redistribution grant for the authored adapter is unrecorded."},
+      "approval":"local-pilot",
+      "approval_reference":"The approved DuckDB relational batch in SHARED-NEEDS.md and row-ops/mined/source/arch.json."
+    },
+    {
       "id":"retained-zip-records","family":"Official Arch packages","upstream":"https://libarchive.org/",
       "revision":"sha256:07b7aaec008cc4892cb2da0c599a16438d2e70869a01b90c4e20bf153f58c3b3",
       "release":"3.8.9-1","method":"signed-local-package",
@@ -912,6 +937,14 @@
       "callable": "bricks::suffix",
       "tests": "v5/fixtures/filter-extension.json",
       "stream": "foundational"
+    },
+    {
+      "source":"retained-relational-filter","route":"api","target":"filter_records",
+      "callable":"brick_miner::shared::filter_records","tests":"v5/fixtures/filter-records.json","stream":"foundational",
+      "coverage_audit":"v5-coverage-audit-XX5WboAN/report.json",
+      "coverage_sha256":"ab8b368e3c9b666c0613a09669fa711669f7774296e888e271a9f546665594f6",
+      "migration_snapshot":"v5-migration-XXZ54mW8/snapshot",
+      "ledger_sha256":"304356b713d780760d05a075031901c6bedec7181f8970ffcfc26de9fbf12b40"
     },
     {
       "source": "gcc-libstdcxx",
