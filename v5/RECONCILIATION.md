@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b reachability replay reproduced H085's archived scheduling input gap, then passed the fixed downstream request through the retained TSV and reachability bindings. H086 transferred that route to upstream prerequisites by reversing the edge columns. [Reachability and schedule controls](../replay-gaps/RESULTS.md#a-scheduling-input-gap-in-a-reachability-request-h085-h086)
+
 The H1b row-boundary controls replay H076 and H088. Both fixed constructions passed on retained operations, with the previously staged TSV writer for H076. [Row-boundary controls](../replay-gaps/RESULTS.md#two-strings-to-rows-stops-h076-h088)
 
 The latest detached backfill qualifies the historical TSV sink registration on the V5 parent. [TSV writer and paired replay](#h1b-tsv-sink-registration)

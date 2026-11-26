@@ -51,8 +51,12 @@ $(BUILD_DIR)/telemetry-replay: replay-gaps/telemetry.cpp $(BUILD_DIR)/host/commo
 $(BUILD_DIR)/path-replay: replay-gaps/path-metadata.cpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
 
-$(BUILD_DIR)/row-boundary-replay: replay-gaps/row-boundaries.cpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
-	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
+ROW_REPLAY_INPUTS = replay-gaps/row-trial.cpp replay-gaps/row-trial.hpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
+$(BUILD_DIR)/row-boundary-replay: replay-gaps/row-boundaries.cpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
+
+$(BUILD_DIR)/reachability-replay: replay-gaps/reachability.cpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
 $(BUILD_DIR)/library-pilot: src/experiments/discovery.cpp src/experiments/pilot.cpp src/experiments/pilots.hpp src/experiments/original_adapter.hpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -lpugixml -o "$@"
