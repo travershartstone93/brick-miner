@@ -69,6 +69,13 @@ std::vector<Qualified> admitted(const Path &pack) {
                                       iface["structural_output"].asString()),
                        c});
   }
+  if (load(pack / "manifest.json")["interfaces"].isMember("library_class")) {
+    auto lib = load(pack / "bundle/providers/library.json");
+    for (const auto &c : load(pack / "class-contracts.json"))
+      for (const auto &cl : lib["classes"])
+        if (cl["brick"] == c["provider_id"])
+          entries.push_back({cl, c});
+  }
   return entries;
 }
 struct Snapshot {
@@ -92,6 +99,7 @@ struct Snapshot {
                field("to"), sha(bytes), header, bytes});
     J claims = object(), proof = object();
     std::string status = "legacy-only pending review", contract,
+                contract_version,
                 reason = "Legacy occurrence has not passed V5 qualification";
     if (id.empty()) {
       status = "quarantined";
@@ -99,11 +107,7 @@ struct Snapshot {
     } else if ((kind == "binding" || kind == "class") && header.empty()) {
       status = "quarantined";
       reason = "Unresolved implementation header";
-    } else if (kind == "class") {
-      status = "class inventory pending qualification";
-      reason = "Library descriptor preserves method identities and value "
-               "types; object lifetime and independent qualification pending";
-    } else if (kind == "binding") {
+    } else if (kind == "binding" || kind == "class") {
       status = "structural inventory pending qualification";
       reason = "Semantic claims, complete dependency closure and independent "
                "qualification pending";
@@ -116,8 +120,15 @@ struct Snapshot {
           // Baseline receipts and unchanged dependency members are required to
           // extend the selected staged proof to the original occurrence.
           if (dir == base) {
-            if (evidence[c["capability_id"].asString()]["baseline"]["result"] !=
-                "passed")
+            if (kind == "class") {
+              auto tests = load(pack / "evidence/fifo-integration.json");
+              check(!tests.empty(), "missing class baseline");
+              for (const auto &t :
+                   c["interface"]["value_types"].getMemberNames())
+                check(!tests[t]["baseline"]["observations"].asString().empty(),
+                      "missing class specialization baseline");
+            } else if (evidence[c["capability_id"].asString()]["baseline"]
+                               ["result"] != "passed")
               continue;
             const J &s = registry["sources"];
             J members;
@@ -134,6 +145,7 @@ struct Snapshot {
           check(contract.empty(),
                 "multiple staged proofs for one legacy binding");
           contract = sha(dump(c));
+          contract_version = c["schema"].asString();
           status = "qualified in isolated stage";
           reason = "Independent and emitted-program evidence for this binding "
                    "in pinned review package";
@@ -144,7 +156,7 @@ struct Snapshot {
     }
     db.insert("INSERT INTO occurrence VALUES(?,?,?,?,?,?,?,?,?,?)",
               {file, std::to_string(ordinal), version, status, reason, contract,
-               contract.empty() ? "" : "unllm.brick-contract/1",
+               contract_version,
                contract.empty() ? "unassessed" : dump(claims, false),
                contract.empty() ? "" : dump(proof, false), "0"});
   }

@@ -223,7 +223,7 @@ Lifecycle lifecycle(const Path &package, const J &c, const J &binding) {
   return result;
 }
 void project(const Path &package, const Path &scratch, const J &contracts,
-             const J &bindings) {
+             const J &bindings, const J &classes) {
   Database db(package / "contracts.sqlite");
   db.script(R"sql(
         CREATE TABLE provider(capability TEXT, provider TEXT PRIMARY KEY, contract_hash TEXT, family TEXT, level TEXT);
@@ -232,6 +232,9 @@ void project(const Path &package, const Path &scratch, const J &contracts,
         CREATE TABLE property(provider TEXT, name TEXT, status TEXT, detail TEXT, PRIMARY KEY(provider,name));
         CREATE TABLE lifecycle(provider TEXT, trace TEXT, step INTEGER, instance TEXT, subject TEXT, event TEXT, response TEXT, PRIMARY KEY(provider,trace,step));
         CREATE TABLE component_input(provider TEXT, event TEXT, PRIMARY KEY(provider,event));
+        CREATE TABLE class_binding(provider TEXT PRIMARY KEY,type TEXT,header TEXT,level TEXT,contract_hash TEXT);
+        CREATE TABLE class_method(provider TEXT,operation TEXT,member TEXT,parameter TEXT,result TEXT,PRIMARY KEY(provider,operation));
+        CREATE TABLE class_value_type(provider TEXT,name TEXT,cpp_type TEXT,PRIMARY KEY(provider,name));
         CREATE INDEX by_family ON provider(family,capability);
         CREATE INDEX by_property ON property(name,status);
         CREATE INDEX by_facet ON facet(name,value);
@@ -246,25 +249,21 @@ void project(const Path &package, const Path &scratch, const J &contracts,
         CREATE TABLE passages(pid INTEGER PRIMARY KEY,role TEXT,text TEXT,doc_id INTEGER,section TEXT,ord INTEGER);
         BEGIN;
     )sql");
-  for (const Strings &row :
-       std::vector<Strings>{{"name", "brickcontracts"},
-                            {"kind", "brick-contract"},
-                            {"passages", std::to_string(contracts.size())},
-                            {"version", "1"}})
+  for (const Strings &row : std::vector<Strings>{
+           {"name", "brickcontracts"},
+           {"kind", "brick-contract"},
+           {"passages", std::to_string(contracts.size() + classes.size())},
+           {"version", "1"}})
     search.insert("INSERT INTO meta VALUES(?,?)", row);
   int pid = 0;
-  for (const auto &c : contracts) {
-    auto id = c["provider_id"].asString(), cap = c["capability_id"].asString();
+  auto entries = contracts;
+  for (const auto &c : classes)
+    entries.append(c);
+  for (const auto &c : entries) {
+    auto id = c["provider_id"].asString(),
+         cap = c.get("capability_id", c["provider_id"]).asString();
     const auto &port = c["interface"];
     auto doc = std::to_string(++pid);
-    db.insert("INSERT INTO provider VALUES(?,?,?,?,?)",
-              {cap, id, sha(dump(c)), c["primary_family"].asString(),
-               c["qualification"]["level"].asString()});
-    db.insert("INSERT INTO port VALUES(?,?,?,?,?)",
-              {id, port["structural_input"].asString(),
-               port["structural_output"].asString(),
-               port["semantic_input"].asString(),
-               port["semantic_output"].asString()});
     for (const auto &k : c["facets"].getMemberNames())
       for (const auto &value : c["facets"][k])
         db.insert("INSERT INTO facet VALUES(?,?,?)", {id, k, value.asString()});
@@ -281,10 +280,36 @@ void project(const Path &package, const Path &scratch, const J &contracts,
                     port["semantic_input"].asString(),
                     port["semantic_output"].asString()};
     append(text, strings(c["facets"]["technical_hierarchy"]));
-    auto binding =
-        select_binding(bindings, cap, id, port["structural_input"].asString(),
-                       port["structural_output"].asString());
-    auto events = lifecycle(package, c, binding);
+    Lifecycle events;
+    if (port["kind"] == "library-class") {
+      db.insert("INSERT INTO class_binding VALUES(?,?,?,?,?)",
+                {id, port["type"].asString(), port["header"].asString(),
+                 c["qualification"]["level"].asString(), sha(dump(c))});
+      for (const auto &op : port["methods"].getMemberNames()) {
+        const auto &m = port["methods"][op];
+        db.insert("INSERT INTO class_method VALUES(?,?,?,?,?)",
+                  {id, op, m["member"].asString(), m["parameter"].asString(),
+                   m["result"].asString()});
+        text.push_back(m["meaning"].asString());
+      }
+      for (const auto &v : port["value_types"].getMemberNames())
+        db.insert("INSERT INTO class_value_type VALUES(?,?,?)",
+                  {id, v, port["value_types"][v].asString()});
+      text.push_back(c["claims"]["state_protocol"]["detail"].asString());
+    } else {
+      db.insert("INSERT INTO provider VALUES(?,?,?,?,?)",
+                {cap, id, sha(dump(c)), c["primary_family"].asString(),
+                 c["qualification"]["level"].asString()});
+      db.insert("INSERT INTO port VALUES(?,?,?,?,?)",
+                {id, port["structural_input"].asString(),
+                 port["structural_output"].asString(),
+                 port["semantic_input"].asString(),
+                 port["semantic_output"].asString()});
+      auto binding =
+          select_binding(bindings, cap, id, port["structural_input"].asString(),
+                         port["structural_output"].asString());
+      events = lifecycle(package, c, binding);
+    }
     if (!events.steps.empty()) {
       std::set<std::string> terms;
       text.push_back(c["claims"]["state_protocol"]["detail"].asString());
@@ -315,6 +340,12 @@ void project(const Path &package, const Path &scratch, const J &contracts,
             "SELECT * FROM lifecycle ORDER BY provider,trace,step"},
            {"ComponentInput",
             "SELECT * FROM component_input ORDER BY provider,event"},
+           {"ClassBinding", "SELECT provider,type,header,level FROM "
+                            "class_binding ORDER BY provider"},
+           {"ClassMethod",
+            "SELECT * FROM class_method ORDER BY provider,operation"},
+           {"ClassValue",
+            "SELECT * FROM class_value_type ORDER BY provider,name"},
            {"Property",
             "SELECT provider,name,status FROM property ORDER BY 1,2"}}) {
     std::string rows;
@@ -333,6 +364,10 @@ void project(const Path &package, const Path &scratch, const J &contracts,
            {"Observed",
             "SELECT DISTINCT capability,name FROM provider JOIN property "
             "USING(provider) WHERE status='observed'"},
+           {"TestedMethod",
+            "SELECT provider,operation,name FROM class_binding JOIN "
+            "class_method USING(provider) JOIN class_value_type "
+            "USING(provider) WHERE level='ordinary-header-tested'"},
            {"ObservedEvent",
             "SELECT DISTINCT capability,event,response FROM provider JOIN "
             "lifecycle USING(provider) JOIN property USING(provider) WHERE "
@@ -360,7 +395,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
   for (auto [q, want] :
        std::map<std::string, std::string>{{"digit", direct},
                                           {"multiplicity", api},
-                                          {"rearm", "threshold_entries"}}) {
+                                          {"rearm", "threshold_entries"},
+                                          {"oldest", "u84"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},
@@ -371,6 +407,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
         object({{"logical", logical},
                 {"tantivy", results},
                 {"contract_set_sha256", digest(package / "contracts.json")},
+                {"class_contracts_sha256",
+                 digest(package / "class-contracts.json")},
                 {"tantivy_binary", digest(rust / "unllm_index")},
                 {"query_library", digest(rust / "libunllm_search.a")},
                 {"queries", "fixed development terms"}}));
@@ -404,6 +442,7 @@ void assemble(const Path &work, const Path &dest) {
            {"extract", "extraction.json"},
            {"extract", "sketch.json"},
            {"extract", "latch-source.json"},
+           {"extract", "fifo-source.json"},
            {"standalone", "lifecycle.json"},
            {"standalone", "standalone.json"},
            {"integration", "integration.json"}})
@@ -419,8 +458,11 @@ void assemble(const Path &work, const Path &dest) {
            fs::copy_options::recursive);
   fs::copy_file(v5_root() / "fixtures/requirements.json",
                 e / "requirements.json");
+  fs::copy_file(work / "integration/fifo/fifo-integration.json",
+                e / "fifo-integration.json");
   for (const auto *name :
-       {"latch-traces.json", "latch-client.cpp", "latch-rows-client.cpp"})
+       {"latch-traces.json", "latch-client.cpp", "latch-rows-client.cpp",
+        "fifo-client.cpp", "fifo-spec.json"})
     fs::copy_file(v5_root() / "fixtures" / name, e / name);
   fs::copy(work / "integration/bundle", package / "bundle",
            fs::copy_options::recursive);
@@ -434,7 +476,19 @@ void assemble(const Path &work, const Path &dest) {
     contracts.append(c);
   }
   write(package / "contracts.json", contracts);
-  project(package, dest, contracts, bindings["providers"]);
+  auto cs = class_schema(schema,
+                         load(v5_root() / "class-interface.schema.json")),
+       klass = class_contract(package);
+  validate(klass, cs);
+  auto classes = array({klass});
+  write(package / "class-vocabulary.json",
+        object({{"id", klass["vocabulary"]},
+                {"extends", load(package / "vocabulary.json")["id"]},
+                {"interface_kinds", array({klass["interface"]["kind"]})},
+                {"qualification", array({klass["qualification"]["level"]})}}));
+  write(package / "class-contract.schema.json", cs);
+  write(package / "class-contracts.json", classes);
+  project(package, dest, contracts, bindings["providers"], classes);
   auto guide = load(package / "vocabulary.json")["primary_families"],
        families = object();
   for (const auto &family : guide.getMemberNames()) {
@@ -445,6 +499,9 @@ void assemble(const Path &work, const Path &dest) {
     families[family] = object(
         {{"guidance", guide[family]},
          {"staged_capabilities", caps},
+         {"retained_class_providers", klass["primary_family"] == family
+                                          ? array({klass["provider_id"]})
+                                          : array()},
          {"tested_typed_programs", caps.size()},
          {"architecture_qualified", 0},
          {"application_family_qualified", 0},
@@ -458,16 +515,27 @@ void assemble(const Path &work, const Path &dest) {
                "This V5 stage; legacy providers awaiting enrichment excluded"},
               {"families", families},
               {"development_programs", load(e / "integration.json")},
+              {"retained_class_providers", array({klass["provider_id"]})},
+              {"class_methods",
+               string_array(klass["interface"]["methods"].getMemberNames())},
+              {"class_header_trials", load(e / "fifo-integration.json")},
               {"usage_sketches", array({"append-backward-then-reverse"})},
               {"published", 0}}));
-  write(package / "manifest.json",
-        object({{"schema", "unllm.staged-acquisition/1"},
-                {"baseline_sha256", base_hash},
-                {"contract_version", "unllm.brick-contract/1"},
-                {"vocabulary_version", "unllm.brick-vocabulary/1"},
-                {"bundle_sha256", digest(package / "bundle/SHA256SUMS")},
-                {"status", "local staged review"},
-                {"files", tree_hashes(package)}}));
+  write(
+      package / "manifest.json",
+      object({{"schema", "unllm.staged-acquisition/1"},
+              {"baseline_sha256", base_hash},
+              {"contract_version", "unllm.brick-contract/1"},
+              {"interfaces",
+               object({{"library_class",
+                        object({{"version", "unllm.library-class/1"},
+                                {"contracts", "class-contracts.json"},
+                                {"vocabulary", "class-vocabulary.json"},
+                                {"schema", "class-contract.schema.json"}})}})},
+              {"vocabulary_version", "unllm.brick-vocabulary/1"},
+              {"bundle_sha256", digest(package / "bundle/SHA256SUMS")},
+              {"status", "local staged review"},
+              {"files", tree_hashes(package)}}));
   verify(package, digest(package / "manifest.json"));
   fs::rename(package, dest / "package");
 }
@@ -531,6 +599,98 @@ J verify(const Path &package, const std::string &expected) {
   check(load(package / "cross-check.json")["contract_set_sha256"] ==
             digest(package / "contracts.json"),
         "stale search receipts");
+  const auto &view = m["interfaces"]["library_class"];
+  if (!view.isNull()) {
+    check(view["version"] == "unllm.library-class/1" &&
+              view["schema"] == "class-contract.schema.json" &&
+              view["contracts"] == "class-contracts.json",
+          "unknown class interface");
+    auto classes = load(package / "class-contracts.json"),
+         library = load(package / "bundle/providers/library.json"),
+         cs = load(package / "class-contract.schema.json"),
+         standalone = load(package / "evidence/standalone.json");
+    Rows descriptors, methods, values;
+    for (const auto &c : classes) {
+      validate(c, cs);
+      auto provider = c["provider_id"].asString();
+      const auto &iface = c["interface"];
+      if (view.isMember("vocabulary")) {
+        check(view["vocabulary"] == "class-vocabulary.json",
+              "unknown class vocabulary location");
+        auto voc = load(package / "class-vocabulary.json");
+        check(voc["id"] == c["vocabulary"] &&
+                  voc["extends"] == m["vocabulary_version"] &&
+                  contains(voc["qualification"], c["qualification"]["level"]) &&
+                  contains(voc["interface_kinds"], iface["kind"]),
+              "class vocabulary does not cover contract");
+      }
+      auto entry = iface;
+      entry.removeMember("kind");
+      entry.removeMember("value_types");
+      entry["brick"] = provider;
+      check(std::count(library["classes"].begin(), library["classes"].end(),
+                       entry) == 1 &&
+                iface["value_types"] == library["value_types"] &&
+                c["source"]["header"].asString() ==
+                    "headers/" + iface["header"].asString() &&
+                c["source"]["implementation_sha256"] ==
+                    digest(project_file(package / "bundle",
+                                        c["source"]["header"].asString())) &&
+                c["source"]["source_registry_sha256"] ==
+                    digest(package / "sources.json"),
+            "class does not match pinned implementation");
+      check(standalone[provider]["client_sha256"] ==
+                    digest(package / "evidence/fifo-client.cpp") &&
+                c["fingerprint"]["observations_sha256"] ==
+                    sha(dump(load(package / "evidence/fifo-integration.json"))),
+            "stale class qualification receipt");
+      auto retained = load(package / "evidence/fifo-source.json");
+      check(retained["source_id"] == c["source"]["id"] &&
+                retained["revision"] == c["source"]["revision"] &&
+                retained["archive_sha256"] == c["source"]["archive_sha256"] &&
+                retained["class"] == entry &&
+                retained["value_types"] == iface["value_types"],
+            "stale retained class source");
+      for (const auto &member : retained["unchanged_members"].getMemberNames())
+        check(retained["unchanged_members"][member][1] ==
+                  digest(project_file(package / "bundle", member)),
+              "stale retained class member");
+      descriptors.push_back(
+          {provider, iface["type"].asString(), iface["header"].asString(),
+           c["qualification"]["level"].asString(), sha(dump(c))});
+      for (const auto &op : iface["methods"].getMemberNames()) {
+        const auto &method = iface["methods"][op];
+        methods.push_back({provider, op, method["member"].asString(),
+                           method["parameter"].asString(),
+                           method["result"].asString()});
+      }
+      for (const auto &v : iface["value_types"].getMemberNames())
+        values.push_back({provider, v, iface["value_types"][v].asString()});
+      for (const auto &prop : c["claims"].getMemberNames())
+        check(db.query("SELECT status,detail FROM property WHERE provider=? "
+                       "AND name=?",
+                       {provider, prop}) ==
+                  Rows{{c["claims"][prop]["status"].asString(),
+                        c["claims"][prop]["detail"].asString()}},
+              "class property differs from contract");
+      ids.append(provider);
+    }
+    std::sort(descriptors.begin(), descriptors.end());
+    std::sort(methods.begin(), methods.end());
+    std::sort(values.begin(), values.end());
+    check(
+        descriptors ==
+                db.query("SELECT * FROM class_binding ORDER BY provider") &&
+            methods ==
+                db.query(
+                    "SELECT * FROM class_method ORDER BY provider,operation") &&
+            values ==
+                db.query(
+                    "SELECT * FROM class_value_type ORDER BY provider,name") &&
+            load(package / "cross-check.json")["class_contracts_sha256"] ==
+                digest(package / "class-contracts.json"),
+        "stale structured class projection");
+  }
   return ids;
 }
 } // namespace v5

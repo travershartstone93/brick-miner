@@ -155,10 +155,28 @@ int main() try {
   auto hash = final["manifest_sha256"].asString();
   check(verify(q / "stage/package", hash) ==
             array({"number_option_prefix", "reverse_record_bytes",
-                   "threshold_entries"}),
+                   "threshold_entries", "u84"}),
         "unexpected distinct qualifications");
   auto pack = q / "stage/package";
   auto pins = load(pack / "cross-check.json");
+  check(pins["tantivy"]["oldest"] == "u84" &&
+            pins["logical"]["TestedMethod"].size() == 6,
+        "class retrieval or type coverage missing");
+  Database catalog(pack / "contracts.sqlite", true);
+  check(catalog.query(
+            "SELECT provider FROM class_binding JOIN property USING(provider) "
+            "WHERE name='state_protocol' AND status='observed'") ==
+                std::vector<Strings>{{"u84"}} &&
+            catalog
+                .query("SELECT provider FROM class_binding JOIN property "
+                       "USING(provider) WHERE name='concurrency' AND "
+                       "status='observed'")
+                .empty() &&
+            catalog
+                .query("SELECT provider FROM class_binding JOIN port "
+                       "USING(provider)")
+                .empty(),
+        "class property or interface-kind isolation failed");
   check(pins["logical"]["ObservedEvent"] ==
             array({"threshold_entries\thold\tsilent",
                    "threshold_entries\trearm\tsilent",

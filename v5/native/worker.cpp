@@ -26,7 +26,8 @@ const Strings stage_files = {"provider-stage.sh",     "effective-contracts.sh",
                              "row-outcomes.json",     "row-sources.json",
                              "population-handoff.jq", "cli-guarantees.json"};
 const Strings native_tools = {"brick-provider-plan", "brick-index-formats",
-                              "unllm_logic_worker", "libunllm_native_logic.so"};
+                              "brick-header-emit", "unllm_logic_worker",
+                              "libunllm_native_logic.so"};
 void materialize(const Path &work, const Path &out) {
   auto observations = object();
   for (const auto &job : pilot_jobs(load(v5_root() / "sources.json"))) {
@@ -69,7 +70,8 @@ std::vector<Job> pilot_jobs(const J &registry) {
       {"std-reverse", {"gcc-libstdcxx", "api"}},
       {"lzip-number-prefix", {"gnu-lzip", "direct"}},
       {"lzip-index-reverse", {"gnu-lzip", "composition"}},
-      {"retained-keyed-latch", {"retained-keyed-latch", "direct"}}};
+      {"retained-keyed-latch", {"retained-keyed-latch", "direct"}},
+      {"retained-unique-fifo", {"retained-unique-fifo", "direct"}}};
   std::set<std::string> selected;
   for (const auto &source : registry["sources"]) {
     if (!source.isMember("jobs"))
@@ -100,7 +102,11 @@ std::vector<Job> pilot_jobs(const J &registry) {
       auto score =
           100 * (config["coverage_gain"].asUInt() + config["reuse"].asUInt()) /
           cost;
-      auto unit = selector == "retained-keyed-latch" ? "latch" : route;
+      auto unit = route;
+      if (selector == "retained-keyed-latch")
+        unit = "latch";
+      if (selector == "retained-unique-fifo")
+        unit = "fifo";
       jobs.push_back(
           {"extract-" + unit, id, route, stream, score, {"inventory"}});
       jobs.push_back(
@@ -151,6 +157,7 @@ J environment_pins() {
            root / ".build/brick-scan", root / "one-brick/check.cpp",
            v5_root() / "contract.schema.json", v5_root() / "vocabulary.json",
            v5_root() / "facts.dl", main_repo / ".deps/bin/souffle",
+           v5_root() / "class-interface.schema.json",
            main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
            main_repo / ".deps/native/usr/bin/souffle",
            main_repo / "reasoning/prolog/rules.pl",
@@ -177,6 +184,10 @@ J worker_step(const std::string &name, const Path &work, const Path &out) {
     extract_latch(out);
   else if (name == "test-latch")
     qualify_latch(work / "extract-latch", out);
+  else if (name == "extract-fifo")
+    extract_fifo(out);
+  else if (name == "test-fifo")
+    qualify_fifo(work / "extract-fifo", out);
   else if (name.starts_with("extract-"))
     extract(out, name.substr(8));
   else if (name.starts_with("test-"))

@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "type",
+    "header",
+    "value_types",
+    "methods"
+  ],
+  "properties": {
+    "kind": {
+      "const": "library-class"
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "header": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value_types": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "methods": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "member",
+          "parameter",
+          "result",
+          "meaning"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "member": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parameter": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "type": "string",
+            "minLength": 1
+          },
+          "meaning": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}

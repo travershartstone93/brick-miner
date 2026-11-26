@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The [current H1 handoff](#h1-class-qualification-and-consumer-handoff) has three qualified row providers, one qualified class, consumer transfer evidence and commands for package verification, mining and migration inventory.
+
 V5 §8 supplies the milestone schedule. Track A owns the miner, with Track E supplying separately specified oracles. The main repository owns B/C/D and production activation.
 
 | Gate | Evidence before transition | Work in the V5 pilot |
@@ -101,3 +103,29 @@ make check-v5-queue
 The November 25 snapshot covers 838 documents at 224 locations, with 54,680 occurrences including historical trials and controls. The active generation has 127 cards, 84 components, 105 row bindings and a separate library descriptor for one class. Of the 105 bindings, one has matching retained-source and ordinary-program evidence in this stage. The other 104 await V5 qualification. The scan found 261 distinct row-and-header versions across the scanned locations and quarantined 234 historical binding occurrences with unresolved headers. These are inventory counts. Compressed archives, other metadata formats, semantic assessment of pending entries, activation and rollback remain open. [Snapshot summary](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XX9ukYid/snapshot/summary.json) · [Itemized ledger](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XX9ukYid/snapshot/ledger.sqlite)
 
 The next H1 class-interface pilot is `u84`, the existing `unllm::UniqueFifo` in `providers/library.json`. Its cancellable queue has three named methods and an object lifetime visible to a client. The pinned class header and library descriptor match the local MIT-licensed revision above. A class trial must use its existing class and operation identities, qualify two live objects and check the ordinary header emitter. The row projection supplies no class qualification.
+
+## H1 class qualification and consumer handoff
+
+The successor stage qualified `u84` through the existing library-class route. The source registry pins the unchanged `UniqueFifo` header, its class descriptor, upstream test and MIT notice to the same local Git revision as the latch. The selected Git archive has SHA-256 `21b3744a5fd0bff4ea3f374c3ff7d9392c05b6225a02f0f157ec97033f339aa1`. The source selector, test cases, semantic descriptions and LIFO substitution were authored for this pilot. The native worker verified the archive members, compiled the independent client, invoked the existing header emitter and generated the staged contracts and projections.
+
+The class retains unique pending values, admits a cancelled value again, and pops the oldest remaining value. On each tested specialization the caller operated two live queues and destroyed and reconstructed one while the other retained pending work. For both integer and string values all 16 observations passed twice against the source and twice against each of the baseline and staged emitted public headers. The LIFO substitution failed the oldest-value check. Removing the only eligible class stopped header emission despite a positive picker preference. Main's separate integer client matched all 26 observations twice through class lookup and ordinary emission. The projected and reference public header and executable matched byte for byte. Main also replayed all 13 latch prefixes twice per process on this stage. Requiring observed concurrency or thread affinity excluded both providers. [FIFO transfer](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-object-final-mO62mRGy/fifo/summary.json) · [Latch transfer](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-h1-object-final-mO62mRGy/latch/summary.json)
+
+The manifest advertises `interfaces.library_class` and pins the canonical `class-contracts.json`, generated schema and additive vocabulary. Common claim, facet, source and evidence fields reuse the row schema. The class interface preserves the class type, header, three existing operation identities, method names, parameter and result specifications, and supported value types from `providers/library.json`. SQLite's `class_binding`, `class_method` and `class_value_type` tables and the common property table support compact intake. Soufflé and SQLite agreed on all six tested method/type pairs. The actual Tantivy reader retrieved the queue first for “oldest”. Both older row-only stages still verify, and an earlier stage yields zero eligible classes. [Class contract](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XX9hlImk/stage/package/class-contracts.json) · [Projection checks](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XX9hlImk/stage/package/cross-check.json)
+
+The clean run used 21.28 CPU seconds and 22.56 summed worker wall seconds. Maximum single-process RSS was 287,448 KiB and peak sampled run storage was 142,119,838 bytes. Source downloads were zero. Extraction and standalone checks for the class used 1.68 CPU seconds, with emission and projection costs shared across the run. Human development time was unmetered. A fresh run with a worker interruption completed 14 jobs in 15 attempts and passed all 12 recovery controls. Contracts, SQLite, facts, deduced relations, search results, observations and the executable bundle manifest matched the clean run. [Recovery trial](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-recovery-XX4V2Gap/recovery.json)
+
+The final H1b snapshot recorded 874 unpacked metadata documents in 242 locations, including archived versions, controls and work copies. It accounted for all 56,630 occurrences, including a separate class registry. The active generation has one backfilled row binding and one backfilled class. The other 104 active row bindings await V5 qualification. The ledger quarantined 234 historical binding occurrences and 13 class occurrences with unresolved headers. Its SQLite integrity and foreign-key checks passed. Full archival reconciliation, qualification of pending providers, incremental projection rebuilds, the wider H1 pilot and H1a tool comparisons remain open. [Migration snapshot](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XXgmRHlK/snapshot/summary.json) · [Itemized ledger](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-migration-XXgmRHlK/snapshot/ledger.sqlite)
+
+Run the following commands from this checkout with the configured corpus mounted. The current package has three qualified row providers, one qualified class and one separate usage sketch. These two stateful backfills added zero new executable capabilities to the active generation. Source rows outside the four reviewed local entries remain discovery-only. Main owns activation.
+
+```sh
+make .build/v5-miner .build/v5-inventory
+pkg=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XX9hlImk/stage/package
+pin=b26709e391a033fe4a472b6aa94d37177848f73cc210fce73e258f54c08fe960
+.build/v5-miner verify "$pkg" "$pin"
+../unllm-upgrade/build/native/v5-class-lookup "$pkg" "$pin" \
+  /run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-queue-XX9hlImk/integration/fifo/integer.json state_protocol
+.build/v5-inventory "$pkg" "$pin"
+.build/v5-miner pilot
+make check check-v5-queue
+```

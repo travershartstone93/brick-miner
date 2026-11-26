@@ -544,6 +544,57 @@
           "cost_units": 2
         }
       ]
+    },
+    {
+      "id": "retained-unique-fifo",
+      "family": "retained project provider",
+      "upstream": "../unllm-upgrade",
+      "revision": "6ba6c9245392545fd6f685538ebece88e96ee28c",
+      "method": "reviewed-local-git-archive",
+      "archive": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-fifo-source-UE4be9E2/unique-fifo.tar",
+      "sha256": "21b3744a5fd0bff4ea3f374c3ff7d9392c05b6225a02f0f157ec97033f339aa1",
+      "members": {
+        "headers/unique_fifo.hpp": [
+          "experiments/boilerplate/component-trial/include/unique_fifo.hpp",
+          "f9133c0c1750a52700ab1c35efbce3b0534835c1c3081dbc9d98f342c9601b17"
+        ],
+        "providers/library.json": [
+          "experiments/boilerplate/component-trial/providers/library.json",
+          "e66c773b27c3295f5e1eac250b0ec50f92107ca11a6ce9db0a219cc01ca56cb5"
+        ]
+      },
+      "symbols": [
+        "unllm::UniqueFifo::push",
+        "unllm::UniqueFifo::cancel",
+        "unllm::UniqueFifo::pop"
+      ],
+      "families": [
+        "application_state"
+      ],
+      "documentation": "experiments/boilerplate/component-trial/providers/library.json",
+      "tests": "experiments/boilerplate/component-trial/test-components.cpp",
+      "examples": "experiments/boilerplate/component-trial/test-components.cpp",
+      "dependencies": [
+        "C++17 standard library"
+      ],
+      "rights": {
+        "scope": "local compilation, qualification and staged review of the retained project source",
+        "upstream_files": "MIT per the pinned repository LICENSE. The selected class header and descriptor carry no different notice.",
+        "redistribute": "Local stage only; retain copyright and permission notice.",
+        "notice_sha256": "8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"
+      },
+      "approval": "local-pilot",
+      "approval_reference": "V5 §4.5 retained-provider migration; approved local source and corpus staging in this workspace.",
+      "jobs": [
+        {
+          "route": "direct",
+          "selector": "retained-unique-fifo",
+          "stream": "foundational",
+          "coverage_gain": 1,
+          "reuse": 2,
+          "cost_units": 2
+        }
+      ]
     }
   ],
   "jobs": [

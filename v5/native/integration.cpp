@@ -153,6 +153,7 @@ void integrate(const Path &extracted, const Path &dest) {
     }
   }
   write(dest / "integration.json", report);
+  emit_fifo(base, draft, dest / "fifo");
   run({"sha256sum", "--quiet", "--strict", "--check", "SHA256SUMS"},
       {.cwd = draft});
   fs::rename(draft, dest / "bundle");

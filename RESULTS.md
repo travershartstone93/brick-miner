@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The November 25 V5 stage adds independent lifecycle evidence for the existing keyed latch and cancellable FIFO class. Main reproduced both transfers through its ordinary emitters. The [current handoff](v5/RECONCILIATION.md#h1-class-qualification-and-consumer-handoff) records the package pin, recovery checks, migration counts and reproduction commands.
+
 The [replay gap ranking](replay-gaps/RESULTS.md) covers all 100 archived interpretations on the 127-card bundle. Eight requests exposed a missing TSV output conversion. Registering the existing writer closed ten output holes and gained eleven fixture passes. Zero additional requests passed all five fixtures.
 
 The [shared-needs ledger](SHARED-NEEDS.md) tracks the cumulative reader and row-operation batches, their Arch sources, and the end-user requests exercised by each brick. Reproduce the staged bundle with `./mine-project shared`.

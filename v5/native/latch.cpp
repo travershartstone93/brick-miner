@@ -73,8 +73,9 @@ J bounded_reference(const Path &exe) {
                  {"responses_sha256", sha(dump(actual))}});
 }
 } // namespace
-void extract_latch(const Path &dest) {
-  auto s = sources()["retained-keyed-latch"];
+J retained_source(const Path &dest, const std::string &id,
+                  const std::string &notice) {
+  auto s = sources()[id];
   Path archive = s["archive"].asString(), base = verified_base();
   auto members = s["members"];
   for (const auto &file : members.getMemberNames()) {
@@ -87,17 +88,19 @@ void extract_latch(const Path &dest) {
   auto license = run({"bsdtar", "-xOf", archive, "LICENSE"});
   check(sha(license) == s["rights"]["notice_sha256"].asString(),
         "license pin mismatch");
-  save(dest / "notices/keyed-latch-LICENSE", license);
-  write(
-      dest / "latch-source.json",
-      object({{"source_id", s["id"]},
-              {"revision", s["revision"]},
-              {"archive_sha256", s["sha256"]},
-              {"unchanged_members", members},
-              {"usage", s["examples"]},
-              {"binding", "threshold_keys"},
-              {"legacy_brick", "k42"},
-              {"scope", "Local backfill of the existing key-output binding"}}));
+  save(dest / "notices" / notice, license);
+  return object({{"source_id", s["id"]},
+                 {"revision", s["revision"]},
+                 {"archive_sha256", s["sha256"]},
+                 {"unchanged_members", members},
+                 {"usage", s["examples"]}});
+}
+void extract_latch(const Path &dest) {
+  auto s = retained_source(dest, "retained-keyed-latch", "keyed-latch-LICENSE");
+  s["binding"] = "threshold_keys";
+  s["legacy_brick"] = "k42";
+  s["scope"] = "Local backfill of the existing key-output binding";
+  write(dest / "latch-source.json", s);
 }
 void qualify_latch(const Path &extracted, const Path &dest) {
   auto fixture = v5_root() / "fixtures/latch-traces.json";

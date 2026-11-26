@@ -22,6 +22,13 @@ J select_binding(const J &rows, const std::string &capability,
 void inventory(const Path &dest);
 void extract(const Path &dest, const std::string &route);
 void extract_latch(const Path &dest);
+J retained_source(const Path &dest, const std::string &id,
+                  const std::string &notice);
+void extract_fifo(const Path &dest);
+void qualify_fifo(const Path &extracted, const Path &dest);
+void emit_fifo(const Path &base, const Path &bundle, const Path &dest);
+J class_contract(const Path &package);
+J class_schema(J common, const J &interface);
 void qualify_latch(const Path &extracted, const Path &dest);
 void standalone(const Path &extract, const Path &dest,
                 const std::string &route);

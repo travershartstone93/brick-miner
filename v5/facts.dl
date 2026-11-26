@@ -17,3 +17,12 @@ Observed(c,n) :- Provider(c,p,_), Property(p,n,"observed").
 .decl ObservedEvent(cap:symbol, event:symbol, response:symbol)
 ObservedEvent(c,e,r) :- Provider(c,p,_), Property(p,"state_protocol","observed"), ComponentInput(p,e), LifecycleStep(p,_,_,_,_,e,r).
 .output ObservedEvent
+.decl ClassBinding(provider:symbol, type:symbol, header:symbol, level:symbol)
+.input ClassBinding
+.decl ClassMethod(provider:symbol, operation:symbol, member:symbol, parameter:symbol, result:symbol)
+.input ClassMethod
+.decl ClassValue(provider:symbol, name:symbol, cpp_type:symbol)
+.input ClassValue
+.decl TestedMethod(provider:symbol, operation:symbol, value_type:symbol)
+TestedMethod(p,o,t) :- ClassBinding(p,_,_,"ordinary-header-tested"), ClassMethod(p,o,_,_,_), ClassValue(p,t,_).
+.output TestedMethod

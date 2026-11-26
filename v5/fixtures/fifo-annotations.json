@@ -1,0 +1,28 @@
+{
+  "description":"An owned queue with unique pending values, cancellation by value and oldest-first removal.",
+  "primary_family":"application_state",
+  "facets":{
+    "technical_hierarchy":["application_state","queue"],
+    "application":["scheduling","desktop applications"],
+    "construction_role":["owned stateful collection"],
+    "abstraction":["parameterized class"],
+    "implementation_form":["retained C++ template"],
+    "platform":["tested Linux x86_64"],
+    "resources":["stores pending values in a list; memory limits unmeasured"]
+  },
+  "details":{
+    "preconditions":["declared","Use a supported value type with equality and copy construction."],
+    "postconditions":["observed","Duplicate push returns false. A successful cancel permits reinsertion. Empty pop returns an empty optional."],
+    "effects":["observed","Push, cancel and pop change the addressed instance's pending membership."],
+    "invariants":["observed","On tested traces pending values were unique and retained FIFO order across cancellation and reinsertion."],
+    "state_protocol":["observed","Two live objects retain independent order and membership. Destroying and reconstructing one object starts it empty while the other retains its pending entries."],
+    "ownership":["observed","The tested caller owned each receiver and controlled destruction and reconstruction."],
+    "upstream_usage":["declared","The pinned test-components.cpp uses push, cancel and pop on an integer queue."],
+    "specification_question":["declared","Which supported value type and public names should the queue methods use?"],
+    "concurrency":["unknown","Concurrent access was not tested."],
+    "thread_affinity":["unknown","Cross-thread use was not tested."],
+    "refinements":["unknown","No general refinement proof supplied."],
+    "formal_predicates":["unknown","No unbounded formal proof supplied."],
+    "mathematical_properties":["unknown","No algebraic laws qualified."]
+  }
+}

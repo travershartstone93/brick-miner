@@ -34,7 +34,7 @@ check-project: $(BUILD_DIR)/project-miner $(BUILD_DIR)/brick-scan $(BUILD_DIR)/p
 $(BUILD_DIR)/package-pilot: project-input/package.cpp $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,common probes project link))
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
 
-V5_OBJECTS = acquisition integration projections database worker queue latch cli
+V5_OBJECTS = acquisition integration projections database worker queue latch fifo cli
 $(BUILD_DIR)/v5/%.o: v5/native/%.cpp v5/native/pilot.hpp
 	mkdir -p "$(dir $@)"
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) -MMD -MP -c "$(abspath $<)" -o "$@"

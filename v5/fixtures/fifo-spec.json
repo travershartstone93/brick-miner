@@ -1,0 +1,1 @@
+{"artifact":{"kind":"header","filename":"delivery.hpp","class_name":"Delivery","methods":{"push":"insert_unique","cancel":"cancel_value","pop":"take_oldest"},"uncovered":[]}}
