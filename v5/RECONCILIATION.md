@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The 19-request prose-obligation ranking reproduces 21 partial roles and one complete role. The retained catalog supplies all operations in the 22 manually supplied roles. The report credits H058 and H070's earlier fixture passes and ranks the six remaining directory requests first for scoped execution. [Prose-obligation ranking and reproduction](../replay-gaps/RESULTS.md#replies-with-uncovered-prose-and-no-typed-gap)
+
 The H009 and H042 replays complete the zero-operation cohort with 32 verified supplied constructions and 160 saved fixture passes. The two final routes use retained inventory-history and XML group counts with the detached TSV writer. The cohort verifies construction after supplying operations. The next archived cohort has 19 replies with prose obligations and no typed conversion gap. [Cohort replay and evidence](../replay-gaps/RESULTS.md#inventory-and-publishing-close-the-zero-operation-cohort)
 
 The four telemetry zero-operation replies use the retained qualified JSON projection in their supplied constructions. H034 and H036 use the detached TSV registration. Independent state and ordering controls distinguish inclusive latch reset, warm-streak boundaries, per-sensor room history and array-order selection. The H034 filter-before-reset variant passed the saved suite and diverged on fresh input. [Telemetry replay and evidence](../replay-gaps/RESULTS.md#archived-telemetry-with-no-ordered-operations)

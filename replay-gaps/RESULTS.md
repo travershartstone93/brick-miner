@@ -571,3 +571,34 @@ The combined receipt joins the five earlier pinned reports and these two results
 The two pinned runs took 100.32 and 103.88 wall seconds. Each contains four planner probes, 30 saved fixture verdicts across the ordinary and altered programs, and 12 fresh executions. The repeat reproduces the plans, program hashes, outputs, verdicts and cohort ledger. Timed receipt hashes differ. All 65 recorded file hashes verified in each run, and both runs released their scratch executables. The primary report SHA-256 is `216acec42166d7aaa5c7aa15268600add9da1bd8b0cb518129221ec4cd0b0fea` and the repeat SHA-256 is `89840519027d2669e5e6f7780c6a6dbc5f2499a6047e246e043c6d22fd296de9`. The language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-singletons-replay-XXwTruXp/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-singletons-replay-XXHfw8s0/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXMYFTNU/controls.json)
 
 Build with `make .build/unordered-singletons-replay` and run `.build/unordered-singletons-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`. The independent XML oracle links the installed `libxml-2.0` through pkg-config.
+
+## Replies with uncovered prose and no typed gap
+
+The archived cohort contains 19 requests and 22 output roles. Replanning each saved role separately on the pinned V5 parent reproduces 21 partial routes and one complete route with no typed conversion gaps. The role marked complete is H057's first output. The English asks for root files, while the saved role asks for regular files and selects the same unfiltered archive reader as its nested-files sibling. The archived combined program passed only the empty fixture. H061 similarly substitutes stems in its prose for the requested full filenames. H071, H072 and H074 request comment exclusion in prose while selecting a positive prefix filter. [Archived rank and original replies](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-5x2_hyp7/ranking.json)
+
+The table counts manually tagged obligations from the saved prose once per request. A label may cover both roles of one request. The formatting count measures repeated output requirements, including cases where the selected sink already fulfills them. Sequence order includes both explicit sorting and preservation of encounter order.
+
+| Prose obligation | Requests | Roles |
+|---|---:|---:|
+| Output formatting | 13 | 15 |
+| Sequence order | 13 | 15 |
+| Grouping and aggregation | 7 | 8 |
+| Deduplication | 5 | 5 |
+| Path depth and root | 5 | 5 |
+| Path names and representation | 5 | 5 |
+
+The supplied recipes add `filter_records` in 14 requests and 17 roles, `ordered_column` in 12 requests and 15 roles, and `tree_file_records` in seven requests and eight roles. `filter_records` was absent from the corresponding menus in all 14 original and later replays. The later replay menus omit `tree_file_records` in two requests. Every named supplied operation has a retained provider, and replacing the operations and clearing the corresponding prose gives a complete plan for all 22 roles on the same V5 parent. These counts compare selected operations with manually supplied constructions. The planner probes measure chain feasibility. [Supplied recipes](../shared/request-recipes.json)
+
+H058 and H070 retain their prior fixture credit. The audit verifies each earlier specification, receipt, provider chain and five fixture outputs, including the separate dot-root checks. Those executions used the earlier 127-card bundle. Their exact planned chains also reproduce on the pinned V5 parent. [Prior execution and removal controls](#correlated-file-metadata-and-dot-root-controls-h058-h070)
+
+| Input family | Archived requests | Requests needing scoped execution evidence |
+|---|---:|---:|
+| Directories | 7 | 6 |
+| Archives | 5 | 4 |
+| URI lists | 4 | 4 |
+| Publishing | 2 | 2 |
+| Inventory | 1 | 1 |
+
+The two runs took 33.97 and 32.16 wall seconds. Each produced 44 role-level plans and a byte-identical ranking receipt at SHA-256 `c83b0ad78c9d2054f17580b1047a5ec2ab30f833810e415391265be4341328c9`. Both verified all 185 recorded file hashes. The C++ language, cross-file and capability-gap checks passed. The six remaining directory cases are H061, H062, H064, H067, H068 and H069. [Sealed ranking](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-ranking-XXXSWRmG/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-ranking-XX3F9zjp/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXjFjpoi/controls.json)
+
+Build with `make .build/residual-ranking` and run `.build/residual-ranking` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.

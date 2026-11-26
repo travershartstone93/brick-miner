@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The next archived cohort has 19 requests and 22 output roles with uncovered prose at the request level and zero typed gaps. All 22 supplied roles plan on the retained catalog. Earlier H058 and H070 execution evidence leaves 17 requests for scoped execution checks, including six directory requests. [Prose-obligation ranking](replay-gaps/RESULTS.md#replies-with-uncovered-prose-and-no-typed-gap)
+
 The H009 inventory and H042 publishing replays close the 32-reply zero-operation cohort. Their supplied constructions use retained readers and the staged TSV registration. The combined report verifies 160 saved fixture passes across the 32 supplied requests. [Cohort replay and reproduction](replay-gaps/RESULTS.md#inventory-and-publishing-close-the-zero-operation-cohort)
 
 The four telemetry constructions reuse the scoped JSON projection and retained sensor-state and ordering operations. Interleaved readings expose a filter-before-reset streak variant that passed all five saved H034 fixtures. [Telemetry replay and reproduction](replay-gaps/RESULTS.md#archived-telemetry-with-no-ordered-operations)
