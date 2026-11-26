@@ -1,0 +1,26 @@
+{
+  "description":"Read a UTF-8 text/uri-list file into ordered strings using the GLib per-line adapter.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"Path to a readable text/uri-list file with valid UTF-8 bytes and no embedded NUL","semantic_output":"Ordered strings supplied by GLib, retaining duplicate entries","parameters":{}},
+  "facets":{
+    "technical_hierarchy":["files_storage","file_input"],"application":["desktop file exchange","text utilities"],"construction_role":["file reader"],
+    "abstraction":["synchronous file operation"],"implementation_form":["generated public C API binding in C++"],
+    "platform":["tested Linux x86_64"],"dependencies":["GLib 2.90.1","C++17 standard library"],
+    "resources":["Reads the complete input into memory. Maximum input size and worst-case cost are unknown."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"The success path requires a readable file, valid UTF-8 and no embedded NUL.","evidence":["source.json","original/headers/gir_g_uri_list_extract_uris.hpp"]},
+    "refinements":{"status":"observed","detail":"A late NUL and an invalid UTF-8 sequence both caused a runtime error before records were delivered.","evidence":["standalone.json"]},
+    "postconditions":{"status":"observed","detail":"Retained entry order, duplicates, percent escapes and fragments on the frozen inputs. Comments and blank lines contributed no entries. A string containing spaces was accepted without validating URI syntax.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Read the requested file. A missing file raised a runtime error. On the failed CLI fixtures a previously existing regular destination retained its bytes.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Comments after blank lines were absent and duplicate entries stayed separate on the tested inputs.","evidence":["standalone.json"]},
+    "formal_predicates":{"status":"unknown","detail":"No formal proof of the conversion or a generally discharged input refinement.","evidence":[]},
+    "mathematical_properties":{"status":"unknown","detail":"No universal algebraic property has been established.","evidence":[]},
+    "ownership":{"status":"declared","detail":"The wrapper frees GLib's input buffer and owned string vector through g_free and g_strfreev and returns C++ strings by value.","evidence":["original/headers/gir_g_uri_list_extract_uris.hpp","source.json"]},
+    "state_protocol":{"status":"not-applicable","detail":"This callable exposes one synchronous read and no retained instance.","evidence":[]},
+    "concurrency":{"status":"unknown","detail":"Concurrent modification of the input was outside the fixtures.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was not tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The archived development client uses the generated file reader. The native generator discovers the documented GLib symbol and its ownership shape in the pinned GIR metadata.","evidence":["source.json","historical-client.cpp"]},
+    "specification_question":{"status":"not-applicable","detail":"The caller selects an input file and MIME type. This binding exposes no other options.","evidence":[]}
+  }
+}

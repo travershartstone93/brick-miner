@@ -192,11 +192,14 @@ J sequence_writer_identities(const Path &package) {
         "unexpected stage identity or evidence");
   return array({sort, writer});
 }
-void project_binding_pair(const Path &stage) {
+J file_binding_identity(const J &row, const Path &bundle) {
+  return identify(row, bundle, array());
+}
+void project_binding_records(const Path &stage) {
   auto canonical = load(stage / "payload.json");
   auto &bindings = canonical["bindings"];
-  check(bindings.size() == 2, "expected two binding records");
-  const auto &sort = bindings[0], &writer = bindings[1];
+  check(bindings.size() == 1 || bindings.size() == 2,
+        "unexpected fixture binding count");
   J checked;
   {
     Database db(stage / "bindings.sqlite");
@@ -210,14 +213,24 @@ void project_binding_pair(const Path &stage) {
               "NULL,UNIQUE(component_id,binding_id,inport,outport))");
     for (const auto &r : bindings)
       index_binding(db, r);
-    check(lookup(db, sort) ==
-                  std::vector<Strings>{
-                      {"sort_lines", "ordinary-emission-tested"}} &&
-              lookup(db, writer) ==
-                  std::vector<Strings>{
-                      {"write_lines", writer["qualification"].asString()}},
-          "binding lookup failed");
-    checked = controls(db, sort, writer);
+    for (const auto &r : bindings)
+      check(lookup(db, r) ==
+                std::vector<Strings>{{r["key"]["binding_id"].asString(),
+                                      r["qualification"].asString()}},
+            "binding lookup failed");
+    if (bindings.size() == 2)
+      checked = controls(db, bindings[0], bindings[1]);
+    else {
+      checked = array();
+      for (auto key : {"binding_sha256", "header_sha256", "contract_sha256",
+                       "qualification", "effect"}) {
+        auto bad = bindings[0];
+        bad[key] = "mismatch";
+        check(lookup(db, bad).empty(),
+              "reader lookup accepted a mismatched field");
+        checked.append(key);
+      }
+    }
   }
   write(stage / "controls.json", checked);
 }
@@ -231,7 +244,7 @@ Path binding_identity_fixture(const Path &package, const std::string &pin) {
                 {"catalog_sha256", pin},
                 {"bindings", bindings},
                 {"scope", "Detached development fixture"}}));
-  project_binding_pair(stage);
+  project_binding_records(stage);
   write(stage / "ordinary.json", ordinary_program(package / "bundle", work));
   auto manifest =
       object({{"schema", "unllm.binding-identity-fixture-manifest/1"},

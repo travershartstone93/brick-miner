@@ -1,0 +1,12 @@
+{
+  "binding": {"component_id":"gir_g_uri_list_extract_uris","binding_id":"gir_g_uri_list_extract_uris","from":"in:text/uri-list","to":"strings"},
+  "cases": [
+    {"name":"empty","input":"","records":[]},
+    {"name":"comment-after-blank","input":"# start\r\n\r\n# ignore me\nfile:///ok\n\n# last","records":["file:///ok"]},
+    {"name":"order-and-repeats","input":"https://z/#fragment\r\nfile:///two%20words\nhttps://z/#fragment","records":["https://z/#fragment","file:///two%20words","https://z/#fragment"]},
+    {"name":"utf8-and-unvalidated-token","input":"urn:é\nnot a uri\n","records":["urn:é","not a uri"]},
+    {"name":"late-nul","input":"file:///ok\nlate\u0000tail","error":"Expected UTF-8 text without embedded NUL"},
+    {"name":"bad-utf8","input_hex":"66696c653a2f2f2f6f6b0ac328","error":"Expected UTF-8 text without embedded NUL"},
+    {"name":"missing-input","error":"Cannot read input file"}
+  ]
+}

@@ -715,6 +715,41 @@
         "scope": "Six archived ASCII development observations for exact binding lineage and comparison only."
       },
       "example_scope": "Historical byte_lengths use only; no upstream item_count example asserted."
+    },
+    {
+      "id": "retained-gir-uri-reader",
+      "family": "retained project API adapter",
+      "method": "reviewed-local-git-archive",
+      "upstream": "../unllm-upgrade",
+      "revision": "6ba6c9245392545fd6f685538ebece88e96ee28c",
+      "archive": "/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-uri-source-OEf6nvoY/uri-adapter.tar",
+      "sha256": "82520ac4f9453da48a0e42608da499aa67ca20ea311af470b95c2ef1d4a29531",
+      "members": {"headers/gir_g_uri_list_extract_uris.hpp":["experiments/boilerplate/stress/brick-learning/evidence/gir_g_uri_list_extract_uris.hpp","c1cae328e204dcf402a6e8cd8fd0d3e9ecef5dea3d07046d9764a0197db9a5c7"]},
+      "symbols": ["g_uri_list_extract_uris"],
+      "families": ["files_storage"],
+      "approval": "local-pilot",
+      "approval_reference": "Retained B31/B32 adapter and existing runtime only, for the H1b local qualification requested by the main project.",
+      "rights": {"scope":"Local compilation and staged review of the retained adapter.","upstream_files":"Retained project adapter and generator under the project's MIT license. The installed GLib dependency declares LGPL-2.1-or-later.","redistribute":"Local stage includes the project MIT notice. GLib is dynamically linked from the installed system.","notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"},
+      "documentation": "/usr/share/gir-1.0/GLib-2.0.gir",
+      "tests": "v5/fixtures/uri-reader.json",
+      "examples": "experiments/boilerplate/stress/brick-learning/evidence/b31-client.cpp",
+      "generator": "experiments/boilerplate/component-trial/learning/gir_adapter.cpp",
+      "dependencies": ["glib-2.0","C++17 standard library"],
+      "runtime": {
+        "upstream":"https://gitlab.gnome.org/GNOME/glib",
+        "archive":"/var/cache/pacman/pkg/glib2-2.90.1-1.1-x86_64_v3.pkg.tar.zst",
+        "sha256":"48cc50b9d4252caa64d6f47dbe424d656476d494f9d0470906db70e77b6add3c",
+        "signature_sha256":"badb91497130b34e1e3ef8966129e26de3ce907d90f0bdc1f06de4bb1b3e4603",
+        "signer":"882DCFE48E2051D48E2562ABF3B607488DB35A47",
+        "packager":"CachyOS",
+        "pkgver":"2.90.1-1.1",
+        "arch":"x86_64_v3",
+        "files":{
+          "usr/share/gir-1.0/GLib-2.0.gir":"c3a72413f743c0a3487c3d6aee62471719356315090deb131ae2c1d0b7b77268",
+          "usr/include/glib-2.0/glib/gconvert.h":"37e3abdc61f2c59acacb1035631ef6f49e1e09de87de627844db3ce9cae9be38",
+          "usr/lib/libglib-2.0.so.0.9000.1":"ba8385e7df96155348ddd165a202cb0140eb23bb80f7599f377251290d0e13b6"
+        }
+      }
     }
   ],
   "jobs": [

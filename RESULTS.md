@@ -4,6 +4,8 @@ The V5 stage contains eleven qualified row providers and one qualified class. It
 
 The miner qualified `write_lines` in a separate opt-in stage after it led the pending bindings with 13 selections in the 100-request replay. Its original implementation passed nine standalone cases and eight ordinary file cases on each executable bundle. Removing just the writer blocked plain-text output while the same sorter still emitted JSON. Two clean runs produced the same candidate manifest. [Writer qualification and reproduction command](v5/RECONCILIATION.md#h1b-qualification-of-the-existing-plain-text-writer) · [Replay usage ranking](v5/RECONCILIATION.md#h1b-migration-priority-from-actual-replay-use)
 
+The other nine-request binding, the retained GLib URI-list reader, now has an opt-in contract on the same parent as the filter. The existing GIR generator reproduced the adapter exactly. Its whole-file alternative returned comments after blank lines. The retained per-line adapter passed all seven standalone and seven ordinary file cases on each executable bundle. [URI reader qualification and reproduction command](v5/RECONCILIATION.md#h1b-retained-uri-list-reader)
+
 The [replay gap ranking](replay-gaps/RESULTS.md) covers all 100 archived interpretations on the 127-card bundle. Eight requests exposed a missing TSV output conversion. Registering the existing writer closed ten output holes and gained eleven fixture passes. Zero additional requests passed all five fixtures.
 
 The [shared-needs ledger](SHARED-NEEDS.md) tracks the cumulative reader and row-operation batches, their Arch sources, and the end-user requests exercised by each brick. Reproduce the staged bundle with `./mine-project shared`.

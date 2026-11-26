@@ -3,7 +3,18 @@
 
 namespace v5 {
 miner::J sequence_writer_identities(const miner::Path &package);
-void project_binding_pair(const miner::Path &stage);
+miner::J file_binding_identity(const miner::J &row, const miner::Path &bundle);
+void project_binding_records(const miner::Path &stage);
+miner::J file_contract(const miner::Path &stage, const miner::Path &package,
+                       const miner::J &record, const miner::J &source,
+                       const miner::Path &registry);
+miner::Path seal_file_qualification(const miner::Path &work,
+                                    const miner::Path &package,
+                                    const std::string &pin, miner::J bindings,
+                                    Json::ArrayIndex selected,
+                                    const miner::J &contract);
+miner::Path qualify_uri_reader(const miner::Path &package,
+                               const std::string &pin);
 miner::Path qualify_writer(const miner::Path &package, const std::string &pin);
 miner::J replay_binding_usage(const miner::Path &snapshot,
                               const std::string &pin);
