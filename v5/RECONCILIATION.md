@@ -1,6 +1,8 @@
 # V5 reconciliation and handoff
 
-The H1b worker reconciled the existing H035 `read_json_records` scope and qualified `tab_records`, each used in 20 supplied requests. Removing the TSV reader left one typed input conversion open in each ordinary plan while preserving the downstream bindings. The next pending binding is `aggregate_groups` at 19 requests. [Ranked reader qualification](#h1b-ranked-json-and-tsv-readers)
+The H1b worker qualified `aggregate_groups` at 19 supplied requests. Count, byte-distinct count and checked signed sum passed ordinary TSV execution. Exact removal blocked all three programs while retaining `group_rows`. The next pending binding is `annotate_group_measure` at 13 requests. [Group aggregation qualification](#h1b-checked-group-aggregation)
+
+The H1b worker reconciled the existing H035 `read_json_records` scope and qualified `tab_records`, each used in 20 supplied requests. Removing the TSV reader left one typed input conversion open in each ordinary plan while preserving the downstream bindings. [Ranked reader qualification](#h1b-ranked-json-and-tsv-readers)
 
 The H1b worker qualified `select_group_row` at 32 supplied requests. Two ordinary TSV programs preserved the selected rows and their source positions. [Group selection qualification](#h1b-positioned-group-selection)
 
@@ -825,3 +827,22 @@ registry="$r/v5-tab-records-XX5wxvS7/stage/sources.json"
 ```
 
 Both TSV runs reproduced the 20-member manifest at `472f2da59bc34051e00282db81bb0a8a73ae8e3012e610cc294176ee6ac1d0d4`, including contract `375c285df0908877a90945980e45277dc6aa17a1b5dd54ce192ff325c562abf0`. The shared worker also reproduced the earlier `column` manifest. The ordinary verifier rejected the detached schema. Cross-file, language and capability-gap regressions passed. The two superseded attempts retained their specification and executable digests before releasing scratch programs. [Manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-tab-records-XX5wxvS7/stage/manifest.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-tab-records-XXUOGTLm/stage/manifest.json) · [Column regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-column-XX0crMmi/stage/manifest.json) · [Qualification controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-tab-records-controls-49OcwKJK) · [Gap controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXEij6gU/controls.json)
+
+## H1b checked group aggregation
+
+The worker verified eight earlier ranked scopes through `tab_records` and selected the exact `aggregate_groups` row at 19 supplied requests. It matched the cached signed DuckDB 1.5.6-1 binary and debug archives to the retained count, sum and grouping source units, original adapters, C ABI and linked symbols. Historical instrumentation covers the factory and partition symbols. The new tests used the retained production kernel and preserved original implementation bytes. Fixtures and contract annotations were authored for this qualification. [Selection and predecessor evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-XXquUnhX/stage/selection.json) · [Source and rights receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-XXquUnhX/stage/source.json)
+
+The standalone client passed 12 positive cases and eight named failures in each of two processes. It checked exact keys, fresh one-based positions, groups with duplicate key tuples or no members, byte-distinct values including NUL, and stable numeric ordering. Count ignored the selected field in the recorded cases. Both tested signed extrema survived cancellation after intermediate totals left the signed result range. Final positive and negative overflow, malformed numbers, short rows and unsupported measure `min` raised the expected exceptions. The client consumed repeated results after the input groups had been destroyed, and four alternative parameter choices produced distinguishable results. [Frozen cases](fixtures/aggregate-groups.json) · [Standalone evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-XXquUnhX/stage/standalone.json)
+
+The ordinary emitter built compound-key count, byte-distinct count and signed-sum TSV programs. Both catalog arms produced identical binaries and passed 18 file executions apiece across absent and pre-existing destinations. Invalid operands and final overflow preserved the previous destination state. Exact binding removal blocked all three plans while retaining `group_rows`. This detached backfill established zero additional fully passing archived requests and zero production activations. [Ordinary executions and exact removal](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-XXquUnhX/stage/integration.json)
+
+```sh
+make .build/v5-inventory
+r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+pkg="$r/v5-queue-XXH5XMi9/stage/package"
+registry="$r/v5-aggregate-groups-XXquUnhX/stage/sources.json"
+.build/v5-inventory --qualify-aggregate-groups "$pkg" d15aee96917ff440f58f76270e3ca48575268dcfcf2bce951805c865aae3af63 \
+  --source-registry "$registry" 1885d85eced76bacdf97193a91d1dc087e94f2278b3127e164fcee1f0e5b842c
+```
+
+Both runs reproduced the 27-member detached manifest `2fcd1aafbf24fb37573839ea977e4810c53e04d8dd1018eb2ae7df75104c414b`, including contract `f6beebee03c322a72afbd56640b9ae010353e821c76c7ee1b972da8a4c27ddc0` and domain `ba0ba4f14fd1ed46bc17312823ca402f1b95ab922fc79c44e4c1db3133ac5fb7`. The primary and frozen-registry repeat took 55.29 and 108.05 wall seconds. They each recorded seven executable digests and released their scratch programs. A wrong registry pin and rehashed job omitting the TSV reader were rejected, and the normal verifier rejected the detached schema. Row selection and grouping reproduced their earlier manifests. Cross-file, C++ language and capability-gap tests passed. [Manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-XXquUnhX/stage/manifest.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-XXntHpNR/stage/manifest.json) · [Rejection controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-aggregate-groups-controls-Oboio7rQ) · [Gap checks](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXkRsACY/controls.json)

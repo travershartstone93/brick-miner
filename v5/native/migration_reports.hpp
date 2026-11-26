@@ -113,6 +113,10 @@ miner::Path qualify_select_group_row(const miner::Path &package,
 miner::Path qualify_tab_records(const miner::Path &package, const std::string &pin,
                                  const miner::Path &registry,
                                  const std::string &registry_pin);
+miner::Path qualify_aggregate_groups(const miner::Path &package,
+                                     const std::string &pin,
+                                     const miner::Path &registry,
+                                     const std::string &registry_pin);
 miner::Path binding_identity_fixture(const miner::Path &package,
                                      const std::string &pin);
 } // namespace v5

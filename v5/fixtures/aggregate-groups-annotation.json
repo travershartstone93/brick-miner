@@ -1,0 +1,32 @@
+{
+  "description":"Compute a row count, distinct byte value count or checked signed total for each supplied group.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite ordered groups of positioned rows with byte-valued key and field strings.",
+    "semantic_output":"One owned row per group with the original key fields, decimal measure text and a new one-based result position.",
+    "parameters":{"measure":"count, distinct or sum","value_column":"Zero-based input field for distinct and sum","result_order":"group, value_asc or value_desc"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","group aggregation"],
+    "application":["tabular reports","ledger totals","distinct counts"],
+    "construction_role":["transform"],"abstraction":["grouped rows to measured rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB row kernels"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick-row-kernels","DuckDB C API 1.5.6-1","C++17"],
+    "resources":["Materializes measurements in a relation and returns an owned row sequence. Maximum group count, throughput and peak memory are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Select a supported measure and ordering. Distinct and sum require the selected field to exist in each nonempty group. Sum operands must parse as signed 64-bit integers.","evidence":["original/miner_aggregate_groups.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"Returned the expected key and decimal measure for every supplied group with fresh one-based positions. Empty groups returned zero and equal group keys remained separate.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Distinct counts preserved byte distinctions including NUL. Sum returned signed extrema for the tested cancellation cases and rejected positive and negative totals outside the signed result range.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Ordinary file programs preserved an existing destination or left it absent on tested short-field, malformed-number and overflow failures. File I/O belongs to the surrounding providers.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Tied numeric measures retained group order under both tested sort directions. Count ignored the field index in the tested cases.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"Finite observations provide no general overflow, ordering or complexity proof.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached scope records tested cases and executable evidence.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Tested invalid arguments or operands failed before returning a result producer. Successful producers returned the same rows on repeated visits.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"observed","detail":"The client consumed the returned rows twice after the input groups had been destroyed.","evidence":["standalone.json","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent invocation and consumption were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The retained adapter uses the registered count and sum aggregates. The signed source closure and historical executed factory and partition symbols are pinned.","evidence":["original/miner_aggregate_groups.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which measure, field and result order should apply to each group?","evidence":["spec.json"]}
+  }
+}
