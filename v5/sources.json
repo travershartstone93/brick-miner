@@ -3,6 +3,62 @@
   "scope": "bounded offline pilot on existing approved source bytes; new remote records are discovery only",
   "sources": [
     {
+      "id": "xxhash",
+      "pkg_config": ["libxxhash"],
+      "family": "Official Arch packages",
+      "upstream": "https://cyan4973.github.io/xxHash/",
+      "package_url": "https://archlinux.org/packages/extra/x86_64/xxhash/",
+      "release": "0.8.4-1",
+      "revision": "sha256:ef60bad0552de3eb8a0e1e2a07eb1bcaceaa771a5f36401a2cf0de135ffcc72b",
+      "upstream_git_revision": null,
+      "method": "signed-local-package",
+      "archive": "/var/cache/pacman/pkg/xxhash-0.8.4-1-x86_64.pkg.tar.zst",
+      "sha256": "ef60bad0552de3eb8a0e1e2a07eb1bcaceaa771a5f36401a2cf0de135ffcc72b",
+      "symbols": [
+        "XXH32"
+      ],
+      "families": [
+        "algorithms",
+        "noncryptographic_hashing"
+      ],
+      "documentation": "https://xxhash.com/doc/v0.8.4/group___x_x_h32__family.html",
+      "examples": "Packaged xxhash.h single-shot example hash_string, invoking XXH32 with buffer, computed byte length and caller seed.",
+      "tests": {
+        "client": "tests/client.cpp",
+        "client_sha256": "44aa677470d1dee4d39b03def74086fb7e78ccefd98fbae1d8b190a5b65ebd3d",
+        "oracle": "contracts/tasks.json#line_xxh32",
+        "oracle_sha256": "4e396a2e0640b21c67f7c9afc620c8308f47dc2b14948dd718cd41f8d85b394b"
+      },
+      "dependencies": [
+        "libxxhash (pkg-config), Arch xxhash 0.8.4-1",
+        "glibc"
+      ],
+      "rights": {
+        "scope": "Local pilot, invoke the installed library and retain its source and binary notices with the staged adapter.",
+        "upstream_files": "BSD-2-Clause for xxhash.h and the library, per packaged LICENSE. The package also labels GPL2 for other material.",
+        "redistribute": "Preserve the copyright notice, conditions and disclaimer. Binary redistribution requires those in accompanying materials. External release unreviewed."
+      },
+      "files": {
+        "/usr/include/xxhash.h": "3dc8d161e867a62d3417f7885b55fdaded8b7b497e2f165d05c94f4fe24f2ca4",
+        "/usr/lib/libxxhash.so.0.8.4": "099a0c0873834e8b05a0037ad88d88ae2b9f43615de711c3e2600765ef15d26d",
+        "/usr/share/licenses/xxhash/LICENSE": "6ffedbc0f7878612d2b23589f1ff2ab15633e1df7963a5d9fc750ec5500c7e7a",
+        "/usr/lib/pkgconfig/libxxhash.pc": "31f3f69c4fed2c3dcff4c5e6a6da1571cd4afaca907a70df438599c56b59e4f2"
+      },
+      "adapter_sha256": "bfe53a5c41407c918c2403d96c0fd2ad35afa830fc227e76eab4f99d0242c4fd",
+      "approval": "local-pilot",
+      "approval_reference": "Previously approved Arch API pilot, contracts/inputs.json and evidence/pilot/run-1.json. Bounded H1 replay of the same signed archive and single symbol.",
+      "jobs": [
+        {
+          "route": "api",
+          "selector": "xxh32-records",
+          "stream": "foundational",
+          "coverage_gain": 1,
+          "reuse": 2,
+          "cost_units": 1
+        }
+      ]
+    },
+    {
       "id": "gcc-libstdcxx",
       "family": "C++ standard library",
       "upstream": "https://github.com/gcc-mirror/gcc",

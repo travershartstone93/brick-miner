@@ -44,7 +44,7 @@ void qualify_measures(const Path &extracted, const Path &out) {
   auto cases = load(fixture), inputs = array();
   for (const auto &c : cases)
     inputs.append(c["records"]);
-  auto exe = out / "client";
+  auto exe = probe_program(out / "client");
   Strings build = {"g++-15", "-std=c++17",
                    "-O1",    "-fPIC",
                    "-I",     extracted / "original/headers",
@@ -108,10 +108,12 @@ J semantic_ports(const J &c, const J &binding, const J &annotation) {
                                 "fixed stored-string probes."
                               : "No reviewed role, unit or cardinality for "
                                 "this port in this pilot.";
-    port["evidence"] = reviewed ? array({"evidence/measure-source.json",
-                                         "evidence/standalone.json#" + id,
-                                         "evidence/integration.json#" + id})
-                                : array();
+    port["evidence"] =
+        reviewed ? array({id == "line_xxh32" ? "evidence/xxhash-source.json"
+                                             : "evidence/measure-source.json",
+                          "evidence/standalone.json#" + id,
+                          "evidence/integration.json#" + id})
+                 : array();
     entries.append(port);
   }
   return entries;
@@ -209,7 +211,9 @@ void check_semantic_ports(const Path &package, const J &ports,
     }
     check(p["evidence"].isArray() && (!supported || !p["evidence"].empty()),
           "missing semantic port evidence");
-    if (supported && vocabulary.isMember("measurement_oracles"))
+    if (supported && c["capability_id"] == "line_xxh32")
+      check_xxhash_witness(package, p, c, row);
+    else if (supported && vocabulary.isMember("measurement_oracles"))
       check_witnesses(package, p, c, row, vocabulary);
     for (const auto &reference : p["evidence"]) {
       auto ref = reference.asString();

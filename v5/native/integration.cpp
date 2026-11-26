@@ -64,17 +64,24 @@ void integrate(const Path &extracted, const Path &dest) {
       parse(original.at("providers/contracts.json"))["providers"];
   for (const auto &a : anchors) {
     auto key = a["id"].asString();
-    if (registry[a["source_id"].asString()]["method"] ==
-        "reviewed-local-git-archive")
-      continue;
-    bool is_api = key == api;
     auto src = a["source_id"].asString();
+    const auto &source = registry[src];
+    if (source["method"] == "reviewed-local-git-archive")
+      continue;
+    const auto &jobs = source["jobs"];
+    auto selected = std::find_if(jobs.begin(), jobs.end(), [&](const J &job) {
+      return job["selector"] == a["source_job"];
+    });
+    check(selected != jobs.end() && ((*selected)["route"] == "api" ||
+                                     (*selected)["route"] == "direct"),
+          "no matching reviewed executable route for " + key);
+    bool is_api = (*selected)["route"] == "api";
     auto task =
         object({{"id", key},
                 {"meaning", a["claims"]["postconditions"]["detail"]},
-                {"from", is_api ? "strings" : "rows"},
-                {"to", is_api ? "strings" : "integers"},
-                {"packages", array()},
+                {"from", a["binding"]["from"]},
+                {"to", a["binding"]["to"]},
+                {"packages", source.get("pkg_config", array())},
                 {"origin", is_api ? "mined_api" : "mined_application"},
                 {"call", (is_api ? "brick_miner::" : "brick_mined::") + key}});
     if (!is_api)
@@ -139,7 +146,7 @@ void integrate(const Path &extracted, const Path &dest) {
                 p["source"].asString().find(row["call"].asString() + "(") !=
                     std::string::npos,
             "wrong provider");
-      auto binary = d / "program";
+      auto binary = probe_program(d / "program");
       build_emission(p, d, binary, "g++-15");
       std::set<std::string> packages;
       for (const auto &h : load(d / "components/helpers.json"))
@@ -149,6 +156,7 @@ void integrate(const Path &extracted, const Path &dest) {
           {{"result", "passed"},
            {"bricks", p["bricks"]},
            {"emitted_sha256", sha(p["source"].asString())},
+           {"binary_sha256", digest(binary)},
            {"probes", probes(binary, d, probe["cases"])},
            {"packages", string_array({packages.begin(), packages.end()})}});
     }

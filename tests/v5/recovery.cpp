@@ -118,7 +118,7 @@ J semantic_controls(const Path &pack, Database &db) {
             db.query("SELECT provider FROM semantic_port WHERE "
                      "direction='input' AND unit_status='not-applicable' AND "
                      "unit IS NULL ORDER BY provider") ==
-                std::vector<Strings>{{"x19"}, {"x20"}},
+                std::vector<Strings>{{"miner_line_xxh32"}, {"x19"}, {"x20"}},
         "unknown, inapplicable and explicit dimensionless were conflated");
   auto canonical = load(pack / "semantic-ports.json"),
        contracts = load(pack / "contracts.json"),
@@ -157,7 +157,29 @@ J semantic_controls(const Path &pack, Database &db) {
       p["cardinality"] = "singleton";
     }
   reject(changed);
-  return array({"same-representation exact matches",
+  auto hash_port =
+      std::find_if(canonical.begin(), canonical.end(), [](const auto &p) {
+        return p["provider"] == "miner_line_xxh32" &&
+               p["direction"] == "output";
+      });
+  check(hash_port != canonical.end(), "missing checksum output");
+  auto wrong_hash = *hash_port;
+  wrong_hash["role"] = "record_byte_length";
+  wrong_hash["unit_status"] = "observed";
+  wrong_hash["unit"] = "byte";
+  changed = canonical;
+  changed[hash_port.index()] = wrong_hash;
+  reject(changed);
+  check(
+      db.query(
+          "SELECT provider FROM semantic_port WHERE direction='output' "
+          "AND role='record_xxh32_seed_zero' AND unit_status='not-applicable' "
+          "AND unit IS NULL AND cardinality='per_input_item'") ==
+          std::vector<Strings>{{"miner_line_xxh32"}},
+      "checksum lookup failed");
+  return array({"checksum role and inapplicable unit",
+                "checksum relabeled as byte length rejected",
+                "same-representation exact matches",
                 "role/unit/cardinality mismatch rejection",
                 "null versus explicit unitless", "stale parent contract",
                 "unknown positive identifier", "duplicate port",
@@ -225,8 +247,39 @@ int main() try {
   auto hash = final["manifest_sha256"].asString();
   check(verify(q / "stage/package", hash) ==
             array({"number_option_prefix", "reverse_record_bytes",
-                   "threshold_entries", "byte_lengths", "item_count", "u84"}),
+                   "threshold_entries", "byte_lengths", "item_count",
+                   "line_xxh32", "u84"}),
         "unexpected distinct qualifications");
+  Json::UInt64 released = 0;
+  unsigned programs = 0;
+  for (const auto &j : final["jobs"]) {
+    auto dir = q / j["name"].asString();
+    check(!fs::exists(dir / ".test-programs"),
+          "test executable scratch was checkpointed");
+    if (!fs::exists(dir / "tested-programs.json"))
+      continue;
+    auto log = load(dir / "tested-programs.json");
+    check(log["phase"] == j["name"] &&
+              log["config_sha256"] == final["config_sha256"],
+          "program release receipt belongs to a different job");
+    for (const auto &ref : log["checked_outputs"].getMemberNames())
+      check(log["checked_outputs"][ref] == digest(dir / ref),
+            "missing durable test verdict");
+    for (const auto &parent : log["input_checkpoints"].getMemberNames())
+      check(log["input_checkpoints"][parent] ==
+                digest(q / parent / "checkpoint.json"),
+            "stale test build context");
+    programs += log["program_sha256"].size();
+    released += log["released_bytes"].asUInt64();
+  }
+  check(programs > 0 && released > 0 &&
+            load(q / "integration/tested-programs.json")
+                    ["program_sha256"]["line_xxh32/staged/program"] ==
+                load(q / "integration/integration.json")["line_xxh32"]["staged"]
+                                                        ["binary_sha256"],
+        "missing compiled XXH32 artifact identity");
+  report["released_programs"] = programs;
+  report["released_bytes"] = released;
   auto pack = q / "stage/package";
   auto pins = load(pack / "cross-check.json");
   check(pins["tantivy"]["oldest"] == "u84" &&
@@ -267,12 +320,49 @@ int main() try {
   fs::create_symlink(ref / "libunllm_search.a", wrong / "libunllm_search.a");
   negative({tool(), "resume", q}, "environment changed",
            {.environment = {{"UNLLM_TANTIVY_REFERENCE_DIR", wrong}}});
+  // Replay the last job in a private copy. Simulate a pin changing *after*
+  // admission and make sure the prepared generation never becomes a stage.
+  auto drift = fresh_run("v5-before-publication");
+  for (const auto &entry : fs::directory_iterator(q)) {
+    auto name = entry.path().filename();
+    if (name != "stage" && name != "attempts")
+      fs::copy(entry.path(), drift / name, fs::copy_options::recursive);
+  }
+  fs::create_directory(drift / "attempts");
+  {
+    Database db(drift / "queue.sqlite");
+    db.script(
+        "DELETE FROM attempt WHERE job='stage'; "
+        "UPDATE job SET state='ready',attempts=0,receipt='' WHERE "
+        "name='stage'; "
+        "CREATE TRIGGER simulate_pin_change AFTER UPDATE OF state ON job "
+        "WHEN NEW.name='stage' AND NEW.state='running' BEGIN "
+        "UPDATE config SET value='changed' WHERE key='config_hash'; END;");
+  }
+  negative({tool(), "resume", drift},
+           "qualification inputs changed before staged publication",
+           {.seconds = 240});
+  {
+    Database db(drift / "queue.sqlite", true);
+    check(fs::exists(drift / "attempts/stage.1/.test-programs/tantivy-query") &&
+              !fs::exists(drift / "stage") &&
+              db.query("SELECT state FROM job WHERE name='stage'")[0][0] ==
+                  "failed",
+          "unverified generation reached the stage");
+  }
   auto cancelled = create(0);
   run({tool(), "cancel", cancelled});
   negative({tool(), "resume", cancelled}, "cancelled");
   auto cancellation = queue_status(cancelled);
   for (const auto &j : cancellation["jobs"])
     check(j["attempts"] == 0, "cancelled source executed");
+  auto interrupted = create(0);
+  stop_worker(interrupted, 1, false);
+  run({tool(), "cancel", interrupted});
+  auto stopped = queue_status(interrupted);
+  for (const auto &j : stopped["jobs"])
+    check(j["state"] == "cancelled",
+          "released worker still reported as running after cancel");
   auto denied = create(1);
   save(denied / "inventory/inputs.json", "changed bytes\n");
   negative({tool(), "resume", denied}, "changed checkpoint payload");
@@ -295,11 +385,13 @@ int main() try {
   report["controls"] = array(
       {"step bound", "concurrent lease exclusion", "interrupted worker retry",
        "rename before SQLite commit", "idempotent completed resume",
-       "changed tool pins", "cancelled queue", "modified checkpoint",
-       "retry ceiling", "disk reservation", "wrong storage root",
+       "changed tool pins", "changed pins during stage", "cancelled queue",
+       "cancel after orphaned worker", "modified checkpoint", "retry ceiling",
+       "disk reservation", "wrong storage root",
        "alternative-provider identity"});
   report["negative_queues"] =
-      array({cancelled.string(), denied.string(), exhaust.string()});
+      array({drift.string(), cancelled.string(), interrupted.string(),
+             denied.string(), exhaust.string()});
   write(evidence / "recovery.json", report);
   std::cout << dump(report);
   return 0;

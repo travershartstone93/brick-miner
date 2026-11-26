@@ -63,21 +63,27 @@ void inventory(const Path &dest) {
     for (const auto *k : {"approval", "revision", "sha256", "method"})
       seen[id][k] = s[k];
   }
-  auto gcc = registry["gcc-libstdcxx"];
-  auto arc = gcc["archive"].asString();
   auto ring = dest / "archlinux.gpg";
   run({"gpg", "--batch", "--dearmor", "--output", ring,
        "/usr/share/pacman/keyrings/archlinux.gpg"});
-  auto status =
-      run({"gpgv", "--keyring", ring, "--status-fd", "1", arc + ".sig", arc});
-  std::regex signature("^\\[GNUPG:\\] VALIDSIG (\\w+) ", std::regex::multiline);
-  std::smatch sig;
-  check(std::regex_search(status, sig, signature),
-        "missing valid GCC package signature");
-  for (const auto &file : gcc["files"].getMemberNames())
-    check(sha(run({"bsdtar", "-xOf", arc, file.substr(1)})) ==
-              gcc["files"][file].asString(),
-          "package member mismatch");
+  J signers = object();
+  for (const auto &s : registry) {
+    if (s["method"] != "signed-local-package")
+      continue;
+    auto arc = s["archive"].asString();
+    auto status =
+        run({"gpgv", "--keyring", ring, "--status-fd", "1", arc + ".sig", arc});
+    std::regex signature("^\\[GNUPG:\\] VALIDSIG (\\w+) ",
+                         std::regex::multiline);
+    std::smatch sig;
+    check(std::regex_search(status, sig, signature),
+          "missing valid package signature: " + arc);
+    signers[s["id"].asString()] = sig[1].str();
+    for (const auto &file : s["files"].getMemberNames())
+      check(sha(run({"bsdtar", "-xOf", arc, file.substr(1)})) ==
+                s["files"][file].asString(),
+            "package member mismatch: " + file);
+  }
   auto lzip = registry["gnu-lzip"];
   for (const auto &file : lzip["files"].getMemberNames())
     check(sha(run({"bsdtar", "-xOf", lzip["archive"].asString(),
@@ -87,7 +93,8 @@ void inventory(const Path &dest) {
   write(
       dest / "inputs.json",
       object({{"sources", seen},
-              {"signer", sig[1].str()},
+              {"signer", signers["gcc-libstdcxx"]},
+              {"package_signers", signers},
               {"base", base.string()},
               {"base_sha256", base_hash},
               {"compiler", digest("/usr/bin/g++-15")},
@@ -237,9 +244,9 @@ void standalone(const Path &extracted, const Path &dest,
   J results = object();
   if (route == "composition") {
     auto client = v5_root() / "fixtures/sketch-client.cpp";
-    run({"g++-15", "-std=c++17", client, "-o", dest / "sketch-client"});
-    auto output = run(sandbox(dest / "sketch-client"),
-                      {.seconds = 8, .probe_limits = true});
+    auto exe = probe_program(dest / "sketch-client");
+    run({"g++-15", "-std=c++17", client, "-o", exe});
+    auto output = run(sandbox(exe), {.seconds = 8, .probe_limits = true});
     results["sketch"] = object(
         {{"observation", load(extracted / "sketch.json")["id"]},
          {"client_sha256", digest(client)},
@@ -255,11 +262,11 @@ void standalone(const Path &extracted, const Path &dest,
          dep = work / "dependencies.d";
     auto client = is_api ? v5_root() / "fixtures/reverse-client.cpp"
                          : root / "one-brick/check.cpp";
+    auto exe = probe_program(work / "client");
     fs::copy_file(extracted / (key + ".hpp"), alias);
     run({"g++-15", "-std=c++17", "-O1", "-MD", "-MF", dep, "-I", work, "-I",
-         verified_base() / "providers", client, "-o", work / "client"});
-    auto out =
-        run(sandbox(work / "client"), {.seconds = 8, .probe_limits = true});
+         verified_base() / "providers", client, "-o", exe});
+    auto out = run(sandbox(exe), {.seconds = 8, .probe_limits = true});
     auto raw = replace(bytes(dep), "\\\n", " ");
     auto pos = raw.find(": ");
     check(pos != raw.npos, "malformed dependencies");
@@ -274,13 +281,15 @@ void standalone(const Path &extracted, const Path &dest,
     if (is_api) {
       check(uses_reverse, "public header not used");
       auto correct = bytes(alias);
-      save(alias,
+      auto mutated_header = work / "identity/provider.hpp";
+      save(mutated_header,
            replace(correct, "std::reverse(record.begin(), record.end());",
                    "(void)record;"));
-      run({"g++-15", "-std=c++17", "-I", work, client, "-o", work / "mutant"});
-      auto mutated = execute(sandbox(work / "mutant"),
-                             {.seconds = 8, .probe_limits = true});
-      save(alias, correct);
+      auto mutant = probe_program(work / "mutant");
+      run({"g++-15", "-std=c++17", "-I", mutated_header.parent_path(), client,
+           "-o", mutant});
+      auto mutated =
+          execute(sandbox(mutant), {.seconds = 8, .probe_limits = true});
       check(mutated.status == 1, "identity mutant escaped independent oracle");
     }
     results[key] =

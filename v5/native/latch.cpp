@@ -26,7 +26,7 @@ J observe(const Path &exe, const J &steps) {
 Path build_client(const Path &dir, const std::string &implementation) {
   fs::create_directories(dir);
   save(dir / "keyed_latch.hpp", implementation);
-  auto exe = dir / "client";
+  auto exe = probe_program(dir / "client");
   run({"g++-15", "-std=c++17", "-O1", "-I", dir,
        v5_root() / "fixtures/latch-client.cpp", "-o", exe});
   return exe;
@@ -136,7 +136,7 @@ void qualify_latch(const Path &extracted, const Path &dest) {
         object({{"source_sha256", sha(changed)}, {"rejected_by", rejected}});
   }
   auto adapter_client = v5_root() / "fixtures/latch-rows-client.cpp",
-       adapter_exe = dest / "rows-client";
+       adapter_exe = probe_program(dest / "rows-client");
   run({"g++-15", "-std=c++17", "-O1", "-I", extracted / "original/providers",
        "-I", extracted / "original/headers", adapter_client, "-o",
        adapter_exe});

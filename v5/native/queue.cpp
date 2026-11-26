@@ -1,7 +1,9 @@
 #include "queue.hpp"
 #include <algorithm>
+#include <cerrno>
 #include <chrono>
 #include <fcntl.h>
+#include <fstream>
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -12,16 +14,25 @@ class Lock {
   int fd;
 
 public:
-  explicit Lock(const Path &path)
+  explicit Lock(const Path &path, bool optional = false)
       : fd(open(path.c_str(), O_CREAT | O_CLOEXEC | O_NOFOLLOW | O_RDWR,
                 0600)) {
     check(fd >= 0, "cannot open queue lease");
     if (flock(fd, LOCK_EX | LOCK_NB)) {
+      bool busy = errno == EWOULDBLOCK;
       close(fd);
-      throw std::runtime_error("another miner holds the worker lease");
+      fd = -1;
+      if (optional && busy)
+        return;
+      throw std::runtime_error(busy ? "another miner holds the worker lease"
+                                    : "cannot acquire worker lease");
     }
   }
-  ~Lock() { close(fd); }
+  ~Lock() {
+    if (fd >= 0)
+      close(fd);
+  }
+  bool held() const { return fd >= 0; }
   Lock(const Lock &) = delete;
 };
 const std::string schema = R"sql(
@@ -68,6 +79,43 @@ void sync_tree(const Path &root) {
   }
   for (auto i = dirs.rbegin(); i != dirs.rend(); ++i)
     sync_path(*i);
+}
+// Test programs are created only inside this attempt's reserved directory.
+void release_programs(const Path &attempt, const Job &job,
+                      const std::string &config, const Path &work) {
+  auto scratch = attempt / ".test-programs";
+  if (!fs::exists(scratch))
+    return;
+  check(fs::is_directory(scratch) && !fs::is_symlink(scratch),
+        "unexpected program scratch path");
+  auto hashes = tree_hashes(scratch);
+  check(!hashes.empty(), "missing disposable program");
+  for (const auto &name : hashes.getMemberNames()) {
+    std::ifstream program(scratch / name, std::ios::binary);
+    char magic[4]{};
+    check(program.read(magic, 4) && std::string_view(magic, 4) == "\177ELF",
+          "non-program in qualification scratch");
+  }
+  J inputs = object(), verdicts = object();
+  for (const auto &parent : job.parents)
+    inputs[parent] = digest(work / parent / "checkpoint.json");
+  for (const auto *file : {"standalone.json", "lifecycle.json",
+                           "integration.json", "fifo/fifo-integration.json",
+                           "package/cross-check.json", "package/manifest.json"})
+    if (fs::is_regular_file(attempt / file))
+      verdicts[file] = digest(attempt / file);
+  check(!verdicts.empty(), "missing qualification verdicts");
+  write(attempt / "tested-programs.json",
+        object({{"schema", "unllm.tested-programs/1"},
+                {"phase", job.name},
+                {"config_sha256", config},
+                {"input_checkpoints", inputs},
+                {"checked_outputs", verdicts},
+                {"program_sha256", hashes},
+                {"released_bytes", Json::UInt64(file_bytes(scratch))}}));
+  sync_tree(attempt);
+  fs::remove_all(scratch);
+  sync_path(attempt);
 }
 void validate_location(const Path &work) {
   check_corpus(work);
@@ -260,7 +308,17 @@ void advance(const Path &work, unsigned max_steps) {
     db.script("COMMIT");
     auto tmp = work / "attempts" / (row[0] + "." + row[3]);
     check(fs::create_directory(tmp), "attempt directory collision");
-    auto p = launch(*selected, work, tmp, limits);
+    Result p;
+    try {
+      p = launch(*selected, work, tmp, limits);
+      if (p.status == 0 && selected->name == "stage")
+        check(sha(dump(environment_pins())) == setting(db, "config_hash"),
+              "qualification inputs changed before staged publication");
+    } catch (const std::exception &error) {
+      failed(db, row, "failed", "worker setup or publication check",
+             error.what());
+      throw;
+    }
     if (p.status != 0) {
       std::string detail = (p.err + p.out).substr(0, 8192);
       bool transient = p.status == -1;
@@ -273,6 +331,7 @@ void advance(const Path &work, unsigned max_steps) {
     }
     check(file_bytes(work) <= limits["disk_mib_per_run"].asUInt64() * 1048576,
           "job exceeded corpus disk budget");
+    release_programs(tmp, *selected, setting(db, "config_hash"), work);
     auto hashes = tree_hashes(tmp);
     auto receipt = object({{"schema", "unllm.acquisition-checkpoint/1"},
                            {"job_id", row[1]},
@@ -336,5 +395,19 @@ void cancel_queue(const Path &work) {
   db.insert("UPDATE config SET value='1' WHERE key='cancelled'", {});
   db.script("UPDATE job SET state='cancelled' WHERE state='ready'");
   db.script("COMMIT");
+  Lock lease(runs / ".v5-worker.lock", true);
+  if (!lease.held())
+    return;
+  // A dead controller may have left a running attempt, including when a
+  // changed executable prevents normal resume. Preserve any committed output.
+  for (const auto &row : db.query("SELECT name,id,state,attempts,receipt FROM "
+                                  "job WHERE state='running'")) {
+    auto path = work / row[0];
+    if (fs::exists(path))
+      finish(db, row, check_artifact(path, row));
+    else
+      failed(db, row, "cancelled", "interrupted",
+             "cancelled after the worker lease ended");
+  }
 }
 } // namespace v5

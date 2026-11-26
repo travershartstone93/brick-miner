@@ -1,6 +1,6 @@
 {
   "id":"unllm.semantic-ports/1",
-  "roles":{"ordered_text_records":"Encounter-ordered collection of string records","record_byte_length":"Length of each record as stored bytes","sequence_item_count":"Cardinality of the input collection"},
+  "roles":{"record_xxh32_seed_zero":"Noncryptographic XXH32 checksum for each record using seed zero","ordered_text_records":"Encounter-ordered collection of string records","record_byte_length":"Length of each record as stored bytes","sequence_item_count":"Cardinality of the input collection"},
   "units":{"byte":"One octet of the stored record","unitless":"Dimensionless integer count of collection members"},
   "cardinalities":{"sequence":"A collection of input records","per_input_item":"One output for each input item in corresponding order","singleton":"Exactly one output, including on empty input"},
   "statuses":["observed","unknown","not-applicable"],

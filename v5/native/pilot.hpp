@@ -15,6 +15,7 @@ const inline std::string api = "reverse_record_bytes",
                          direct = "number_option_prefix";
 const inline std::string base_hash =
     "e4564e3079f0b32b3379a411b170ce9af61ec80ab7938b6a974e724abd538328";
+Path probe_program(const Path &logical_output);
 std::string digest(const Path &file);
 J tree_hashes(const Path &base);
 Path verified_base();
@@ -29,6 +30,10 @@ void extract_latch(const Path &dest);
 J retained_source(const Path &dest, const std::string &id,
                   const std::string &notice);
 void extract_fifo(const Path &dest);
+void extract_xxhash(const Path &dest);
+void qualify_xxhash(const Path &extracted, const Path &dest);
+void check_xxhash_witness(const Path &package, const J &port, const J &contract,
+                          const J &binding);
 void extract_measures(const Path &dest);
 void qualify_measures(const Path &extracted, const Path &dest);
 J semantic_ports(const J &contract, const J &binding, const J &annotation);

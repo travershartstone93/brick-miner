@@ -62,12 +62,23 @@ double secs(timeval t) {
   return double(t.tv_sec) + double(t.tv_usec) / 1000000;
 }
 } // namespace
+Path probe_program(const Path &logical_output) {
+  auto attempt = fs::current_path();
+  auto relative = logical_output.lexically_relative(attempt);
+  check(!relative.empty() && *relative.begin() != ".." &&
+            !relative.is_absolute(),
+        "test program outside worker attempt");
+  auto file = attempt / ".test-programs" / relative;
+  fs::create_directories(file.parent_path());
+  return file;
+}
 std::vector<Job> pilot_jobs(const J &registry) {
   std::vector<Job> jobs = {
       {"inventory", "registry", "", "foundational", 0, {}}};
   Strings required;
   const std::map<std::string, std::pair<std::string, std::string>> reviewed = {
       {"std-reverse", {"gcc-libstdcxx", "api"}},
+      {"xxh32-records", {"xxhash", "api"}},
       {"lzip-number-prefix", {"gnu-lzip", "direct"}},
       {"lzip-index-reverse", {"gnu-lzip", "composition"}},
       {"retained-keyed-latch", {"retained-keyed-latch", "direct"}},
@@ -104,6 +115,8 @@ std::vector<Job> pilot_jobs(const J &registry) {
           100 * (config["coverage_gain"].asUInt() + config["reuse"].asUInt()) /
           cost;
       auto unit = route;
+      if (selector == "xxh32-records")
+        unit = "xxhash";
       if (selector == "retained-keyed-latch")
         unit = "latch";
       if (selector == "retained-unique-fifo")
@@ -137,7 +150,8 @@ J environment_pins() {
       check(digest(arc) == s["sha256"].asString(),
             "changed source archive " + arc.string());
       if (s["method"] == "signed-local-package")
-        p["signature"] = digest(arc.string() + ".sig");
+        p["package_signatures"][s["id"].asString()] =
+            digest(arc.string() + ".sig");
       for (const auto &f : s["files"].getMemberNames())
         check(digest(f) == s["files"][f].asString(),
               "changed pinned input " + f);
@@ -156,18 +170,28 @@ J environment_pins() {
     p["planner"][f] = digest(integrated() / f);
   for (const auto &f : native_tools)
     p["planner"][f] = digest(main_repo / "build/native" / f);
-  for (const auto &path : std::vector<Path>{
-           root / ".build/brick-scan", root / "one-brick/check.cpp",
-           v5_root() / "contract.schema.json", v5_root() / "vocabulary.json",
-           v5_root() / "facts.dl", main_repo / ".deps/bin/souffle",
-           v5_root() / "class-interface.schema.json",
-           v5_root() / "semantic-vocabulary.json",
-           main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
-           main_repo / ".deps/native/usr/bin/souffle",
-           main_repo / "reasoning/prolog/rules.pl",
-           sample_application() / "build/compile_commands.json",
-           sample_application() / "provenance.json", "/usr/bin/g++-15",
-           "/usr/bin/c++", "/usr/bin/clang++", "/usr/bin/bwrap", "/usr/bin/ld"})
+  for (const auto &path :
+       std::vector<Path>{root / ".build/brick-scan",
+                         root / ".build/brick-mine",
+                         root / "one-brick/check.cpp",
+                         root / "tests/client.cpp",
+                         root / "contracts/tasks.json",
+                         v5_root() / "contract.schema.json",
+                         v5_root() / "vocabulary.json",
+                         v5_root() / "facts.dl",
+                         main_repo / ".deps/bin/souffle",
+                         v5_root() / "class-interface.schema.json",
+                         v5_root() / "semantic-vocabulary.json",
+                         main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
+                         main_repo / ".deps/native/usr/bin/souffle",
+                         main_repo / "reasoning/prolog/rules.pl",
+                         sample_application() / "build/compile_commands.json",
+                         sample_application() / "provenance.json",
+                         "/usr/bin/g++-15",
+                         "/usr/bin/c++",
+                         "/usr/bin/clang++",
+                         "/usr/bin/bwrap",
+                         "/usr/bin/ld"})
     p["files"][path.string()] = digest(path);
   p["fixtures"] = tree_hashes(v5_root() / "fixtures");
   auto backend = run({"g++-15", "-print-prog-name=cc1plus"});
@@ -184,6 +208,10 @@ J worker_step(const std::string &name, const Path &work, const Path &out) {
   const auto start = std::chrono::steady_clock::now();
   if (name == "inventory")
     inventory(out);
+  else if (name == "extract-xxhash")
+    extract_xxhash(out);
+  else if (name == "test-xxhash")
+    qualify_xxhash(work / "extract-xxhash", out);
   else if (name == "extract-latch")
     extract_latch(out);
   else if (name == "test-latch")
@@ -286,7 +314,9 @@ Result launch(const Job &job, const Path &work, const Path &out,
            "/etc/ld.so.cache", root / "v5", root / "src",
            main_repo / "docs/UNLLM_MASTER_PLAN_V5.md",
            root / "one-brick/check.cpp", root / ".build/brick-scan",
-           sample_application() / "source", sample_application() / "build",
+           root / ".build/brick-mine", root / "contracts/tasks.json",
+           root / "tests/client.cpp", sample_application() / "source",
+           sample_application() / "build",
            sample_application() / "provenance.json", main_repo / ".deps",
            main_repo / "reasoning", integrated()})
     ro(f);

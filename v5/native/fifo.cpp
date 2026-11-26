@@ -24,9 +24,10 @@ Result client(const Path &dir, const Path &include, const std::string &type,
   check(type == "integer" || type == "string", "unsupported FIFO probe type");
   if (type == "string")
     cmd.push_back("-DFIFO_STRING");
-  append(cmd, {v5_root() / "fixtures/fifo-client.cpp", "-o", dir / "client"});
+  auto exe = probe_program(dir / "client");
+  append(cmd, {v5_root() / "fixtures/fifo-client.cpp", "-o", exe});
   run(cmd);
-  return execute(sandbox(dir / "client"), {.seconds = 8, .probe_limits = true});
+  return execute(sandbox(exe), {.seconds = 8, .probe_limits = true});
 }
 J positive(const Path &dir, const Path &include, const std::string &type,
            bool original) {
@@ -34,11 +35,11 @@ J positive(const Path &dir, const Path &include, const std::string &type,
   check(!result.status && !result.out.empty(), "FIFO behavioral check failed " +
                                                    type + ": " + result.err +
                                                    result.out);
-  auto repeat =
-      run(sandbox(dir / "client"), {.seconds = 8, .probe_limits = true});
+  auto exe = probe_program(dir / "client");
+  auto repeat = run(sandbox(exe), {.seconds = 8, .probe_limits = true});
   check(repeat == result.out, "FIFO observations changed across processes");
   return object({{"observations", result.out},
-                 {"binary_sha256", digest(dir / "client")},
+                 {"binary_sha256", digest(exe)},
                  {"executions", 2}});
 }
 } // namespace

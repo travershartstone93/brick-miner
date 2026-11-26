@@ -1,6 +1,7 @@
 [
   {
     "id": "number_option_prefix",
+    "source_job": "lzip-number-prefix",
     "semantic_input": "ordered TSV fields",
     "semantic_output": "per-row option-prefix flags",
     "primary_family": "developer_tools",
@@ -123,6 +124,7 @@
   },
   {
     "id": "reverse_record_bytes",
+    "source_job": "std-reverse",
     "semantic_input": "ordered byte strings",
     "semantic_output": "per-record reversed bytes",
     "primary_family": "algorithms",
@@ -643,6 +645,143 @@
         "cardinality_status": "observed"
       }
     }
+  },
+  {
+    "id": "line_xxh32",
+    "source_job": "xxh32-records",
+    "source_id": "xxhash",
+    "binding": {
+      "brick": "miner_line_xxh32",
+      "from": "strings",
+      "to": "integers"
+    },
+    "semantic_input": "ordered byte strings",
+    "semantic_output": "seed-zero unsigned 32-bit xxHash values for each record",
+    "primary_family": "algorithms",
+    "facets": {
+      "technical_hierarchy": [
+        "algorithms",
+        "noncryptographic_hashing"
+      ],
+      "application": [
+        "data processing",
+        "file comparison"
+      ],
+      "construction_role": [
+        "per-record transform"
+      ],
+      "abstraction": [
+        "collection transformation"
+      ],
+      "implementation_form": [
+        "generated public API adapter"
+      ],
+      "platform": [
+        "tested Linux x86_64"
+      ],
+      "resources": [
+        "allocates a vector of one integer per record; runtime limits unmeasured"
+      ]
+    },
+    "claims": {
+      "concurrency": {
+        "detail": "Concurrent calls were not qualified.",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "effects": {
+        "detail": "Produces integer values from the supplied byte strings on the fixed probes.",
+        "evidence": [
+          "evidence/standalone.json#line_xxh32"
+        ],
+        "status": "observed"
+      },
+      "formal_predicates": {
+        "detail": "No machine-checked predicate.",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "invariants": {
+        "detail": "Order, duplicate records and cardinality were preserved in the frozen probes.",
+        "evidence": [
+          "evidence/integration.json#line_xxh32"
+        ],
+        "status": "observed"
+      },
+      "mathematical_properties": {
+        "detail": "No collision or distribution property qualified.",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "ownership": {
+        "detail": "Borrows the string vector and returns an owned vector of integers.",
+        "evidence": [
+          "evidence/xxhash-source.json"
+        ],
+        "status": "declared"
+      },
+      "postconditions": {
+        "detail": "Map each line to its unsigned XXH32 value with seed zero, in original order including duplicates. Count every byte except the LF delimiter.",
+        "evidence": [
+          "evidence/standalone.json#line_xxh32",
+          "evidence/integration.json#line_xxh32"
+        ],
+        "status": "observed"
+      },
+      "preconditions": {
+        "detail": "Each input record supplies a contiguous range of bytes readable for its recorded size.",
+        "evidence": [
+          "evidence/xxhash-source.json"
+        ],
+        "status": "declared"
+      },
+      "refinements": {
+        "detail": "The matched upstream result is unsigned, 32 bits, and is widened to int64_t.",
+        "evidence": [
+          "evidence/xxhash-source.json"
+        ],
+        "status": "declared"
+      },
+      "specification_question": {
+        "detail": "This adapter fixes both algorithm and seed. It has no callable parameters.",
+        "evidence": [],
+        "status": "not-applicable"
+      },
+      "state_protocol": {
+        "detail": "Calls the single-shot API once per record.",
+        "evidence": [],
+        "status": "not-applicable"
+      },
+      "thread_affinity": {
+        "detail": "Thread affinity was not tested.",
+        "evidence": [],
+        "status": "unknown"
+      },
+      "upstream_usage": {
+        "detail": "The upstream single-shot header example passes a byte count and seed to XXH32.",
+        "evidence": [
+          "evidence/xxhash-source.json"
+        ],
+        "status": "declared"
+      }
+    },
+    "port_semantics": {
+      "input": {
+        "role": "ordered_text_records",
+        "role_status": "observed",
+        "unit": null,
+        "unit_status": "not-applicable",
+        "cardinality": "sequence",
+        "cardinality_status": "observed"
+      },
+      "output": {
+        "role": "record_xxh32_seed_zero",
+        "role_status": "observed",
+        "unit": null,
+        "unit_status": "not-applicable",
+        "cardinality": "per_input_item",
+        "cardinality_status": "observed"
+      }
+    }
   }
-
 ]

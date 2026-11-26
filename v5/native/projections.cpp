@@ -401,7 +401,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
     check(derived == expected, "Soufflé and SQLite disagree on " + name);
     logical[name] = string_array(expected);
   }
-  auto rust = tantivy_reference(), reader = scratch / "tantivy-query";
+  auto rust = tantivy_reference(),
+       reader = probe_program(scratch / "tantivy-query");
   run({"env", "-u", "HOME", rust / "unllm_index", pack, "--threads", "1",
        "--heap-mb", "32"});
   run({"c++", "-std=c++17", v5_root() / "fixtures/tantivy-query.cpp",
@@ -413,7 +414,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
                                           {"rearm", "threshold_entries"},
                                           {"oldest", "u84"},
                                           {"octet", "byte_lengths"},
-                                          {"dimensionless", "item_count"}}) {
+                                          {"dimensionless", "item_count"},
+                                          {"checksum", "line_xxh32"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},
@@ -463,6 +465,7 @@ void assemble(const Path &work, const Path &dest) {
            {"extract", "latch-source.json"},
            {"extract", "fifo-source.json"},
            {"extract", "measure-source.json"},
+           {"extract", "xxhash-source.json"},
            {"standalone", "lifecycle.json"},
            {"standalone", "standalone.json"},
            {"integration", "integration.json"}})
@@ -478,6 +481,8 @@ void assemble(const Path &work, const Path &dest) {
            fs::copy_options::recursive);
   fs::copy_file(v5_root() / "fixtures/requirements.json",
                 e / "requirements.json");
+  fs::copy_file(root / "tests/client.cpp", e / "xxhash-client.cpp");
+  fs::copy_file(root / "contracts/tasks.json", e / "xxhash-tasks.json");
   fs::copy_file(v5_root() / "semantic-vocabulary.json",
                 package / "semantic-vocabulary.json");
   for (const auto *name : {"measure-client.cpp", "measure-probes.json"})
