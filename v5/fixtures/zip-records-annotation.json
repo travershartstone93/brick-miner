@@ -1,0 +1,26 @@
+{
+  "description":"Project the ASCII-folded final extension and lexical parent of each regular ZIP member.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"Local ZIP input path with fields exactly ext,parent for the qualified projection.","semantic_output":"In archive encounter order, indexed rows of extension and parent taken from the same regular member.","parameters":{"fields":"text"}},
+  "facets":{
+    "technical_hierarchy":["files_storage","archive metadata","path selection"],"application":["archive inventories","file reports"],"construction_role":["reader"],
+    "abstraction":["ordered row visitor"],"implementation_form":["authored C++ adapter over a signed native library"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_inputs","Arch libarchive 3.8.9-1","C++17"],
+    "resources":["Tests use small local archives. Aggregate memory, runtime bounds and payload integrity are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Use a local readable ZIP and the exact ext,parent projection. Qualified path observations use the pinned packaged runtime and normal local files.","evidence":["source.json","spec.json"]},
+    "postconditions":{"status":"observed","detail":"Regular members yielded correlated extension and parent fields in archive order, with consecutive one-based positions. Directory and symlink entries were omitted and duplicates were retained on the recorded archives.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"The extension is ASCII-lowercased without the leading delimiter. A lone leading dot and a final trailing dot produced an empty extension. Bare names have parent dot. The retained backslash member was exposed as having parent a on this runtime.","evidence":["standalone.json"]},
+    "effects":{"status":"observed","detail":"The reader did not change any fixture bytes. For the tested missing, invalid and TAR inputs, the direct visitor reported an error and the emitted program preserved or left absent the destination.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Repeated calls on the same valid input produced the same visitor sequence. Reordering the projection reordered fields and left row positions intact in one standalone control.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"No proof over archive structure, malformed data or path encodings was performed.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"Exact parameter scope is recorded separately. No verified ZIP-validity predicate was established.","evidence":[]},
+    "state_protocol":{"status":"declared","detail":"The callable returns a row producer. Visiting opens its own archive and releases the reader before the call returns.","evidence":["original/adapter.cpp","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The row producer captures owned input-path and selector strings. The visitor borrows one row for the duration of the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter invokes archive_read_next_header. The retained H058 recipe filters the extension field and emits sorted distinct parents.","evidence":["source.json","integration.json"]},
+    "specification_question":{"status":"declared","detail":"Should the report use a folded suffix and a dot for a member at archive root? Use this evidence for ext,parent.","evidence":["spec.json","integration.json"]}
+  }
+}

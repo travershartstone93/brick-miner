@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The retained ZIP metadata reader passed seven direct cases in two processes and 14 ordinary checks on each bundle for the exact `ext,parent` projection. Removing it blocked the fixed H058 recipe. A detached stage reproduced all 29 files and pins the packaged libarchive runtime, adapter, parameter scope and observations. [ZIP qualification and reproduction](v5/RECONCILIATION.md#h1b-correlated-zip-extension-and-parent-projection)
+
 The miner qualified the retained case-sensitive extension filter in a detached fifteen-file stage. It passed nine direct fixtures in each of two processes and ten ordinary file cases on each bundle. The existing correlated ZIP and directory readers raised two fixed path reports from 1/5 each to 5/5, including separate dot-root probes. Removing the exact reader blocked each report. [Filter qualification](v5/RECONCILIATION.md#h1b-exact-filename-extension-filter) · [Path replay and reproduction](replay-gaps/RESULTS.md#correlated-file-metadata-and-dot-root-controls-h058-h070)
 
 The retained JSON-object reader returned all 26 telemetry records in order. Changing only the reader gained zero of fifteen end-user fixture passes on H033, H035 and H038. With the authored operations and archived output formats, H035 passed on the baseline. H033 and H038 also needed the existing staged TSV writer registration. The original 100/100 reference run selected plain text for both. [Controlled replay and reproduction](replay-gaps/RESULTS.md#telemetry-reader-and-output-format-controls-h033-h035-h038)

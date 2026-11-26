@@ -1,0 +1,28 @@
+{
+  "binding": {"component_id":"miner_zip_file_records","binding_id":"zip_file_records","from":"in:application/zip","to":"rows"},
+  "parameters": {"fields":"ext,parent"},
+  "cases": [
+    {
+      "name":"mixed-members","format":"mixed",
+      "members":["d/UP.CsV","TOP.csv","links/alias","dir.csv/","d/archive.tar.GZ","notes/.env","p/x.","README","d/UP.CsV"],
+      "rows":[["csv","d"],["csv","."],["gz","d"],["","notes"],["","p"],["","."],["csv","d"]],
+      "output":".\nd\n"
+    },
+    {
+      "name":"bare-root","format":"top-level",
+      "rows":[["csv","."]],"output":".\n"
+    },
+    {
+      "name":"backslash-spelling","format":"bare-only",
+      "rows":[["","."],["","."],["","."],["","a"]],"output":""
+    },
+    {"name":"empty","format":"empty","rows":[],"output":""},
+    {"name":"missing-input","format":"missing","error":"visit"},
+    {"name":"not-zip","format":"invalid","error":"visit"},
+    {"name":"tar-discriminator","format":"tar","error":"visit"}
+  ],
+  "pinned_fixtures": {
+    "top-level":"e32722224571988df699d7138592e6e0fc020c5c6d683889ccef68486374734e",
+    "bare-only":"2cafad584390bedbccdd6f95bb44cd2ba7901a75e94014564b4421e4231474cd"
+  }
+}

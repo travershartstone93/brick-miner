@@ -791,6 +791,29 @@
         "files":{"usr/include/json-c/json.h":"05408079f9d62dbec3c4ebc2c05babdc0f70cf130fdbda39c95337805a358f25","usr/include/json-c/json_object.h":"20499c79777b310c8347319b93a07ecc04c92eb117e00b5197f7be02be88e09e","usr/lib/libjson-c.so.5.5.0":"5519671516f5f73cdfd9988b47f40c08a0d8d5a9fa44bcfb5a8fdf12c9429d46","usr/share/licenses/json-c/COPYING":"74c1e6ca5eba76b54d0ad00d4815c8315c1b3bc45ff99de61d103dc92486284c"}}
     },
     {
+      "id":"retained-zip-records","family":"Official Arch packages","upstream":"https://libarchive.org/",
+      "revision":"sha256:07b7aaec008cc4892cb2da0c599a16438d2e70869a01b90c4e20bf153f58c3b3",
+      "release":"3.8.9-1","method":"signed-local-package",
+      "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/input-bridges-4GR40Go3/libarchive-3.8.9-1-x86_64.pkg.tar.zst",
+      "sha256":"07b7aaec008cc4892cb2da0c599a16438d2e70869a01b90c4e20bf153f58c3b3",
+      "signature_sha256":"961917aed3a74274caa64108ac35d63d7ea3629a6bbfaeb229a9880cdeb9175e",
+      "signer":"62CC73F884E52957B2FDD8839B7A287D9A2EC608",
+      "recipe_sha256":"d1c9a0b606f018e43ab456227ef4941193c2efd79d60b0e913c7e13792482e0f",
+      "upstream_release":"v3.8.9","symbols":["archive_read_next_header"],"families":["files_storage"],
+      "adapter_revision":"b4e51bf11e1fe9494d5770734af982f89ad9158b",
+      "provider_abi_revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a",
+      "provider_abi_notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e",
+      "documentation":"qualifications/shared/inputs/contracts.json",
+      "examples":"shared/request-recipes.json#H058",
+      "tests":"v5/fixtures/zip-records.json",
+      "dependencies":["brick_shared_inputs","libarchive.so.13","libsqlite3.so.0","liburiparser.so.1","GLib","C++17 standard library"],
+      "rights":{"scope":"Reuse the original approved bundle and signed local package for detached ext,parent evidence.",
+                "upstream_files":"Signed Arch metadata lists BSD-2-Clause, BSD-4-Clause-UC and Apache-2.0 OR CC0-1.0 OR OpenSSL. Retain the two supplied libarchive notices.",
+                "redistribute":"Local review only. The authored adapter has no separate redistribution grant recorded. The package recipe records incomplete upstream notice extraction."},
+      "approval":"local-pilot",
+      "approval_reference":"Historical approved format-input batch, shared/inputs/pins.json and SHARED-NEEDS.md. No new acquisition."
+    },
+    {
       "id":"retained-zip-member-names","family":"retained project provider","upstream":"../unllm-upgrade",
       "revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a","method":"reviewed-local-git-archive",
       "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-zip-source-EwRfQaXg/archive-reader.tar","sha256":"008d4b8f7fe6da7762b5af8bb4baf7340ec17839bfae332e0e3302899ad23058",
@@ -807,6 +830,14 @@
     }
   ],
   "jobs": [
+    {
+      "source":"retained-zip-records",
+      "route":"api",
+      "target":"zip_file_records",
+      "stream":"foundational",
+      "parameter":{"fields":"ext,parent"},
+      "tests":"v5/fixtures/zip-records.json"
+    },
     {
       "source":"retained-zip-member-names",
       "route":"direct",
