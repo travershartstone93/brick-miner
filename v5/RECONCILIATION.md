@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+H039 closes the audit of the 21 archived first-error argument-validation cases. Its fixed route reuses the exact qualified telemetry projection, separate extrema and the detached TSV writer. A numeric-minute variant corrects a signed-zero grouping failure witnessed on legal JSON integer input. [H039 replay evidence](../replay-gaps/RESULTS.md#conflicting-readings-and-numeric-minute-keys-h039)
+
 The H1b threshold-output audit reproduced both archived scalar-enum errors. H002 uses the retained keyed alert. H007 needs per-SKU previous values and source positions and passes through those retained row operations. [Stock-history fixtures and controls](../replay-gaps/RESULTS.md#threshold-output-validation-and-stock-histories)
 
 The H1b group-order audit covers eight later validation stops and 40 passing fixed fixtures. H004's single aggregate rejects `min`. The retained minimum annotation and distinct-count operations cover the two-measure report, including a fresh repeated-SKU witness. [Group order and H004 controls](../replay-gaps/RESULTS.md#group-order-validation-and-the-h004-minimum)

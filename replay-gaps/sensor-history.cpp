@@ -17,35 +17,6 @@ const std::string telemetry = R"([
   {"sensor":"cold","room":"Lab","minute":3,"temp":-5}
 ])";
 
-J verified_reader(const Path &bundle, const Path &stage) {
-  const auto pin = hash(stage / "manifest.json");
-  check(pin ==
-            "c97ffce350f2eb6f582702d1dd6a9b803463ed0d35ae8a4668bd7d01d195b7cb",
-        "changed detached telemetry package");
-  const auto manifest = load(stage / "manifest.json");
-  for (const auto *name : {"source.json", "domain.json", "contract.json"})
-    check(hash(stage / name) == manifest["files"][name].asString(),
-          "changed telemetry evidence file");
-  const auto source = load(stage / "source.json");
-  const auto domain = load(stage / "domain.json");
-  auto reader =
-      exact_row(bundle, "read_json_records", "in:application/json", "rows");
-  check(
-      source["binding"] == reader && domain["call"] == reader["call"] &&
-          domain["argument_index"] == 1 &&
-          domain["all_of"] ==
-              array({object({{"id", "exact_text"}, {"value", selector}})}) &&
-          domain["header_sha256"] ==
-              hash(bundle / "headers" / reader["header"].asString()) &&
-          domain["implementation_sha256"] ==
-              hash(bundle / "runtime/duckdb/lib/libbrick_shared_readers.so") &&
-          domain["contract_sha256"] == hash(stage / "contract.json"),
-      "retained reader or selector differs from qualified evidence");
-  return object({{"manifest_sha256", pin},
-                 {"domain_sha256", hash(stage / "domain.json")},
-                 {"binding", reader}});
-}
-
 J named_lists_control(const Path &work, const Path &bundle,
                       std::vector<Path> &programs) {
   auto dir = work / "named-lists-json";
@@ -95,8 +66,10 @@ int main() try {
   check(active_pin ==
             "e4564e3079f0b32b3379a411b170ce9af61ec80ab7938b6a974e724abd538328",
         "changed published replay context");
-  const auto reader =
-      verified_reader(bundle, runs / "v5-json-records-XXptaI1o/stage");
+  const auto reader = verify_json_records_scope(
+      bundle, runs / "v5-json-records-XXptaI1o/stage",
+      "c97ffce350f2eb6f582702d1dd6a9b803463ed0d35ae8a4668bd7d01d195b7cb",
+      selector);
   const auto recipes_file = root / "shared/request-recipes.json";
   const auto recipe_pin = hash(recipes_file);
   check(recipe_pin ==

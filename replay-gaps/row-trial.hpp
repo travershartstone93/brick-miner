@@ -23,4 +23,8 @@ miner::J extra_case(const miner::Path &dir, const miner::Path &exe,
                     const miner::Path &bundle, const std::string &input,
                     const miner::J &expected, int expected_exit = 0);
 void verify_bundle(const miner::Path &bundle, const std::string &expected);
+miner::J verify_json_records_scope(const miner::Path &bundle,
+                                   const miner::Path &stage,
+                                   const std::string &expected_manifest,
+                                   const std::string &selector);
 } // namespace row_replay

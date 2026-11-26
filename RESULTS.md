@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H039 completed the archived validation cohort. Retained minimum and maximum operations reached the TSV boundary, and the existing staged writer brought the supplied recipe to 5/5. A fresh signed-zero fixture exposed a missed conflict that the retained numeric-minute normalization recovers. [H039 results and reproduction](replay-gaps/RESULTS.md#conflicting-readings-and-numeric-minute-keys-h039)
+
 Both stock-history recipes passed all ten fixtures after correcting the construction. A fresh interleaved trace caught an early-rearm variant of H002 and a quantity-only variant of H007 that the archived suites accepted. [Threshold output and stock histories](replay-gaps/RESULTS.md#threshold-output-validation-and-stock-histories)
 
 The eight saved group-order failures all exposed another invalid argument after the first correction. Their fixed recipes passed 40/40. H004's controls distinguished calculating an aisle minimum over every reading from counting each SKU once. [Group order and H004 evidence](replay-gaps/RESULTS.md#group-order-validation-and-the-h004-minimum)

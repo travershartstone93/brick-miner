@@ -189,4 +189,33 @@ void verify_bundle(const Path &bundle, const std::string &expected) {
   run({"sha256sum", "--strict", "--quiet", "-c", "SHA256SUMS"},
       {.cwd = bundle});
 }
+
+J verify_json_records_scope(const Path &bundle, const Path &stage,
+                            const std::string &expected_manifest,
+                            const std::string &selector) {
+  const auto pin = hash(stage / "manifest.json");
+  check(pin == expected_manifest, "changed detached JSON reader package");
+  const auto manifest = load(stage / "manifest.json");
+  for (const auto *name : {"source.json", "domain.json", "contract.json"})
+    check(hash(stage / name) == manifest["files"][name].asString(),
+          "changed JSON reader evidence file");
+  const auto source = load(stage / "source.json");
+  const auto domain = load(stage / "domain.json");
+  const auto reader =
+      exact_row(bundle, "read_json_records", "in:application/json", "rows");
+  check(
+      source["binding"] == reader && domain["call"] == reader["call"] &&
+          domain["argument_index"] == 1 &&
+          domain["all_of"] ==
+              array({object({{"id", "exact_text"}, {"value", selector}})}) &&
+          domain["header_sha256"] ==
+              hash(bundle / "headers" / reader["header"].asString()) &&
+          domain["implementation_sha256"] ==
+              hash(bundle / "runtime/duckdb/lib/libbrick_shared_readers.so") &&
+          domain["contract_sha256"] == hash(stage / "contract.json"),
+      "retained reader or selector differs from qualified evidence");
+  return object({{"manifest_sha256", pin},
+                 {"domain_sha256", hash(stage / "domain.json")},
+                 {"binding", reader}});
+}
 } // namespace row_replay
