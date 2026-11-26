@@ -91,3 +91,13 @@ check-v5-queue: $(BUILD_DIR)/v5-miner $(BUILD_DIR)/v5-recovery $(BUILD_DIR)/bric
 
 $(BUILD_DIR)/v5-inventory: v5/native/inventory_main.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -lsqlite3 -o "$@"
+
+$(BUILD_DIR)/v5-gap-review: v5/native/gap_review.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -lsqlite3 -o "$@"
+
+$(BUILD_DIR)/v5-gap-check: tests/v5/gap.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host -Iv5/native $(HOST_FLAGS) $^ $(HOST_LIBS) -lsqlite3 -o "$@"
+
+.PHONY: check-v5-gap
+check-v5-gap: $(BUILD_DIR)/v5-gap-review $(BUILD_DIR)/v5-gap-check
+	"$(BUILD_DIR)/v5-gap-check"
