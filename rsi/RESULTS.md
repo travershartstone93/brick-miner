@@ -1,6 +1,10 @@
 # Independent self-improvement evaluation
 
-The first unllm-authored source change increased verified transfer from **0/4 to 1/4** on unseen integer synthesis tasks. The new program passed all eight held observations. Both builds passed the three protected tasks and produced identical protected binaries. Reruns reproduced the verdicts and program hashes.
+Two successive unllm-authored changes increased verified transfer on separate blind suites. The first change expanded integer synthesis over multiplication and the second expanded it over addition. The second build retained the first gain.
+
+## Generation one
+
+The first change increased verified transfer from **0/4 to 1/4**. The new program passed all eight held observations. Both builds passed the three protected tasks and produced identical protected binaries. Reruns reproduced the verdicts and program hashes.
 
 | Frozen comparison | Parent | Self-patched |
 |---|---:|---:|
@@ -38,3 +42,20 @@ make .build/rsi-score
 | Active catalog manifest | `e4564e3079f0b32b3379a411b170ce9af61ec80ab7938b6a974e724abd538328` |
 
 The aggregate evidence is at `unllm/experiments/brick-miner/v5-eval-rsi-first-gen-sq6afKhx/evidence/` on the corpus volume. Its `SHA256SUMS` is `832024ac3ae6c2ac4961a3d1e08628db51b5fe1550f1a884ae482321eb03e6b0` and covers both score summaries, the suite commitment and the negative controls. The private suite stays frozen for protected retesting of subsequent generations.
+
+## Generation two
+
+The unllm build containing the first patch and the original maintenance scaffold emitted the second patch from a public additive-composition task. Generation two increased verified transfer from **0/4 to 4/4** on a separate, frozen suite. Its four new programs passed **36/36** held observations. Both builds passed the three new protected tasks with identical IR and executables.
+
+On the first suite, all four previously verified programs remained byte-identical and passed all 32 held observations. Two former misses also passed and were recorded only in the retest. Both out-of-grammar controls exhausted in both arms. The two seeded defects passed their supplied examples and failed a held observation each. No returned program failed a held check. Reruns produced byte-identical candidate receipts for each suite.
+
+The scaffold-only control used the same public contract and produced the same five added lines and public witness IR. The inherited build therefore demonstrated a second successive gain and preserved the first. The control rules out the first gain as a prerequisite for this second repair. A stronger causal test requires a new maintenance task on which the scaffold-only arm cannot produce the successful patch and an inherited arm can.
+
+| Input | SHA-256 |
+|---|---|
+| Frozen second suite | `3d27356c572f6bb21c41908efed81193ce3c49127672202ed4074ef6f1f27264` |
+| Matched inherited parent | `bbdafa80c1e569bc3b7eacc3d5b313f985142e65990348fcf70e2328181829e9` |
+| Matched second candidate | `440330aa1efc907b99982f86b103f69226d261aad2bd3d3d4d7aac0c2b05899a` |
+| First submitted second-generation diff | `7fc1a59b6e05b1b4dd705386adb516894878d7d07ee1cf33b66861a9daf9d677` |
+
+The second aggregate evidence is at `unllm/experiments/brick-miner/v5-eval-rsi-second-gen-W1DkStLA/evidence/` on the corpus volume. Its `SHA256SUMS` is `752a378c6736c34a6c191eba775603d00ce85de611b9b5182d6a069220101247` and covers both score summaries, the suite commitment, the first-suite retest, and both controls. Both private suites remain sealed. General V5 mining stays paused.
