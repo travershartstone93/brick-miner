@@ -1,0 +1,43 @@
+{
+  "binding":{"component_id":"t80","binding_id":"tab_records","from":"in:text/tab-separated-values","to":"rows"},
+  "direct":[
+    {"name":"mixed-terminators","input":"a\tb\t\r\nc\t\td\nx\tlast",
+     "rows":[[1,["a","b",""]],[2,["c","","d"]],[3,["x","last"]]]},
+    {"name":"blank-records","input":"\n\r\n\t\n",
+     "rows":[[1,[""]],[2,[""]],[3,["",""]]]},
+    {"name":"empty","input":"","rows":[]},
+    {"name":"payload-is-bytes","input_hex":"61000009ff0d0a002009e298830a",
+     "rows_hex":[[1,["610000","ff"]],[2,["0020","e29883"]]]},
+    {"name":"literal-quotes","input":"\"a\tb\"\tx\n",
+     "rows":[[1,["\"a","b\"","x"]]]},
+    {"name":"one-terminal-cr","input":"u\t\r\r\nv\tend\r",
+     "rows":[[1,["u","\r"]],[2,["v","end"]]]},
+    {"name":"interior-cr-and-space","input":"one\r \ttwo\rX\n",
+     "rows":[[1,["one\r ","two\rX"]]]},
+    {"name":"row-width-and-repetition","input":"a\na\nb\tc\n\t\t",
+     "rows":[[1,["a"]],[2,["a"]],[3,["b","c"]],[4,["","",""]]]}
+  ],
+  "errors":[
+    {"name":"missing-path","exception":"Cannot open TSV"},
+    {"name":"directory-path","directory":true,"exception":"TSV read failed"}
+  ],
+  "visitor_failure":{"case":"mixed-terminators","exception":"consumer stopped"},
+  "ordinary":[
+    {"name":"positioned-tsv-to-lines","type":"text/plain","outcome":"report_fields",
+     "parameters":{"fields":"pos,0,1"},"chain":["tab_records","report_fields","write_lines"],
+     "cases":[
+       {"name":"mixed-terminators-and-empty-fields","input":"a\tb\t\r\n\t\t\nx\ty","output":"1\ta\tb\n2\t\t\n3\tx\ty\n"},
+       {"name":"embedded-bytes","input":"left\u0000zero\tright\n","output":"1\tleft\u0000zero\tright\n"},
+       {"name":"empty","input":"","output":""},
+       {"name":"absent-source","error":"missing"}
+     ]},
+    {"name":"tsv-first-column-to-json","type":"application/json","outcome":"ordered_column",
+     "parameters":{"column":0},"chain":["tab_records","column","write_texts"],
+     "cases":[
+       {"name":"literal-quotes-empty-and-utf8","input":"\"a\tb\"\n\ttrailing\n雪\tx","output":["\"a","","雪"]},
+       {"name":"duplicates-and-blank-row","input":"a\na\n\n","output":["a","a",""]},
+       {"name":"empty","input":"","output":[]},
+       {"name":"directory-source","directory":true,"error":"directory"}
+     ]}
+  ]
+}

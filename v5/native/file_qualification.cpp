@@ -4,6 +4,13 @@
 #include <QStandardPaths>
 #include <sstream>
 namespace v5 {
+Strings duckdb_sandbox(const Path &exe, const Path &directory, const Path &bundle) {
+  auto args = sandbox(exe, directory);
+  args.pop_back();
+  append(args, {"--ro-bind", bundle / "runtime/duckdb/lib", "/runtime",
+                "--setenv", "LD_LIBRARY_PATH", "/runtime"});
+  return args;
+}
 J retained_binding_job(const Path &registry, const std::string &target) {
   J job;
   for (const auto &row : load(registry).get("jobs", array()))

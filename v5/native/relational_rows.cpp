@@ -218,15 +218,6 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
   return result;
 }
 
-Strings runtime_sandbox(const Path &exe, const Path &directory,
-                        const Path &bundle) {
-  auto cmd = sandbox(exe, directory);
-  cmd.pop_back();
-  append(cmd, {"--ro-bind", bundle / runtime, "/runtime", "--setenv",
-               "LD_LIBRARY_PATH", "/runtime"});
-  return cmd;
-}
-
 J goal(const RowScope &scope, const J &trial, bool tsv = false) {
   auto steps = array();
   if (scope.selects())
@@ -307,7 +298,7 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
           const std::string sentinel = "unchanged output\n";
           if (existing)
             save(dest, sentinel);
-          auto cmd = runtime_sandbox(exe, input, catalog);
+          auto cmd = duckdb_sandbox(exe, input, catalog);
           append(cmd, {"/probe", "input", "output"});
           auto proc = execute(cmd, {.seconds = 10, .probe_limits = true});
           const bool failure = fixture.get("error", false).asBool();
@@ -415,7 +406,7 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
   env["compiler_flags"] = string_array(compiler_options);
   write(stage / "environment.json", env);
 
-  auto cmd = runtime_sandbox(exe, {}, bundle);
+  auto cmd = duckdb_sandbox(exe, {}, bundle);
   append(cmd, {"--ro-bind", stage / "spec.json", "/spec", "/probe", "/spec"});
   const auto first = parse(run(cmd, {.seconds = 30, .probe_limits = true}));
   check(first["errors"].size() == spec["errors"].size() &&
@@ -455,27 +446,44 @@ J detached_manifest(const Path &stage, const std::string &pin,
   return manifest;
 }
 
-J binding_predecessor(const Path &stage, const Path &package, const J &manifest,
-                      const J &ranked) {
-  const auto &files = manifest["files"];
-  for (const auto *name : {"payload.json", "contract.json", "source.json",
-                          "bindings.sqlite", "tested-programs.json"})
-    check(files.isMember(name), "missing sealed predecessor member: " + std::string(name));
+void check_test_receipt(const Path &stage, const J &files) {
+  check(files.isMember("tested-programs.json"),
+        "missing sealed predecessor member: tested-programs.json");
   const auto tested = load(stage / "tested-programs.json");
   for (const auto *name : {"standalone", "integration", "environment", "spec"}) {
     const auto file = std::string(name) + ".json";
     check(files.isMember(file) && tested[std::string(name) + "_sha256"] == files[file],
           "detached test receipt differs from sealed " + file);
   }
+  check(tested["verdict"] == "passed", "detached evidence has no passing receipt");
+}
+
+J ranked_parent_binding(const J &raw, const Path &bundle, const J &ranked) {
+  const auto rows = load(bundle / "providers/contracts.json")["providers"];
+  check(std::count(rows.begin(), rows.end(), raw) == 1,
+        "detached binding has no unique parent row");
+  const auto expected = file_binding_identity(raw, bundle);
+  const auto &key = expected["key"];
+  check(key["binding_id"] == ranked["binding_id"] &&
+            key["component_id"] == ranked["component_id"] &&
+            key["from"] == ranked["from"] && key["to"] == ranked["to"] &&
+            expected["binding_sha256"] == ranked["binding_sha256"] &&
+            expected["header_sha256"] == ranked["header_sha256"],
+        "detached binding differs from the next ranked binding");
+  return expected;
+}
+
+J binding_predecessor(const Path &stage, const Path &package, const J &manifest,
+                      const J &ranked) {
+  const auto &files = manifest["files"];
+  for (const auto *name : {"payload.json", "contract.json", "source.json",
+                          "bindings.sqlite"})
+    check(files.isMember(name), "missing sealed predecessor member: " + std::string(name));
+  check_test_receipt(stage, files);
   const auto payload = load(stage / "payload.json");
   const auto contract = load(stage / "contract.json");
-  const auto bundle = package / "bundle";
   const auto raw = load(stage / "source.json")["binding"];
-  const auto rows = load(bundle / "providers/contracts.json")["providers"];
-  check(std::count(rows.begin(), rows.end(), raw) == 1 &&
-            tested["verdict"] == "passed",
-        "detached binding has no unique parent row or passing receipt");
-  auto expected = file_binding_identity(raw, bundle);
+  auto expected = ranked_parent_binding(raw, package / "bundle", ranked);
   const auto &key = expected["key"];
   expected["contract_sha256"] = files["contract.json"];
   expected["qualification"] = "ordinary-emission-tested";
@@ -485,12 +493,7 @@ J binding_predecessor(const Path &stage, const Path &package, const J &manifest,
             payload["contract_file"] == "contract.json" &&
             payload["qualified_logical_id"] == expected["logical_id"] &&
             manifest["binding_id"] == expected["logical_id"] &&
-            std::count(bindings.begin(), bindings.end(), expected) == 1 &&
-            key["binding_id"] == ranked["binding_id"] &&
-            key["component_id"] == ranked["component_id"] &&
-            key["from"] == ranked["from"] && key["to"] == ranked["to"] &&
-            expected["binding_sha256"] == ranked["binding_sha256"] &&
-            expected["header_sha256"] == ranked["header_sha256"],
+            std::count(bindings.begin(), bindings.end(), expected) == 1,
         "detached binding differs from the next ranked binding");
   const auto capability = raw["effect"].isNull() ? key["binding_id"] : raw["effect"];
   check(contract["provider_id"] == key["component_id"] &&
@@ -503,6 +506,65 @@ J binding_predecessor(const Path &stage, const Path &package, const J &manifest,
         "detached qualification does not describe the exact ranked binding");
   verify_binding_records(stage, bindings);
   return expected;
+}
+
+J file_predecessor(const Path &stage, const Path &package, const J &manifest,
+                   const J &ranked, const J &scope) {
+  const auto &files = manifest["files"];
+  for (const auto *name : {"domain.json", "contract.json", "source.json"})
+    check(files.isMember(name), "missing sealed predecessor member: " + std::string(name));
+  check_test_receipt(stage, files);
+  const auto source = load(stage / "source.json");
+  const auto raw = source["binding"];
+  const auto bundle = package / "bundle";
+  const auto binding = ranked_parent_binding(raw, bundle, ranked);
+  const auto &key = binding["key"];
+  const auto contract = load(stage / "contract.json");
+  const auto spec = load(stage / "spec.json");
+  const auto domain = load(stage / "domain.json");
+  unsigned kernels = 0;
+  for (const auto &file : source["runtime_files"]) {
+    check(digest(project_file(bundle / runtime, file["path"].asString())) ==
+              file["sha256"].asString(),
+          "scoped reader runtime differs from the parent");
+    if (file["sha256"] == source["kernel_sha256"])
+      ++kernels;
+  }
+  check(kernels == 1, "scoped reader lacks a unique pinned parent kernel");
+  check(scope["parameter"].isString() && scope["value"].isString() &&
+            scope["argument_index"] == 1 && scope["argument_type"] == "const std::string&" &&
+            raw["args"] == array({scope["parameter"]}) &&
+            spec["binding"] == key && spec["parameters"][scope["parameter"].asString()] == scope["value"],
+        "scoped file fixture differs from approved selector");
+  check(domain["schema"] == "unllm.scoped-file-evidence-domain/1" &&
+            domain["binding_key"] == key && domain["call"] == binding["call"] &&
+            domain["logical_id"] == binding["logical_id"] &&
+            manifest["binding_id"] == binding["logical_id"] &&
+            domain["raw_binding_sha256"] == binding["binding_sha256"] &&
+            domain["header_sha256"] == binding["header_sha256"] &&
+            domain["contract_sha256"] == files["contract.json"] &&
+            domain["environment_sha256"] == files["environment.json"] &&
+            domain["implementation_sha256"] == source["kernel_sha256"] &&
+            domain["quantifier"] == "argument" &&
+            domain["argument_index"] == scope["argument_index"] &&
+            domain["argument_type"] == scope["argument_type"] &&
+            domain["all_of"] == array({object({{"id", "exact_text"}, {"value", scope["value"]}})}),
+        "sealed file scope differs from the exact reviewed binding or selector");
+  check(contract["provider_id"] == key["component_id"] &&
+            contract["capability_id"] == raw["effect"] &&
+            contract["interface"]["callable"] == binding["call"] &&
+            contract["interface"]["structural_input"] == key["from"] &&
+            contract["interface"]["structural_output"] == key["to"] &&
+            contract["source"]["id"] == source["source_id"] &&
+            contract["source"]["implementation_sha256"] == domain["implementation_sha256"] &&
+            contract["qualification"]["level"] == "ordinary-emission-tested",
+        "scoped file contract differs from the reviewed reader");
+  return object({{"binding_id", key["binding_id"]},
+                 {"logical_id", binding["logical_id"]},
+                 {"domain_sha256", files["domain.json"]},
+                 {"contract_sha256", files["contract.json"]},
+                 {"selector", scope},
+                 {"disposition", "scoped evidence reconciled"}});
 }
 } // namespace
 
@@ -522,6 +584,7 @@ J select_ranked_scope(const Path &package, const std::string &parent,
     const auto pin = previous["sha256"].asString();
     const auto schema = previous.get("schema", "unllm.scoped-row-evidence/1").asString();
     check(schema == "unllm.scoped-row-evidence/1" ||
+              schema == "unllm.scoped-file-evidence/1" ||
               schema == "unllm.binding-qualification-stage/1",
           "unsupported ranked predecessor schema");
     const auto sealed = detached_manifest(stage, pin, parent, schema);
@@ -532,6 +595,13 @@ J select_ranked_scope(const Path &package, const std::string &parent,
                               {"logical_id", record["logical_id"]},
                               {"contract_sha256", record["contract_sha256"]},
                               {"disposition", "scoped evidence reconciled"}}));
+      ++next;
+      continue;
+    }
+    if (schema == "unllm.scoped-file-evidence/1") {
+      auto record = file_predecessor(stage, package, sealed, *next, previous["selector"]);
+      record["manifest_sha256"] = pin;
+      reviewed.append(record);
       ++next;
       continue;
     }

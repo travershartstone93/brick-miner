@@ -10,6 +10,9 @@ std::string signed_build_info(const miner::J &src, const miner::Path &recipe,
 std::string package_info(const miner::J &src, const std::string &name);
 miner::J runtime_files(const miner::Path &bundle, const miner::Path &base,
                        const miner::Strings &files);
+miner::Strings duckdb_sandbox(const miner::Path &exe,
+                              const miner::Path &directory,
+                              const miner::Path &bundle);
 void retain_adapter(const miner::Path &stage, const miner::Path &bundle,
                     const miner::Path &origin, const miner::J &src,
                     const miner::J &binding, const miner::J &provenance,
@@ -107,6 +110,9 @@ miner::Path qualify_select_group_row(const miner::Path &package,
                                      const std::string &pin,
                                      const miner::Path &registry,
                                      const std::string &registry_pin);
+miner::Path qualify_tab_records(const miner::Path &package, const std::string &pin,
+                                 const miner::Path &registry,
+                                 const std::string &registry_pin);
 miner::Path binding_identity_fixture(const miner::Path &package,
                                      const std::string &pin);
 } // namespace v5

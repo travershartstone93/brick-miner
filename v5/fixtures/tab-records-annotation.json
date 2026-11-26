@@ -1,0 +1,32 @@
+{
+  "description":"Visit plain tab-delimited file rows in encounter order with one-based line positions and preserved field bytes.",
+  "primary_family":"files_storage",
+  "interface":{
+    "semantic_input":"Caller-supplied path to a local plain tab-delimited byte file.",
+    "semantic_output":"A synchronous file reader that visits ragged field vectors with one-based line positions.",
+    "parameters":{}
+  },
+  "facets":{
+    "technical_hierarchy":["files_storage","tabular files","plain TSV reader"],
+    "application":["tabular extraction","positioned reports"],
+    "construction_role":["reader"],"abstraction":["file-to-positioned-row producer"],
+    "implementation_form":["retained C++ headers"],"platform":["tested Linux x86_64"],
+    "dependencies":["C++17 standard library","retained Rows callback ABI"],
+    "resources":["Retains the path and processes one line and its fields at a time. Maximum line length, memory use and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply a valid path string and a synchronous visitor. The successful fixture domain is local regular files. Each callback borrows fields only for that visit.","evidence":["original/providers/tab_provider.hpp","original/headers/tab_rows.hpp","original/providers/provider_types.hpp"]},
+    "postconditions":{"status":"observed","detail":"Newline separated the tested physical records. Tabs split each row, preserving blank, ragged, repeated and trailing empty fields, with one-based positions.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"The reader stripped one terminal CR, kept interior CR and whitespace, treated quote bytes literally and preserved embedded NUL, multibyte text and an invalid UTF-8 byte in the recorded direct fixtures.","evidence":["standalone.json","spec.json"]},
+    "effects":{"status":"observed","detail":"Open and directory read failures occurred on visit with no rows delivered. Both ordinary file programs left existing destinations unchanged or absent as appropriate on the tested reader failures.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Repeating each visit returned the same rows and restarted positions at one on the frozen files.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"No general proof of the line, field or byte-preservation laws was established.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The scope is the tested local byte-file behavior.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Construction did not read the missing path. A visitor exception escaped with the tested message, and a subsequent visit restarted at the first row.","evidence":["standalone.json"]},
+    "ownership":{"status":"observed","detail":"The producer could read after the original path storage had been changed and destroyed. The visitor copies any fields it retains.","evidence":["original/providers/tab_provider.hpp","client.cpp","standalone.json"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits and concurrent modification of the input were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The retained project test reads empty and final unterminated record fields through the same TSV header.","evidence":["source.json","original/project-test-components.cpp"]},
+    "specification_question":{"status":"declared","detail":"Is the input plain tab-delimited text where every tab separates a field?","evidence":["spec.json","standalone.json"]}
+  }
+}
