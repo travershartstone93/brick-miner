@@ -71,3 +71,27 @@ make .build/telemetry-replay
 ```
 
 The sealed report SHA-256 is `31a35180daf8cf52b050e5ca2eb6200147124f57a55f7f6f5aadb7ef228893c8`. It pins all thirteen native replay receipts and the direct reader observations. The thirteen runs recorded 65 fixture verdicts and 159.36 seconds of combined pipeline time, excluding the separate held-check and reader-client runs. The baseline used the separately staged 127-card replica with the active manifest `e4564e3079f0b32b3379a411b170ce9af61ec80ab7938b6a974e724abd538328`. The TSV stage used manifest `88eff82d2bba78d6049a50be4d625e7bac5b21dda8019c52bca1c6e25ec7d7bc`. Eleven arms overlapped an earlier clean run. All eleven reproduced the emitted program hashes, plans, residuals, fixture verdicts and verification outcomes. Run timings differ. Every completed run recorded the executable hashes before releasing the test programs. [Final report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-telemetry-replay-XX5OHDSR/report.json) · [Reader observations](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-telemetry-replay-XX5OHDSR/reader.json) · [Earlier comparison](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-telemetry-replay-XXGYQzC7/report.json)
+
+## Correlated file metadata and dot-root controls (H058, H070)
+
+H058 needs the distinct parents of regular ZIP members with a case-insensitive CSV extension. H070 needs the immediate parents that each contain both an extensionless regular file and a case-insensitive TXT file. Both requests require a dot for the root, alphabetical output and one parent per plain-text line. The 127-card catalog already has two correlated readers that produce folded extensions and the required root spelling. `zip_file_records` supplies `ext,parent`. `tree_file_records` supplies `parent,ext`, keeping each extension associated with its parent so the two counts can be tested on the same group. [Retained binding declarations](../shared/inputs/contracts.json) · [Fixed recipe operations](../shared/request-recipes.json)
+
+The archived interpretations and the existing author-designed recipes ran with the same output format, catalog replica and disabled editor. The H058 exact-extension control adds x25, deduplication and sorting to the original name and parent operations. It still excludes uppercase extensions and yields an empty parent for a bare filename. The selected x25 binding passed its own exact case-sensitive contract. [Detached x25 qualification](../v5/RECONCILIATION.md#h1b-exact-filename-extension-filter)
+
+The checker regenerated the ZIP fixtures with differing timestamps. Each generated H058 converter also executed in isolation on the original archived ZIP bytes, and the receipt joins its five output digests to the checker verdicts. The H070 fixture tree paths and file contents matched the saved replay for all five fixtures. Two additional root probes used the independently retained ZIP containing `report.csv` and a new tree with `.profile` and `ROOT.TxT` at the root. The tree includes one qualifying nested parent and two separate parents that each satisfy only one condition. [Pinned root ZIP](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/v5-parent-transfer-QCn3p5ZQ/top-level.zip)
+
+| Request | Archived operations | Exact extension and lexical parent | Correlated reader and full operations | Exact reader removed |
+|---|---:|---:|---:|---:|
+| H058 | 1/5 | 4/5 | 5/5 | 0/5 |
+| H070 | 1/5 | — | 5/5 | 0/5 |
+
+H058's ordinary fixture distinguishes case sensitivity. The exact-extension program emitted only `data`, while the correlated route also emitted `data/sub`. The separate bare ZIP fixture distinguishes root spelling. The lexical route wrote a blank line and the correlated route wrote `.`. H070's additional tree wrote `.` and `notes`, excluding both incomplete parents. Each removal kept the outcome declaration and all sibling operations. The planner emitted no provider chain and the runner's compiled gap stub failed all fixtures. These were fixed typed replays. Fresh English selection and the readers' other projections remain unmeasured in this slice.
+
+The sealed report pins all seven native receipts at SHA-256 `897d493da10f1982ec058fbc8bc2f4587049fc8cd81658234cb9f757aeda2db8`. It records 35 checker verdicts, 15 additional executions on the original ZIP bytes, three dot-root executions and 108.74 summed pipeline seconds. The run recorded executable digests before releasing scratch. The correlated routes were already in the pinned 127-card bundle. This replay added zero registrations or implementations. [Sealed replay report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-path-replay-XXSSPzLT/report.json)
+
+Reproduce from the miner checkout with the corpus volume mounted.
+
+```sh
+make .build/path-replay
+.build/path-replay
+```

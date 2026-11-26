@@ -48,6 +48,9 @@ $(BUILD_DIR)/replay-gaps: replay-gaps/replay.cpp $(BUILD_DIR)/host/common.o $(BU
 $(BUILD_DIR)/telemetry-replay: replay-gaps/telemetry.cpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/path-replay: replay-gaps/path-metadata.cpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
+
 $(BUILD_DIR)/library-pilot: src/experiments/discovery.cpp src/experiments/pilot.cpp src/experiments/pilots.hpp src/experiments/original_adapter.hpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -lpugixml -o "$@"
 
@@ -92,7 +95,7 @@ $(BUILD_DIR)/v5-recovery: tests/v5/recovery.cpp $(addprefix $(BUILD_DIR)/v5/,$(a
 check-v5-queue: $(BUILD_DIR)/v5-miner $(BUILD_DIR)/v5-recovery $(BUILD_DIR)/brick-scan
 	"$(BUILD_DIR)/v5-recovery"
 
-$(BUILD_DIR)/v5-inventory: v5/native/inventory_main.cpp v5/native/replay_usage.cpp v5/native/binding_identity.cpp v5/native/writer.cpp v5/native/uri_reader.cpp v5/native/recursive_files.cpp v5/native/json_writer.cpp v5/native/archive_names.cpp v5/native/parent_paths.cpp v5/native/file_qualification.cpp v5/native/migration_reports.hpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
+$(BUILD_DIR)/v5-inventory: v5/native/inventory_main.cpp v5/native/replay_usage.cpp v5/native/binding_identity.cpp v5/native/writer.cpp v5/native/uri_reader.cpp v5/native/recursive_files.cpp v5/native/json_writer.cpp v5/native/archive_names.cpp v5/native/parent_paths.cpp v5/native/filter_extension.cpp v5/native/file_qualification.cpp v5/native/migration_reports.hpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter-out %.hpp,$^) $(HOST_LIBS) -lsqlite3 -o "$@"
 
 $(BUILD_DIR)/v5-gap-review: v5/native/gap_review.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))

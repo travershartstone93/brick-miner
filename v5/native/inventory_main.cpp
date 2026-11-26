@@ -318,6 +318,7 @@ int main(int argc, char **argv) try {
       {"--qualify-parent-paths", qualify_parent_paths},
       {"--qualify-uri-reader", qualify_uri_reader},
       {"--qualify-archive-names", qualify_archive_names},
+      {"--qualify-filter-extension", qualify_filter_extension},
       {"--qualify-json-writer", qualify_json_writer}};
   if ((argc == 4 || argc == 7) && file_trials.contains(argv[1])) {
     auto qualify = file_trials.at(argv[1]);
@@ -336,7 +337,7 @@ int main(int argc, char **argv) try {
       "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
       "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
       "--binding-identity-fixture, --qualify-writer, --qualify-recursive-files "
-      "--qualify-parent-paths, --qualify-archive-names, --qualify-json-writer "
+      "--qualify-parent-paths, --qualify-archive-names, --qualify-filter-extension, --qualify-json-writer "
       "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);

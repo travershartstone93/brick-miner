@@ -1,0 +1,26 @@
+{
+  "description":"Keep pathname strings whose lexical final filename extension equals the supplied case-sensitive text.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"Ordered POSIX pathname text and an exact extension selector, including its dot when present.","semantic_output":"An ordered subsequence of the original pathname strings.","parameters":{"extension":"text"}},
+  "facets":{
+    "technical_hierarchy":["files_storage","path selection"],"application":["archive inventories","file reports"],"construction_role":["filter"],
+    "abstraction":["ordered sequence of path strings"],"implementation_form":["retained C++ header over std::filesystem::path"],
+    "platform":["tested Linux x86_64"],"dependencies":["C++17 standard library and filesystem support"],
+    "resources":["Inspects every input path and copies matching strings into the result. Memory limits and scaling remain unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Provide an in-memory vector and a text selector. An empty selector is allowed and matches a path with an empty lexical extension.","evidence":["original/headers/path_ops.hpp","client.cpp"]},
+    "postconditions":{"status":"observed","detail":"Returned the original matching strings, preserving their order, bytes and multiplicity in the tested cases.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"The comparison is case-sensitive. A lone leading dot does not start an extension. A trailing dot counts as extension dot. The selector tests only the final extension, including the delimiter.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The client input vector remained unchanged. File I/O in the ordinary checks belongs to the surrounding reader and writer.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"A directory component containing a dot did not change the final filename extension. Repeated matching inputs produced repeated outputs.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"No general property proof or generated exhaustive domain was attempted.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"No verified formal model of filesystem lexical extension was used.","evidence":[]},
+    "state_protocol":{"status":"not-applicable","detail":"The interface is a single synchronous call with no retained state object.","evidence":["original/headers/path_ops.hpp"]},
+    "ownership":{"status":"declared","detail":"Borrows both arguments by const reference and returns owned strings in a vector by value.","evidence":["client.cpp","original/headers/path_ops.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent calls were not tested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The pinned project example selects the exact .log filename extension from three pathname records.","evidence":["source.json"]},
+    "specification_question":{"status":"declared","detail":"Which final extension should match, and should letter case matter? This filter compares case-sensitively.","evidence":["source.json","standalone.json"]}
+  }
+}

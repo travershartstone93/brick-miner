@@ -825,6 +825,14 @@
       "stream": "foundational"
     },
     {
+      "source": "retained-recursive-files",
+      "route": "direct",
+      "target": "filter_extension",
+      "callable": "bricks::suffix",
+      "tests": "v5/fixtures/filter-extension.json",
+      "stream": "foundational"
+    },
+    {
       "source": "gcc-libstdcxx",
       "route": "api",
       "target": "reverse_record_bytes",

@@ -1,0 +1,14 @@
+{
+  "binding":{"component_id":"x25","binding_id":"filter_extension","from":"strings","to":"strings"},
+  "cases":[
+    {"name":"archived-example","extension":".log","records":["dir/../log/a.tar.gz","f","dir/b.log"],"expected":["dir/b.log"]},
+    {"name":"literal-case","extension":".csv","records":["å.csv","a.CSV","a.CsV",".csv","nested/r.csv","nested/r.csv","archive.csv.gz","under.csv/plain","under.csv/"],"expected":["å.csv","nested/r.csv","nested/r.csv"]},
+    {"name":"exact-uppercase","extension":".CSV","records":["a.csv","a.CSV","other.CSV","a.cSv"],"expected":["a.CSV","other.CSV"]},
+    {"name":"no-leading-dot","extension":"csv","records":["a.csv","csv",".csv","nested/.csv","x.CSV"],"expected":[]},
+    {"name":"compound","extension":".tar.gz","records":["a.tar.gz",".tar.gz","tar.gz","a.tar","gz"],"expected":[]},
+    {"name":"trailing-dot","extension":".","records":["a.","hidden/.bashrc",".","..","report","report.txt.","with.dot/report"],"expected":["a.","report.txt."]},
+    {"name":"empty-extension","extension":"","records":[".","..","a.",".profile","dir.with.dot/file","dir.with.dot/","a.txt",".hidden.txt"],"expected":[".","..",".profile","dir.with.dot/file","dir.with.dot/"]},
+    {"name":"empty-input","extension":".csv","records":[],"expected":[]},
+    {"name":"embedded-nul-in-path","extension":".csv","standalone_only":true,"records":["a\u0000b.csv","c.csv\u0000","d.csv"],"expected":["a\u0000b.csv","d.csv"]}
+  ]
+}
