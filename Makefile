@@ -45,6 +45,9 @@ $(BUILD_DIR)/v5-miner: $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(V5_OBJECTS)
 $(BUILD_DIR)/replay-gaps: replay-gaps/replay.cpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/telemetry-replay: replay-gaps/telemetry.cpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
+
 $(BUILD_DIR)/library-pilot: src/experiments/discovery.cpp src/experiments/pilot.cpp src/experiments/pilots.hpp src/experiments/original_adapter.hpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -lpugixml -o "$@"
 

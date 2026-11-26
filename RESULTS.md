@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The retained JSON-object reader returned all 26 telemetry records in order. Changing only the reader gained zero of fifteen end-user fixture passes on H033, H035 and H038. With the authored operations and archived output formats, H035 passed on the baseline. H033 and H038 also needed the existing staged TSV writer registration. The original 100/100 reference run selected plain text for both. [Controlled replay and reproduction](replay-gaps/RESULTS.md#telemetry-reader-and-output-format-controls-h033-h035-h038)
+
 Main’s ZIP → parent → stable deduplication → JSON program matched 8/10 frozen runs. In the two failures, the archive stored a literal backslash and the ZIP reader exposed a slash. Supplying the original name directly to the parent operation gave the expected result. [Independent composition and ZIP spelling evidence](v5/RECONCILIATION.md#h1b-zip-filename-spelling)
 
 Three partial English requests explicitly needed parent folders. The retained `parent_paths` binding passed seven fixed sequence cases and 35 constructed triples in two processes, plus nine ordinary cases on each executable bundle. A bare filename produced the empty parent. Two requests still require displaying that result as dot. The fifteen-file qualification is staged on the same parent as the independently checked ZIP reader. [Parent-path evidence and reproduction](v5/RECONCILIATION.md#h1b-lexical-parent-paths)

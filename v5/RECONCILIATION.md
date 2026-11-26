@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b replay of three telemetry requests traces reader selection, omitted row operations and the TSV output binding to separate causes. [Telemetry results and rerun command](../replay-gaps/RESULTS.md#telemetry-reader-and-output-format-controls-h033-h035-h038)
+
 The current regular H1b stage contains twelve qualified row providers and one class. Its latest backfill is x16, the literal prefix filter. The preceding stage and its detached reader and writer qualifications retain their original pins. [Current handoff and commands](#h1b-literal-prefix-filter) · [Previous regular stage](#h1b-nonempty-record-filter) · [Detached recursive directory reader](#h1b-recursive-directory-reader) · [URI-list reader](#h1b-retained-uri-list-reader) · [Writer qualification](#h1b-qualification-of-the-existing-plain-text-writer)
 
 Two detached qualifications on the x16 parent cover the ZIP regular-member reader and lexical parent paths. An independent composition exposed a filename spelling change in the reader. [ZIP spelling evidence](#h1b-zip-filename-spelling) · [Parent-path handoff](#h1b-lexical-parent-paths) · [Original ZIP handoff](#h1b-zip-regular-member-names)
