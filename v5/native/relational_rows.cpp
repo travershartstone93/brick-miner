@@ -4,7 +4,9 @@
 #include <QScopeGuard>
 #include <QStandardPaths>
 #include <algorithm>
+#include <set>
 #include <sstream>
+#include <tuple>
 
 namespace v5 {
 namespace {
@@ -18,28 +20,31 @@ struct RowScope {
   std::string qualification, fingerprint;
   bool report() const { return operation == "report_fields"; }
   bool groups() const { return operation == "group_rows"; }
-  bool filter() const { return !report() && !groups(); }
+  bool selects() const { return operation == "select_group_row"; }
+  bool row_kernels() const { return groups() || selects(); }
+  bool filter() const { return !report() && !row_kernels(); }
   std::string kernel() const {
-    return groups() ? "libbrick_row_kernels.so"
-                    : "libbrick_shared_relational.so";
+    return row_kernels() ? "libbrick_row_kernels.so"
+                         : "libbrick_shared_relational.so";
   }
   std::string pkg_config() const {
-    return groups() ? "brick-row-kernels" : "brick_shared_relational";
+    return row_kernels() ? "brick-row-kernels" : "brick_shared_relational";
   }
 };
 
-J group_materials(const Path &stage, const Path &bundle, const J &src,
-                  const J &debug, const J &row, const RowScope &scope,
-                  J receipt) {
+J row_kernel_materials(const Path &stage, const Path &bundle, const Path &base,
+                       const J &src, const J &debug, const J &row,
+                       const RowScope &scope, J receipt) {
   const auto original = bundle / group_history / "native";
   const auto prior = load(original / "provenance.json");
   const auto &partition = prior["physical_partition"];
-  const auto &list = prior["factories"]["brick_list"];
   auto library = bundle / runtime / scope.kernel();
   const auto symbols = run({"nm", "-D", "--defined-only", library});
-  const std::string list_symbol = "_ZN6duckdb7ListFun11GetFunctionEv";
-  auto symbol_present = [&](const std::string &name) {
-    return symbols.find(" " + name + "\n") != std::string::npos;
+  auto check_execution = [&](const std::string &unit, const J &symbol) {
+    const auto &observed = prior["native_checks"]["executed_source_functions"][unit];
+    check(symbols.find(" " + symbol.asString() + "\n") != std::string::npos &&
+              std::find(observed.begin(), observed.end(), symbol) != observed.end(),
+          "missing linked or historical execution evidence for " + unit);
   };
   const auto register_file = original / "register.cpp";
   check(prior["source"]["source_id"] == src["upstream_source_id"] &&
@@ -48,25 +53,37 @@ J group_materials(const Path &stage, const Path &bundle, const J &src,
             prior["outputs"]["register.cpp"].asString() ==
                 digest(register_file) &&
             partition["method"] == "FindOrCreateGroupsInternal" &&
-            list["cls"] == "ListFun" &&
-            symbol_present(partition["symbol"].asString()) &&
-            symbol_present(list_symbol) &&
-            symbol_present("brick_register_row_kernels"),
+            symbols.find(" brick_register_row_kernels\n") != std::string::npos,
         "group kernel provenance or linked symbols differ");
-  for (const auto &unit : {partition["source"], list["source"]}) {
-    const auto path = unit.asString();
-    const auto &observed =
-        prior["native_checks"]["executed_source_functions"][path];
-    const auto expected_symbol = unit == partition["source"]
-                                     ? partition["symbol"].asString()
-                                     : list_symbol;
-    check(std::find(observed.begin(), observed.end(), J(expected_symbol)) !=
-              observed.end(),
-          "missing historical execution evidence for " + path);
+  const auto partition_unit = partition["source"].asString();
+  check_execution(partition_unit, partition["symbol"]);
+  const auto &factories = prior["factories"];
+  std::set<std::string> units{partition_unit};
+  if (scope.selects()) {
+    auto selected = object();
+    for (const auto &[name, cls, symbol] :
+         {std::tuple{"brick_first", "FirstFun", "_ZN6duckdb8FirstFun12GetFunctionsEv"},
+          std::tuple{"brick_last", "LastFun", "_ZN6duckdb7LastFun12GetFunctionsEv"}}) {
+      const auto &factory = factories[name];
+      check(factory["cls"] == cls && factory["method"] == "GetFunctions",
+            "row selection factory changed: " + std::string(name));
+      const auto unit = factory["source"].asString();
+      check_execution(unit, symbol);
+      units.insert(unit);
+      selected[name] = factory;
+    }
+    receipt["selection_factories"] = selected;
+  } else {
+    const auto &list = factories["brick_list"];
+    check(list["cls"] == "ListFun", "group list factory changed");
+    const auto unit = list["source"].asString();
+    check_execution(unit, "_ZN6duckdb7ListFun11GetFunctionEv");
+    units.insert(unit);
+    receipt["list_factory"] = list;
   }
 
   const auto members = src["source_units"].getMemberNames();
-  check(string_array(members) == array({list["source"], partition["source"]}),
+  check(members == Strings(units.begin(), units.end()),
         "reviewed grouped source closure differs");
   auto extracted = stage.parent_path() / ".signed-group-units";
   fs::create_directory(extracted);
@@ -81,19 +98,26 @@ J group_materials(const Path &stage, const Path &bundle, const J &src,
     check(pin == src["source_units"][member].asString() &&
               pin == prior["upstream_files"][member].asString() &&
               pin == digest(original / "original" / member),
-          "signed DuckDB grouping source member changed: " + member);
+          "signed DuckDB row kernel member changed: " + member);
     fs::copy_file(extracted / prefix / member,
                   stage / "original" / Path(member).filename());
   }
   fs::remove_all(extracted);
 
-  const auto header = row["header"].asString();
-  const auto adapter = bytes(bundle / "headers" / header);
-  check(adapter == run({"git", "-C", root, "show",
-                        src["adapter_revision"].asString() +
-                            ":row-ops/mined/include/" + header}),
-        "retained grouping adapter differs from original");
-  save(stage / "original" / header, adapter);
+  Strings headers{row["header"].asString()};
+  if (scope.selects())
+    headers.push_back("miner_group_rows.hpp");
+  for (const auto &header : headers) {
+    const auto adapter = bytes(bundle / "headers" / header);
+    check(adapter == bytes(base / "headers" / header) &&
+              adapter == run({"git", "-C", root, "show",
+                              src["adapter_revision"].asString() +
+                                  ":row-ops/mined/include/" + header}),
+          "retained row adapter differs from original: " + header);
+    save(stage / "original" / header, adapter);
+    if (scope.selects())
+      receipt["adapter_headers"][header] = sha(adapter);
+  }
   retain_provider_abi(stage, bundle, src);
   const auto sdk = archive_member(src, "usr/include/duckdb.h");
   check(sha(sdk) == prior["outputs"]["duckdb.h"].asString() &&
@@ -106,7 +130,6 @@ J group_materials(const Path &stage, const Path &bundle, const J &src,
                 stage / "legacy-contracts.json");
   receipt["source_units"] = src["source_units"];
   receipt["partition"] = partition;
-  receipt["list_factory"] = list;
   receipt["sdk_header_sha256"] = sha(sdk);
   receipt["registration_sha256"] = digest(register_file);
   receipt["historical_instrumentation_sha256"] =
@@ -152,8 +175,8 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
                         {"arch_debug_buildinfo_sha256", sha(debug_build)},
                         {"runtime_files", links}});
   fs::create_directories(stage / "original");
-  if (scope.groups()) {
-    result = group_materials(stage, bundle, src, debug, row, scope, result);
+  if (scope.row_kernels()) {
+    result = row_kernel_materials(stage, bundle, base, src, debug, row, scope, result);
     write(stage / "source.json", result);
     return result;
   }
@@ -205,13 +228,15 @@ Strings runtime_sandbox(const Path &exe, const Path &directory,
 }
 
 J goal(const RowScope &scope, const J &trial, bool tsv = false) {
-  auto steps = array({object(
-      {{"outcome", scope.operation}, {"parameters", trial["parameters"]}})});
+  auto steps = array();
+  if (scope.selects())
+    steps.append(object({{"outcome", "group_rows"}, {"parameters", trial["group"]}}));
+  steps.append(object({{"outcome", scope.operation}, {"parameters", trial["parameters"]}}));
   if (scope.filter()) {
     steps.append(object({{"outcome", "ordered_column"},
                          {"parameters", object({{"column", 0}})}}));
-  } else if (scope.groups()) {
-    if (trial["count"].asBool())
+  } else if (scope.row_kernels()) {
+    if (scope.groups() && trial["count"].asBool())
       steps.append(
           object({{"outcome", "aggregate_groups"},
                   {"parameters", object({{"measure", "count"},
@@ -233,7 +258,7 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
                      : array({"tab_records", "op_0_filter_records",
                               "op_1_column", "write_lines"});
   auto report = object({{"trials", array()}});
-  if (!scope.groups())
+  if (!scope.row_kernels())
     report["chain"] = chain;
   std::map<std::string, Path> arms{{"baseline", base}, {"staged", bundle}};
   auto tsv_chain = chain;
@@ -255,6 +280,10 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
                        "write_lines"})
               : array({"tab_records", "op_0_group_rows", "flatten_row_groups",
                        "op_1_report_fields", "write_lines"});
+      result["chain"] = expected;
+    } else if (scope.selects()) {
+      expected = array({"tab_records", "op_0_group_rows", "op_1_select_group_row",
+                        "op_2_report_fields", "write_lines"});
       result["chain"] = expected;
     }
     for (const auto &[arm, catalog] : arms) {
@@ -331,17 +360,16 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
     }
     auto receipt =
         object({{"bundle_sha256", digest(cut / "SHA256SUMS")}, {"gaps", gaps}});
-    if (scope.groups()) {
+    if (scope.row_kernels()) {
       const auto providers =
           load(cut / "providers/contracts.json")["providers"];
-      auto sibling =
-          std::find_if(providers.begin(), providers.end(), [](const auto &p) {
-            return p["id"] == "flatten_row_groups" &&
-                   p["brick"] == "miner_group_rows";
-          });
+      const auto keep = scope.selects() ? "group_rows" : "flatten_row_groups";
+      auto sibling = std::find_if(providers.begin(), providers.end(), [&](const auto &p) {
+        return p["id"] == keep && p["brick"] == "miner_group_rows";
+      });
       check(sibling != providers.end(),
-            "exact removal lost the flatten sibling");
-      receipt["retained_sibling"] = *sibling;
+            "exact removal lost the retained group binding");
+      receipt[scope.selects() ? "retained_grouping" : "retained_sibling"] = *sibling;
     }
     return receipt;
   };
@@ -394,12 +422,15 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
             parse(run(cmd, {.seconds = 30, .probe_limits = true})) == first,
         "standalone relational suite failed to reproduce");
   if (!scope.filter()) {
-    check(first[scope.groups() ? "groupings" : "reports"].size() ==
+    const auto cases = scope.selects() ? "selections" : scope.groups() ? "groupings" : "reports";
+    const auto calls = scope.selects() ? "calls_per_selection" :
+                       scope.groups() ? "calls_per_grouping" : "calls_per_report";
+    check(first[cases].size() ==
               spec["direct"].size(),
           "incomplete direct relational observations");
     return object(
         {{"fresh_processes", 2},
-         {scope.groups() ? "calls_per_grouping" : "calls_per_report", 2},
+         {calls, 2},
          {"observations", first}});
   }
   check(first["comparisons"].size() == 24,
@@ -540,7 +571,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
   check(src["approval"] == "local-pilot" &&
             src["method"] == "signed-local-package" &&
             job["source"] == scope.source_id.c_str() &&
-            job["route"] == (scope.groups() ? "direct" : "api") &&
+            job["route"] == (scope.row_kernels() ? "direct" : "api") &&
             job["stream"] == "foundational" &&
             job["tests"].asString() == "v5/fixtures/" + scope.fixture + ".json",
         "unapproved retained relational job");
@@ -560,11 +591,12 @@ Path qualify_rows(const Path &package, const std::string &pin,
   const auto defs = load(bundle / "providers/contracts.json");
   const auto row =
       select_binding(defs["providers"], scope.operation,
-                     "miner_" + scope.operation, "rows", scope.output);
+                     "miner_" + scope.operation,
+                     scope.selects() ? "row_groups" : "rows", scope.output);
   const auto record = file_binding_identity(row, bundle);
   const auto selection = select_ranked_scope(package, pin, priority, job);
   const auto &selected = selection["selected"];
-  const auto legacy = load(bundle / (scope.groups() ? group_history : history) /
+  const auto legacy = load(bundle / (scope.row_kernels() ? group_history : history) /
                            "contracts.json")[scope.operation];
   check(selected["binding_id"] == scope.operation.c_str() &&
             selected["binding_sha256"] == record["binding_sha256"] &&
@@ -594,7 +626,7 @@ Path qualify_rows(const Path &package, const std::string &pin,
                 {"bundle_sha256", tsv_manifest["files"]["bundle/SHA256SUMS"]},
                 {"writer", writer}});
     write(stage / "selection.json", qualified_selection);
-  } else if (scope.groups()) {
+  } else if (scope.row_kernels()) {
     write(stage / "selection.json", selection);
   }
   const auto source = verify_materials(stage, bundle, base, src, row, scope);
@@ -643,8 +675,8 @@ Path qualify_rows(const Path &package, const std::string &pin,
   if (!scope.filter()) {
     domain["selector_fixture_sha256"] = digest(stage / "spec.json");
     domain["selection_sha256"] = digest(stage / "selection.json");
-    if (scope.groups()) {
-      domain["grouping"] = object(
+    if (scope.row_kernels()) {
+      domain[scope.selects() ? "row_selection" : "grouping"] = object(
           {{"arguments", scope.arguments}, {"direct_cases", spec["direct"]}});
     } else {
       domain["selector"] = object({{"argument_index", 1},
@@ -700,5 +732,15 @@ Path qualify_group_rows(const Path &package, const std::string &pin,
        "Exact selected key tuples, group order and positioned member rows on "
        "the "
        "frozen grouping fixtures."});
+}
+
+Path qualify_select_group_row(const Path &package, const std::string &pin,
+                             const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"select_group_row", "retained-select-group-row", "select-group-row", "rows", "",
+       array({"which", "order_by", "result_order"}),
+       "Detached positional and ordered selection fixtures through the pinned DuckDB row kernels.",
+       "Entire selected rows and signed positions across checked encounter, numeric and byte orderings."});
 }
 } // namespace v5

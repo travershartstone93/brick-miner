@@ -1,6 +1,8 @@
 # V5 reconciliation and handoff
 
-The H1b worker reconciled the existing `write_lines` scope at 42 supplied requests and qualified retained t80 `column` at 36. Two ordinary TSV projection programs passed on both catalog arms, and exact removal blocked both. The next pending binding is `select_group_row` at 32 requests. [Column and writer reconciliation](#h1b-ordered-column-projection)
+The H1b worker qualified `select_group_row` at 32 supplied requests. Two ordinary TSV programs preserved the selected rows and their source positions. The existing scoped `read_json_records` evidence matches its ranked binding at 20 requests. Reconcile it before qualifying the tied `tab_records` reader. [Group selection qualification](#h1b-positioned-group-selection)
+
+The H1b worker reconciled the existing `write_lines` scope at 42 supplied requests and qualified retained t80 `column` at 36. Two ordinary TSV projection programs passed on both catalog arms, and exact removal blocked both. [Column and writer reconciliation](#h1b-ordered-column-projection)
 
 `group_rows` passed scoped qualification at 51 supplied requests. The retained row kernels matched the signed and historical source evidence. Full positioned member sequences and composite-key counts passed through the ordinary emitter. [Grouping qualification](#h1b-exact-row-grouping)
 
@@ -781,3 +783,24 @@ The primary and clean repeats produced the same 20 file pins and detached manife
 ## H5 optional dispatch-repair transfer
 
 The V5 amendment at `0a4b681` keeps live maintenance attempts optional and makes the H6 catalog comparison a separate matched test after a promoted expansion. The independent screen of 11 installed and documented native command entry points at that revision found no live documented command with an implemented same-unit handler missing from dispatch. No real issue was assigned or scored within this family. The intentionally omitted public branch remains a development control. The miner continues ranked qualification while the transfer comparison awaits a real eligible issue. [V5 H5 and H6](/home/whisper/repo-work/unllm-upgrade/docs/UNLLM_MASTER_PLAN_V5.md:1523) · [Pinned source screen](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-h5-dispatch-screen-14Vxlpmt/review.json)
+
+## H1b positioned group selection
+
+The worker rechecked five ranked predecessor scopes through `column` before selecting `select_group_row` at 32 supplied uses. It joined the exact raw binding, header and ABI to the frozen migration ledger. The retained adapter and grouping header were identical in the original Git revision and both catalog arms. The signed DuckDB binary and debug archives matched the retained grouping and first/last source units, linked factories and historical execution evidence. The new runs used the retained production library. The manual inputs were the scope annotation, frozen row coordinates and acceptance cases. [Rank selection](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXLn5X7i/stage/selection.json) · [Source receipt](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXLn5X7i/stage/source.json)
+
+The standalone C++ client passed 11 selection and nine failure cases in two fresh processes, with two selection calls per case. It consumed each returned producer after the local input groups were destroyed. The checks covered first and last choice, empty groups, stable numeric and byte ties, NUL-bearing keys, equal and extreme signed positions, malformed parameters, short rows and integer overflow. Four alternative parameter choices differed from the frozen expectations. [Fixtures](fixtures/select-group-row.json) · [Standalone observations](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXLn5X7i/stage/standalone.json)
+
+The ordinary rank-first and encounter-last TSV constructions each reported original positions. Baseline and staged programs were byte-identical and passed all 12 file executions per arm. Invalid ranking operands retained an existing destination and left an absent one absent. Exact removal blocked both plans and retained the grouping binding. This is detached evidence for an existing provider with zero newly passing archived requests and zero activations. [Ordinary programs and removal](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXLn5X7i/stage/integration.json)
+
+```sh
+make .build/v5-inventory
+r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+pkg="$r/v5-queue-XXH5XMi9/stage/package"
+registry="$r/v5-select-group-row-XXLn5X7i/stage/sources.json"
+.build/v5-inventory --qualify-select-group-row "$pkg" d15aee96917ff440f58f76270e3ca48575268dcfcf2bce951805c865aae3af63 \
+  --source-registry "$registry" bf19230f9abfba8cacf7c9633be946c3f7c2b749b67fdd6579b0946600a772bc
+```
+
+Both runs reproduced the 26-file manifest at SHA-256 `38c36465bfb5e40d9e7bf9df6c37f268df3582c6dd025f825ddc200c057a6692`, including contract `d4987e4cfcd81369adef32e5ebc48ac2978ca1e9f4562aadd451916e47980728` and domain `4e2e984531f4b6a54a9dbe612d2dd813b9fdd75406b764dcf12f6a1731049750`. The primary and frozen-registry repeat took 71.12 and 85.39 wall seconds while other regressions were running. Both recorded five executable digests and released the scratch programs. The normal package verifier rejected the detached scope. A wrong registry pin and a rehashed registry omitting the column predecessor also failed. Grouping, report and filter replays reproduced their earlier manifests. Cross-file, language and capability-gap regressions passed. [Manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXLn5X7i/stage/manifest.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXv4C5Ox/stage/manifest.json) · [Controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-controls-W0cLZVEN) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXLtIsUm/controls.json)
+
+The next two ranked bindings have 20 supplied uses each. All 33 file pins in the existing `read_json_records` scope verified, and its parent, raw binding and header digests match the ranked row. Its accepted domain still names the exact H035 selector. The next checkpoint will reconcile that evidence and qualify `tab_records` as a separate binding from `column`. [JSON reader scope](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-json-records-XXptaI1o/stage/domain.json) · [Ranked bindings](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-select-group-row-XXLn5X7i/stage/priority.json)

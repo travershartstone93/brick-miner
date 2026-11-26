@@ -1,0 +1,32 @@
+{
+  "description":"Select one complete positioned row from each nonempty group using encounter or caller-specified stable order.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite ordered groups of complete byte-valued rows with signed source positions.",
+    "semantic_output":"A repeatable visitor producer containing each chosen row's full field vector and original position.",
+    "parameters":{"which":"first or last","order_by":"Empty for encounter order or comma-separated zero-based column, type and direction terms","result_order":"group, source_asc or source_desc"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","group representative selection"],
+    "application":["tabular reports","stock histories","ranked group records"],
+    "construction_role":["transform"],"abstraction":["grouped rows to selected positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB row kernels"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick-row-kernels","DuckDB C API 1.5.6-1","C++17"],
+    "resources":["Materializes ranking fields and selected rows. Maximum group count, throughput and memory use are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Select first or last and a supported result order. Every visited row must contain each selected ranking field. Numeric fields must parse as signed 64-bit integers.","evidence":["original/miner_select_group_row.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The finite cases returned the expected complete row and its original signed position for each tested nonempty group. Empty groups contributed no row.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Numeric ranks distinguished integer magnitude from byte spelling. Byte ranks distinguished strings containing NUL and the returned fields preserved those bytes.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The ordinary TSV pipeline preserved both destination states on a short or invalid ranking operand. The surrounding reader and writer own file effects.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Equal complete ranking keys kept encounter order in the tested first and last selections. Equal source positions retained group order in the tested source-ordered result.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"The finite observations provide no general ordering proof.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached domain records the finite argument and input cases.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"The callable rejected malformed parameters and invalid ranking fields before exposing a result producer. Successful producers returned identical rows on repeated visits.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"observed","detail":"The direct client consumed each returned producer twice after the local input groups had been destroyed.","evidence":["standalone.json","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent invocation or consumption was outside the measured cases.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The retained adapter chooses a row ID using the registered first or last DuckDB aggregate and copies its full input row. Historical instrumentation records the underlying factories and the grouping kernel.","evidence":["original/miner_select_group_row.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which ranked row should represent each group and how should the result be ordered?","evidence":["spec.json"]}
+  }
+}
