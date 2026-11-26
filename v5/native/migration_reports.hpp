@@ -11,6 +11,10 @@ miner::Path finish_file_stage(const miner::Path &work,
                               const miner::Path &package,
                               const std::string &pin, const std::string &id,
                               const std::string &schema);
+miner::Path qualify_archive_names(const miner::Path &package,
+                                  const std::string &pin,
+                                  const miner::Path &registry,
+                                  const std::string &registry_pin);
 miner::Path qualify_json_writer(const miner::Path &package,
                                 const std::string &pin,
                                 const miner::Path &registry,

@@ -789,6 +789,21 @@
         "archive":"/var/cache/pacman/pkg/json-c-0.19-1.1-x86_64_v3.pkg.tar.zst","sha256":"61ffd05cb782f9b7e0b3d59f44b2549e0e7b37012c3be196c04e35dc4af21be2",
         "signature_sha256":"cb775cc33007915e87e77c7b20ff1741805cf4f6967720da2f3b950c7699cc92","signer":"882DCFE48E2051D48E2562ABF3B607488DB35A47",
         "files":{"usr/include/json-c/json.h":"05408079f9d62dbec3c4ebc2c05babdc0f70cf130fdbda39c95337805a358f25","usr/include/json-c/json_object.h":"20499c79777b310c8347319b93a07ecc04c92eb117e00b5197f7be02be88e09e","usr/lib/libjson-c.so.5.5.0":"5519671516f5f73cdfd9988b47f40c08a0d8d5a9fa44bcfb5a8fdf12c9429d46","usr/share/licenses/json-c/COPYING":"74c1e6ca5eba76b54d0ad00d4815c8315c1b3bc45ff99de61d103dc92486284c"}}
+    },
+    {
+      "id":"retained-zip-member-names","family":"retained project provider","upstream":"../unllm-upgrade",
+      "revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a","method":"reviewed-local-git-archive",
+      "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-zip-source-EwRfQaXg/archive-reader.tar","sha256":"008d4b8f7fe6da7762b5af8bb4baf7340ec17839bfae332e0e3302899ad23058",
+      "members":{"headers/archive_ops.hpp":["experiments/boilerplate/component-trial/expanded/archive_ops.hpp","cd4d89cbac0b36c1704d60cf45c595d81181bd55d17698f4f02630a316e6bdb3"]},
+      "symbols":["bricks::archives::names<AE_IFREG>"],"families":["files_storage"],
+      "documentation":"experiments/boilerplate/component-trial/expanded/operations.tsv","documentation_sha256":"15459d1462e44736ce30c63c82ded87d5f6188b69390a6e7aaedab6a13316599",
+      "registration":"experiments/boilerplate/component-trial/expanded/register.cpp","registration_sha256":"ef1d021fbe6b81b11d5179c18bec19295b01f5ee6157df1a6368bb951b841c02",
+      "examples":"experiments/boilerplate/component-trial/expanded/behavior-fixtures.json","examples_sha256":"22cb518edc2902235202a3c8830ddb738d2b5298e6e71bab64e7354f7ffdabe7",
+      "tests":"v5/fixtures/archive-names.json","dependencies":["C++17 standard library","Qt6Core headers","libarchive"],
+      "rights":{"scope":"Local qualification and staged review of the retained ZIP binding.","upstream_files":"Project MIT license for retained code. The installed libarchive package lists BSD-2-Clause and BSD-4-Clause-UC.","redistribute":"Local stage includes the project MIT notice and both installed libarchive notices. The runtime is dynamically linked.","notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"},
+      "approval":"local-pilot","approval_reference":"V5 H1b local migration of the existing ZIP member-name binding and installed runtime.",
+      "runtime":{"upstream":"https://libarchive.org/","archive":"/var/cache/pacman/pkg/libarchive-3.8.11-2.1-x86_64_v3.pkg.tar.zst","sha256":"af0e5fe522f1b4983c17f8d85add2ecd3be3187aabc0357ca30f5db8a54a0266","signature_sha256":"4ac978550c842ea5d6537e5b59d48fc70c14c94a68fd6af2582f54dd8740242e","signer":"882DCFE48E2051D48E2562ABF3B607488DB35A47","pkgver":"3.8.11-2.1","arch":"x86_64_v3","licenses":["BSD-2-Clause","BSD-4-Clause-UC"],
+        "files":{"usr/include/archive.h":"7c1f9a5858cf11b4097e61489eb498ea955067287a9f754312c60cce3a3e54de","usr/include/archive_entry.h":"0f76dc1de6cd51be76c946c27ab5af0e9b29b3f0991d50a498cf17e0ee0c2ffc","usr/lib/libarchive.so.13.8.11":"f4483e37053d5322132793f5badde9a08c0877f72b1044a107efe39d3644db13","usr/share/licenses/libarchive/BSD-2-Clause.txt":"0f9c97a2f7a75d3303d6b3cbf61d782a5f242ca7f510deaf220b4ba3e89952eb","usr/share/licenses/libarchive/BSD-4-Clause-UC.txt":"e2d8e88f20fc73195792b45502399fa7c012a91bf07ec6c9ee015b5f78a8b709"}}
     }
   ],
   "jobs": [

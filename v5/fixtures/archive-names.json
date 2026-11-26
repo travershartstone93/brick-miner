@@ -1,0 +1,12 @@
+{
+  "binding":{"component_id":"x42","binding_id":"archive_files_zip","from":"in:application/zip","to":"strings"},
+  "cases":[
+    {"name":"archive-order","format":"zip","members":["z","d/","d/a.txt","shortcut","empty","z"],"expected":["z","d/a.txt","empty","z"]},
+    {"name":"only-nonregular","format":"zip","members":["d/","shortcut"],"expected":[]},
+    {"name":"empty-zip","format":"empty-zip","expected":[]},
+    {"name":"flat-names","format":"zip","members":["plain file",".hidden"],"expected":["plain file",".hidden"]},
+    {"name":"auto-detected-tar","format":"tar","members":["z","d/","shortcut","d/a.txt"],"expected":["z","d/a.txt"]},
+    {"name":"unrecognized-input","format":"unrecognized","error":true},
+    {"name":"missing-input","format":"missing","error":true}
+  ]
+}

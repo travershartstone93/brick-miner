@@ -77,7 +77,8 @@ J file_contract(const Path &stage, const Path &package, const J &record,
   c["schema"] = "unllm.brick-contract/1";
   c["vocabulary"] = "unllm.brick-vocabulary/1";
   const auto &key = record["key"];
-  c["capability_id"] = key["binding_id"];
+  c["capability_id"] =
+      record["effect"].isNull() ? key["binding_id"] : record["effect"];
   c["provider_id"] = c["legacy_brick"] = key["component_id"];
   c["interface"]["callable"] = record["call"];
   c["interface"]["structural_input"] = key["from"];

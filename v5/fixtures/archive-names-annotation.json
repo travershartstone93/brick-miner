@@ -1,0 +1,26 @@
+{
+  "description":"List regular member pathnames in archive order through the retained ZIP input binding.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"A path to a readable ZIP archive on the tested filesystem.","semantic_output":"Ordered names of regular members. Names and multiplicity are preserved on the tested archive fixtures.","parameters":{}},
+  "facets":{
+    "technical_hierarchy":["files_storage","archive inventory"],"application":["archive browsers","file inventories"],"construction_role":["file reader"],
+    "abstraction":["synchronous archive operation"],"implementation_form":["retained C++ header template specialization"],
+    "platform":["tested Linux x86_64"],"dependencies":["libarchive 3.8.11","Qt6Core headers","C++17 standard library"],
+    "resources":["Collects names in memory. Bounds on member count, name length and total processing cost are unknown."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"The row advertises ZIP input and no parameters. The underlying callable relies on libarchive content detection.","evidence":["source.json","original/headers/archive_ops.hpp"]},
+    "refinements":{"status":"observed","detail":"A valid TAR input supplied to the ZIP binding also succeeded. Enumeration therefore does not establish that the file is a ZIP archive.","evidence":["standalone.json","integration.json"]},
+    "postconditions":{"status":"observed","detail":"Returned only regular-file pathnames, including nested paths, zero-length members and repeated names, in archive order on the frozen ZIPs.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The reader enumerated member names. Missing and unrecognized archive inputs raised runtime_error. Each failed ordinary program retained an existing destination or left an absent destination absent.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Directory and symlink entries did not appear in the regular-file list. A zero-entry ZIP produced an empty array.","evidence":["standalone.json"]},
+    "formal_predicates":{"status":"unknown","detail":"Enumeration alone does not establish format conformance, member-content integrity, or a universal file-type guarantee.","evidence":[]},
+    "mathematical_properties":{"status":"unknown","detail":"No general ordering or filtering property was proved.","evidence":[]},
+    "state_protocol":{"status":"declared","detail":"Allocates a libarchive reader, visits headers and closes it synchronously.","evidence":["original/headers/archive_ops.hpp"]},
+    "ownership":{"status":"declared","detail":"Borrows the input path, manages the reader with a unique pointer, and returns owned strings.","evidence":["original/headers/archive_ops.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent reads and concurrent changes to the source file were not tested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was not tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The project declares archive_files for TAR and registers a ZIP alias for that callable. The historical example exercises the TAR binding.","evidence":["source.json"]},
+    "specification_question":{"status":"not-applicable","detail":"The caller supplies the input path and MIME type. There is no configurable archive member filter in this row.","evidence":[]}
+  }
+}
