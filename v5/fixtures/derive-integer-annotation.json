@@ -1,0 +1,32 @@
+{
+  "description":"Append a checked signed integer result to each original positioned row.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite ordered positioned rows with signed decimal int64 text in the selected operand fields.",
+    "semantic_output":"Each original row in encounter order with its fields and position preserved and one appended decimal result.",
+    "parameters":{"column":"Zero-based left operand column","operation":"add, subtract, divide or absolute","operand":"col:N for a right operand field, int:N for a signed decimal constant, or self for absolute"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","integer derivation"],
+    "application":["tabular reports","duration arithmetic","numeric transformations"],
+    "construction_role":["transform"],"abstraction":["positioned rows to annotated positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB projection kernel"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_relational","DuckDB 1.5.6-1","C++17"],
+    "resources":["Materializes both input and query result. The retained table helper configures one DuckDB thread and a 64MB database memory setting. Process memory and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Select an existing left column and supply the applicable operand form. Selected fields and literal operands must be signed decimal int64 text. Division requires a nonzero divisor and each result must fit in int64.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested cases preserved encounter order, positions and original field bytes, and appended the expected decimal add, subtract, divide or absolute value result.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Division truncated toward zero for tested positive and negative operands. The runtime rejected tested signed overflow, zero divisors, missing fields and malformed operands.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The surrounding emitted file programs preserved the previous destination state on tested operand and arithmetic failures. File I/O belongs to the surrounding providers.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Retained original spelling and positions with duplicate positions, leading zeros, plus signs and an unselected field containing NUL.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"The finite fixtures establish neither a formal integer-arithmetic equivalence nor resource bounds.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached evidence records tested cases only.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Tested invalid selector shapes failed before consuming input. Tested invalid operands failed at visitation before any output row. A repeated successful visit consumed input again.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The returned producer captures its source producer by value. The source producer must keep its own captures valid at visitation.","evidence":["original/table.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent construction and visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter emits a DuckDB projection with BIGINT expressions. The retained projection symbol and source unit are pinned. The linked runtime provides integer parsing and operators.","evidence":["original/adapter.cpp","original/table.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which integer operation, input field and field or constant operand should each row use?","evidence":["spec.json"]}
+  }
+}

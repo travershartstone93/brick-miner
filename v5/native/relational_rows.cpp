@@ -22,9 +22,11 @@ struct RowScope {
   bool selects() const { return operation == "select_group_row"; }
   bool aggregates() const { return operation == "aggregate_groups"; }
   bool annotates() const { return operation == "annotate_group_measure"; }
+  bool derives() const { return operation == "derive_integer"; }
   bool group_transform() const { return selects() || aggregates(); }
   bool row_kernels() const { return groups() || group_transform(); }
-  bool renders_rows() const { return row_kernels() || annotates(); }
+  bool appends_fields() const { return annotates() || derives(); }
+  bool renders_rows() const { return row_kernels() || appends_fields(); }
   bool filter() const { return !report() && !renders_rows(); }
   Path origin() const {
     if (row_kernels())
@@ -218,7 +220,7 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
       {.output = source});
   const auto source_pin = digest(source);
   check(source_pin == src["source_unit_sha256"].asString() &&
-            (!scope.annotates() ||
+            (!scope.appends_fields() ||
              source_pin == provenance["headers"][unit].asString()),
         "signed relational source member differs");
   retain_adapter(stage, bundle, origin, src, row, provenance,
@@ -295,8 +297,8 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
       expected = array({"tab_records", "op_0_group_rows", "op_1_" + scope.operation,
                         "op_2_report_fields", "write_lines"});
       result["chain"] = expected;
-    } else if (scope.annotates()) {
-      expected = array({"tab_records", "op_0_annotate_group_measure",
+    } else if (scope.appends_fields()) {
+      expected = array({"tab_records", "op_0_" + scope.operation,
                         "op_1_report_fields", "write_lines"});
       result["chain"] = expected;
     }
@@ -436,10 +438,12 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
             parse(run(cmd, {.seconds = 30, .probe_limits = true})) == first,
         "standalone relational suite failed to reproduce");
   if (!scope.filter()) {
-    const auto cases = scope.annotates() ? "annotations" :
+    const auto cases = scope.derives() ? "derivations" :
+                       scope.annotates() ? "annotations" :
                        scope.aggregates() ? "aggregates" :
                        scope.selects() ? "selections" : scope.groups() ? "groupings" : "reports";
-    const auto calls = scope.annotates() ? "calls_per_annotation" :
+    const auto calls = scope.derives() ? "calls_per_derivation" :
+                       scope.annotates() ? "calls_per_annotation" :
                        scope.selects() ? "calls_per_selection" :
                        scope.groups() ? "calls_per_grouping" :
                        scope.aggregates() ? "calls_per_aggregate" : "calls_per_report";
@@ -593,6 +597,70 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
                  {"selector", scope},
                  {"disposition", "scoped evidence reconciled"}});
 }
+
+J json_writer_predecessor(const Path &stage, const Path &package,
+                          const J &manifest, const J &ranked,
+                          const J &scope) {
+  const auto &files = manifest["files"];
+  for (const auto *name : {"source.json", "domain.json", "contract.json"})
+    check(files.isMember(name),
+          "missing sealed predecessor member: " + std::string(name));
+  const auto source = load(project_file(stage, "source.json"));
+  const auto domain = load(project_file(stage, "domain.json"));
+  const auto contract = load(project_file(stage, "contract.json"));
+  const auto env = load(project_file(stage, "environment.json"));
+  const auto fixture = load(project_file(stage, "spec.json"));
+  check_test_receipt(stage, files);
+  const auto raw = source["binding"];
+  const auto binding = ranked_parent_binding(raw, package / "bundle", ranked);
+  const auto &key = binding["key"];
+  const auto header = "original/headers/" + raw["header"].asString();
+  const auto provenance = sources()["retained-json-text-writer"];
+  check(key["binding_id"] == "write_texts" && key["from"] == "strings" &&
+            key["to"] == "out:application/json" && raw["destination_first"] == true &&
+            raw["effect"].isNull() && raw["args"].isNull() &&
+            fixture["binding"] == key && files[header] == binding["header_sha256"] &&
+            source["source_id"] == provenance["id"] &&
+            source["runtime"] == provenance["runtime"] &&
+            env["linked_json_c_sha256"] ==
+                provenance["runtime"]["files"]["usr/lib/libjson-c.so.5.5.0"],
+        "scoped JSON writer implementation or tested runtime differs");
+  const auto predicates = array(
+      {object({{"id", "valid_utf8"}, {"value", true}}),
+       object({{"id", "max_bytes_inclusive"}, {"value", env["int_max"]}})});
+  check(env["int_max"].isInt() && env["int_max"].asInt() > 0 &&
+            scope == object({{"quantifier", "each_record"}, {"argument_index", 1},
+                             {"argument_type", "const std::vector<std::string>&"},
+                             {"all_of", predicates}}) &&
+            domain["schema"] == "unllm.scoped-file-evidence-domain/1" &&
+            domain["binding_key"] == key && domain["logical_id"] == manifest["binding_id"] &&
+            domain["logical_id"] == binding["logical_id"] &&
+            domain["raw_binding_sha256"] == binding["binding_sha256"] &&
+            domain["implementation_sha256"] == binding["header_sha256"] &&
+            domain["call"] == binding["call"] &&
+            domain["contract_sha256"] == files["contract.json"] &&
+            domain["environment_sha256"] == files["environment.json"] &&
+            domain["argument_index"] == scope["argument_index"] &&
+            domain["argument_type"] == scope["argument_type"] &&
+            domain["quantifier"] == scope["quantifier"] &&
+            domain["all_of"] == predicates,
+        "sealed JSON writer domain differs from the reviewed per-record scope");
+  check(contract["provider_id"] == key["component_id"] &&
+            contract["capability_id"] == key["binding_id"] &&
+            contract["interface"]["callable"] == binding["call"] &&
+            contract["interface"]["structural_input"] == key["from"] &&
+            contract["interface"]["structural_output"] == key["to"] &&
+            contract["source"]["id"] == provenance["id"] &&
+            contract["source"]["implementation_sha256"] == binding["header_sha256"] &&
+            contract["qualification"]["level"] == "ordinary-emission-tested",
+        "scoped file contract differs from the reviewed JSON writer");
+  return object({{"binding_id", key["binding_id"]},
+                 {"logical_id", binding["logical_id"]},
+                 {"domain_sha256", files["domain.json"]},
+                 {"contract_sha256", files["contract.json"]},
+                 {"record_scope", scope},
+                 {"disposition", "scoped evidence reconciled"}});
+}
 } // namespace
 
 J select_ranked_scope(const Path &package, const std::string &parent,
@@ -626,7 +694,11 @@ J select_ranked_scope(const Path &package, const std::string &parent,
       continue;
     }
     if (schema == "unllm.scoped-file-evidence/1") {
-      auto record = file_predecessor(stage, package, sealed, *next, previous["selector"]);
+      auto record = previous.isMember("record_scope")
+                        ? json_writer_predecessor(stage, package, sealed, *next,
+                                                  previous["record_scope"])
+                        : file_predecessor(stage, package, sealed, *next,
+                                           previous["selector"]);
       record["manifest_sha256"] = pin;
       reviewed.append(record);
       ++next;
@@ -772,7 +844,8 @@ Path qualify_rows(const Path &package, const std::string &pin,
     domain["selector_fixture_sha256"] = digest(stage / "spec.json");
     domain["selection_sha256"] = digest(stage / "selection.json");
     if (scope.renders_rows()) {
-      const auto kind = scope.annotates() ? "group_measure_annotation" :
+      const auto kind = scope.derives() ? "checked_integer_derivation" :
+                        scope.annotates() ? "group_measure_annotation" :
                         scope.aggregates() ? "group_aggregation" :
                         scope.selects() ? "row_selection" : "grouping";
       domain[kind] = object(
@@ -862,5 +935,16 @@ Path qualify_annotate_group_measure(const Path &package, const std::string &pin,
        array({"keys", "column", "measure", "value"}),
        "Detached count-equal, min, max and lower-median fixtures on the pinned DuckDB window adapter.",
        "Exact original fields and positions, encounter order, appended partition measures and failure outcomes."});
+}
+
+Path qualify_derive_integer(const Path &package, const std::string &pin,
+                            const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"derive_integer", "retained-derive-integer", "derive-integer", "rows",
+       "src/execution/operator/projection/physical_projection.cpp",
+       array({"column", "operation", "operand"}),
+       "Detached signed add, subtract, divide and absolute-value fixtures on the pinned DuckDB projection adapter.",
+       "Exact original fields and positions, signed decimal results, and failure outcomes."});
 }
 } // namespace v5
