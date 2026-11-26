@@ -204,17 +204,25 @@ J extra_case(const Path &dir, const Path &exe, const Path &bundle,
   return evidence;
 }
 
-std::string path_output(const Path &dest, const Path &input, const Path &exe,
-                        const Path &bundle) {
+J path_outputs(const Path &dest, const Path &input, const Path &exe,
+               const Path &bundle, const Strings &names) {
   fs::create_directories(dest);
   auto argv = sandbox(exe, dest);
   argv.pop_back();
-  append(argv,
-         {"--ro-bind", input, "/case/input", "--ro-bind",
-          bundle / "runtime/duckdb/lib", "/runtime", "--setenv",
-          "LD_LIBRARY_PATH", "/runtime", "/probe", "input", "result.txt"});
+  append(argv, {"--ro-bind", input, "/case/input", "--ro-bind",
+                bundle / "runtime/duckdb/lib", "/runtime", "--setenv",
+                "LD_LIBRARY_PATH", "/runtime", "/probe", "input"});
+  append(argv, names);
   run(argv, {.seconds = 8, .probe_limits = true});
-  return bytes(dest / "result.txt");
+  auto outputs = array();
+  for (const auto &name : names)
+    outputs.append(bytes(dest / name));
+  return outputs;
+}
+
+std::string path_output(const Path &dest, const Path &input, const Path &exe,
+                        const Path &bundle) {
+  return path_outputs(dest, input, exe, bundle, {"result.txt"})[0].asString();
 }
 
 void verify_bundle(const Path &bundle, const std::string &expected) {

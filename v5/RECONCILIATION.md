@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The six directory replays exercise seven supplied roles on the retained reader and writers. Their fresh oracle covers exact byte identity, filename case and suffixes, hidden directory membership, shallow exclusions and all maximum-depth ties. The earlier H070 evidence already covers the seventh directory request in the prose-obligation cohort. [Directory replay and evidence](../replay-gaps/RESULTS.md#directory-requests-with-uncovered-prose)
+
 The 19-request prose-obligation ranking reproduces 21 partial roles and one complete role. The retained catalog supplies all operations in the 22 manually supplied roles. The report credits H058 and H070's earlier fixture passes and ranks the six remaining directory requests first for scoped execution. [Prose-obligation ranking and reproduction](../replay-gaps/RESULTS.md#replies-with-uncovered-prose-and-no-typed-gap)
 
 The H009 and H042 replays complete the zero-operation cohort with 32 verified supplied constructions and 160 saved fixture passes. The two final routes use retained inventory-history and XML group counts with the detached TSV writer. The cohort verifies construction after supplying operations. The next archived cohort has 19 replies with prose obligations and no typed conversion gap. [Cohort replay and evidence](../replay-gaps/RESULTS.md#inventory-and-publishing-close-the-zero-operation-cohort)

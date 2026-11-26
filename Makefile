@@ -85,6 +85,9 @@ $(BUILD_DIR)/directory-count-replay: replay-gaps/directory-count.cpp $(ROW_REPLA
 $(BUILD_DIR)/depot-count-replay: replay-gaps/depot-count.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/residual-directory-replay: replay-gaps/residual-directory.cpp $(ROW_REPLAY_INPUTS)
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
+
 $(BUILD_DIR)/residual-ranking: replay-gaps/residual-ranking.cpp $(ROW_REPLAY_INPUTS)
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -o "$@"
 

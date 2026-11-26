@@ -602,3 +602,35 @@ H058 and H070 retain their prior fixture credit. The audit verifies each earlier
 The two runs took 33.97 and 32.16 wall seconds. Each produced 44 role-level plans and a byte-identical ranking receipt at SHA-256 `c83b0ad78c9d2054f17580b1047a5ec2ab30f833810e415391265be4341328c9`. Both verified all 185 recorded file hashes. The C++ language, cross-file and capability-gap checks passed. The six remaining directory cases are H061, H062, H064, H067, H068 and H069. [Sealed ranking](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-ranking-XXXSWRmG/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-ranking-XX3F9zjp/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXjFjpoi/controls.json)
 
 Build with `make .build/residual-ranking` and run `.build/residual-ranking` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## Directory requests with uncovered prose
+
+H061, H062, H064, H067, H068 and H069 are the six remaining directory requests from the prose-obligation ranking. Their seven supplied roles call the retained directory reader and use the existing plain-text or JSON writers. The replay verifies the reader binding, header and runtime against the earlier directory-reader evidence. The earlier exact qualification covered `parent,ext`. The present tests exercise the six projections below through emitted programs. [Prose-obligation ranking](#replies-with-uncovered-prose-and-no-typed-gap) · [Retained reader evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-tree-records-XXSIq5vi/stage/manifest.json)
+
+| Request | Projection | Behavior checked |
+|---|---|---|
+| H061 | `base,parent` | Count distinct folders per exact basename, including its suffix. |
+| H062 | `path,depth,size` | Keep empty regular files below the root, including hidden files. |
+| H064 | `path,payload` | Group by exact bytes and report the smallest path and count per duplicate group. |
+| H067 | `path,hidden_name,hidden_parent` | Produce both sorted lists and allow a file to appear in each. |
+| H068 | `folded_base,base` | Group by ASCII-folded name and count distinct original spellings. |
+| H069 | `path,depth` | Report every regular file at maximum parent-directory depth. |
+
+The independent C++ oracle walks the archived trees, reads file bytes directly and computes each report separately. The fresh 20-file tree includes case-only aliases, identical stems with different suffixes, empty files at different depths, hidden basenames and ancestors, a deeper empty directory and three maximum-depth files. It also has equal-length binary files with different bytes and a matching pair of 16,401-byte files with an embedded NUL. A second tree has two root files and nested empty directories. [Native replay and oracle](residual-directory.cpp)
+
+All six supplied programs passed 30/30 saved fixtures. The regenerated trees matched the archived path, type and content manifests. Running each program again on the exact saved tree reproduced all 35 output files byte for byte, including both H067 destinations. For H062, the oracle compares decoded JSON paths and the byte check independently verifies the saved slash escaping. On the fresh tree, H064 reports three duplicate groups and distinguishes the near-match by bytes. H067's two reports both include `.cache/.secret`. Its ancestor report also includes `.cache/sub/plain`, whose immediate parent and basename are visible.
+
+| Altered construction | Saved fixtures passed | Difference on the fresh tree |
+|---|---:|---|
+| H061, compare folded basenames | 4/5 | Adds a collision between `Mix.ini` and `MIX.INI`. |
+| H062, include root files | 1/5 | Adds both root-level empty files. |
+| H064, group by size | 2/5 | Merges equal-length files with different contents, including the binary near-match. |
+| H067, reuse the hidden-basename flag for both outputs | 2/5 | Misses visible basenames with a hidden ancestor and repeats root-level hidden names. |
+| H068, count file occurrences | 2/5 | Counts five `shared.txt` files across three distinct spellings and adds `repeated.bin`. |
+| H069, keep only the first deepest file | 5/5 | Drops two of the three depth ties. |
+
+H063's single-output regression through the shared helper reproduces its previous plans, program hashes, verdicts and output bytes. Timed receipt hashes differ. [H063 regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-directory-count-replay-XXKQly6D/report.json)
+
+The two pinned runs took 178.46 and 205.51 wall seconds. Each contains 60 saved fixture verdicts, 30 executions on exact archived trees and 24 fresh executions. The repeat reproduces the plans, program hashes, outputs and verdicts. Timed receipt hashes differ. All 68 recorded file hashes verified in each run, and both runs released their scratch executables. The primary report SHA-256 is `bace72893bc599004a2d0564c058213083257d1f396760bf565d21cc72282b68` and the repeat SHA-256 is `0064731db910a6d26787cd2bd777c1c2ed856708573a7b54ce1f1a095576ca2f`. The C++ language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-directory-replay-XXHTdjz7/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-directory-replay-XXT9ct4g/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXJUXuBQ/controls.json)
+
+Build with `make .build/residual-directory-replay` and run `.build/residual-directory-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
