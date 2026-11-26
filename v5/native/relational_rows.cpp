@@ -1069,4 +1069,15 @@ Path qualify_previous_field(const Path &package, const std::string &pin,
        "Exact positions, original fields, encounter order and prior values within the tested partitions.",
        "histories", "calls_per_history", "previous_partition_field", "history"});
 }
+
+Path qualify_running_total(const Path &package, const std::string &pin,
+                            const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"running_total", "retained-running-total", "running-total", "rows",
+       "src/function/window/window_aggregate_function.cpp", array({"keys", "column"}),
+       "Detached signed running-sum and overflow fixtures on the pinned DuckDB window adapter.",
+       "Exact positions, original fields, signed decimal sums and failure outcomes.",
+       "totals", "calls_per_total", "partition_running_total", "history"});
+}
 } // namespace v5

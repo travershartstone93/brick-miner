@@ -1,0 +1,68 @@
+{
+  "binding":{"component_id":"miner_running_total","binding_id":"running_total","from":"rows","to":"rows"},
+  "rows":[
+    [23,["a","bc","+5","9"]],
+    [-3,["ab","c","-7","08"]],
+    [23,["a","bc","002","7"]],
+    [7,["ab","c","+8","6"]],
+    [0,["a","other","1","5"]],
+    [9,["a","bc","-9","4"]],
+    [1,["ab","c","-1","3"]],
+    [-9,["a","bc","-0","2"]],
+    [11,["","","4","1"]]
+  ],
+  "direct":[
+    {"name":"compound-interleaved","keys":"0,1","column":2,"totals":["5","-7","7","1","1","-2","0","-2","4"]},
+    {"name":"global-running-sum","keys":"all","column":2,"totals":["5","-2","0","8","9","0","-1","-1","3"]},
+    {"name":"single-key","keys":"0","column":2,"totals":["5","-7","7","1","8","-1","0","-1","4"]},
+    {"name":"nul-in-group-key","keys":"0","column":1,"totals":["5","-9","7","0"],"rows":[[5,["a\u0000","5"]],[5,["a","-9"]],[1,["a\u0000","2"]],[0,["a","9"]]]},
+    {"name":"signed-bounds-by-partition","keys":"0,1","column":2,"totals":["9223372036854775807","-9223372036854775808","9223372036854775806","-9223372036854775807","9223372036854775807","-9223372036854775808"],"rows":[[8,["a","x","9223372036854775807","0"]],[8,["b","x","-9223372036854775808","0"]],[-3,["a","x","-1","0"]],[4,["b","x","+1","0"]],[1,["a","x","+1","0"]],[0,["b","x","-1","0"]]]},
+    {"name":"signed-bounds-cancel","keys":"all","column":2,"totals":["9223372036854775807","-1","0"],"rows":[[4,["a","x","9223372036854775807","0"]],[-1,["b","x","-9223372036854775808","0"]],[4,["a","x","+1","0"]]]},
+    {"name":"empty-input","keys":"0,1","column":2,"totals":[],"rows":[]},
+    {"name":"singleton","keys":"all","column":0,"totals":["0"],"rows":[[-3,["-0"]]]}
+  ],
+  "errors":[
+    {"name":"empty-key-selector","keys":"","column":2,"error":"invalid_argument"},
+    {"name":"negative-key-column","keys":"0,-1","column":2,"error":"invalid_argument"},
+    {"name":"trailing-key-delimiter","keys":"0,","column":2,"error":"invalid_argument"},
+    {"name":"all-with-index","keys":"all,0","column":2,"error":"invalid_argument"},
+    {"name":"key-index-limit","keys":"2147483647","column":2,"error":"invalid_argument"},
+    {"name":"value-index-limit","keys":"all","column":2147483647,"error":"invalid_argument"},
+    {"name":"missing-partition-field","keys":"0,1","column":2,"error":"missing column","rows":[[3,["a","b","1"]],[2,["a"]],[1,["a","b","2"]]]},
+    {"name":"missing-value-field","keys":"0,1","column":2,"error":"missing column","rows":[[1,["x","y","1","0"]],[2,["x","y"]]]},
+    {"name":"malformed-decimal","keys":"all","column":2,"error":"invalid integer","rows":[[1,["x","y","1","0"]],[2,["x","y","2.5","0"]]]},
+    {"name":"out-of-range-value","keys":"all","column":2,"error":"Could not convert","rows":[[1,["x","y","1","0"]],[2,["x","y","9223372036854775808","0"]]]},
+    {"name":"positive-prefix-overflow","keys":"0,1","column":2,"error":"out of range","rows":[[1,["a","x","9223372036854775807","0"]],[2,["b","x","-1","0"]],[3,["a","x","1","0"]],[4,["a","x","-1","0"]]]},
+    {"name":"negative-prefix-overflow","keys":"0,1","column":2,"error":"out of range","rows":[[1,["a","x","-9223372036854775808","0"]],[2,["b","x","1","0"]],[3,["a","x","-1","0"]],[4,["a","x","1","0"]]]},
+    {"name":"global-prefix-overflow","keys":"all","column":2,"error":"out of range","rows":[[1,["a","x","9223372036854775807","0"]],[3,["a","x","1","0"]],[4,["a","x","-1","0"]]]}
+  ],
+  "controls":[
+    {"name":"global-instead-of-compound","witness":"compound-interleaved","field":"keys","value":"all"},
+    {"name":"drop-secondary-key","witness":"compound-interleaved","field":"keys","value":"0"},
+    {"name":"different-value-field","witness":"compound-interleaved","field":"column","value":3}
+  ],
+  "ordinary":[
+    {"name":"compound-interleaved","fields":"pos,0,1,2,3,4","parameters":{"keys":"0,1","column":2},
+     "cases":[
+       {"name":"interleaved-signed-input","input":"a\tbc\t+5\t9\nab\tc\t-7\t08\na\tbc\t002\t7\nab\tc\t+8\t6\na\tother\t1\t5\na\tbc\t-9\t4\nab\tc\t-1\t3\na\tbc\t-0\t2\n\t\t4\t1\n","output":"1\ta\tbc\t+5\t9\t5\n2\tab\tc\t-7\t08\t-7\n3\ta\tbc\t002\t7\t7\n4\tab\tc\t+8\t6\t1\n5\ta\tother\t1\t5\t1\n6\ta\tbc\t-9\t4\t-2\n7\tab\tc\t-1\t3\t0\n8\ta\tbc\t-0\t2\t-2\n9\t\t\t4\t1\t4\n"},
+       {"name":"signed-bounds","input":"a\tx\t9223372036854775807\t0\nb\tx\t-9223372036854775808\t0\na\tx\t-1\t0\nb\tx\t+1\t0\na\tx\t+1\t0\nb\tx\t-1\t0\n","output":"1\ta\tx\t9223372036854775807\t0\t9223372036854775807\n2\tb\tx\t-9223372036854775808\t0\t-9223372036854775808\n3\ta\tx\t-1\t0\t9223372036854775806\n4\tb\tx\t+1\t0\t-9223372036854775807\n5\ta\tx\t+1\t0\t9223372036854775807\n6\tb\tx\t-1\t0\t-9223372036854775808\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"positive-overflow-with-later-cancellation","input":"a\tx\t9223372036854775807\t0\nb\tx\t-1\t0\na\tx\t1\t0\na\tx\t-1\t0\n","error":true},
+       {"name":"negative-overflow-with-later-cancellation","input":"a\tx\t-9223372036854775808\t0\nb\tx\t1\t0\na\tx\t-1\t0\na\tx\t1\t0\n","error":true},
+       {"name":"out-of-range-operand","input":"x\ty\t1\t0\nx\ty\t9223372036854775808\t0\n","error":true},
+       {"name":"malformed-integer","input":"x\ty\t1\t0\nx\ty\t2.5\t0\n","error":true},
+       {"name":"missing-value","input":"x\ty\t1\t0\nx\ty\n","error":true}
+     ]},
+    {"name":"global-running-sum","fields":"pos,0,1,2,3,4","parameters":{"keys":"all","column":2},
+     "cases":[
+       {"name":"interleaved-signed-input","input":"a\tbc\t+5\t9\nab\tc\t-7\t08\na\tbc\t002\t7\nab\tc\t+8\t6\na\tother\t1\t5\na\tbc\t-9\t4\nab\tc\t-1\t3\na\tbc\t-0\t2\n\t\t4\t1\n","output":"1\ta\tbc\t+5\t9\t5\n2\tab\tc\t-7\t08\t-2\n3\ta\tbc\t002\t7\t0\n4\tab\tc\t+8\t6\t8\n5\ta\tother\t1\t5\t9\n6\ta\tbc\t-9\t4\t0\n7\tab\tc\t-1\t3\t-1\n8\ta\tbc\t-0\t2\t-1\n9\t\t\t4\t1\t3\n"},
+       {"name":"signed-cancellation","input":"a\tx\t9223372036854775807\t0\nb\tx\t-9223372036854775808\t0\na\tx\t+1\t0\n","output":"1\ta\tx\t9223372036854775807\t0\t9223372036854775807\n2\tb\tx\t-9223372036854775808\t0\t-1\n3\ta\tx\t+1\t0\t0\n"},
+       {"name":"empty-input","input":"","output":""},
+       {"name":"positive-overflow-with-later-cancellation","input":"a\tx\t9223372036854775807\t0\na\tx\t1\t0\na\tx\t-1\t0\n","error":true},
+       {"name":"negative-overflow-with-later-cancellation","input":"a\tx\t-9223372036854775808\t0\na\tx\t-1\t0\na\tx\t1\t0\n","error":true},
+       {"name":"out-of-range-operand","input":"x\ty\t1\t0\nx\ty\t9223372036854775808\t0\n","error":true},
+       {"name":"malformed-integer","input":"x\ty\t1\t0\nx\ty\t2.5\t0\n","error":true},
+       {"name":"missing-value","input":"x\ty\t1\t0\nx\ty\n","error":true}
+     ]}
+  ]
+}

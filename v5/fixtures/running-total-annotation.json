@@ -1,0 +1,32 @@
+{
+  "description":"Append an inclusive signed running sum to each positioned row within its key partition.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite positioned rows with selected key fields and signed decimal int64 operands.",
+    "semantic_output":"The original rows in encounter order, with their inclusive partition sums appended as decimal text.",
+    "parameters":{"keys":"all for one partition, or a comma-separated list of zero-based key columns","column":"Zero-based field containing the signed integer operand"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","partition running sum"],
+    "application":["running reports","per-key balances","cumulative measurements"],
+    "construction_role":["transform"],"abstraction":["positioned rows to annotated positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB window operator"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_history","DuckDB 1.5.6-1","C++17"],
+    "resources":["Materializes input and query results. The table helper configures one DuckDB thread and a 64MB database memory setting. Peak process memory and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply valid partition and value selectors and existing fields. Each operand must parse as signed decimal int64 text and every reported prefix sum must fit in signed int64.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested rows retained their original fields, positions and encounter order and received the expected inclusive sum within the selected partition.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Tested exact signed bounds succeeded. Positive and negative out-of-range prefixes failed even when later terms would return the sum to range. Out-of-range operands and malformed decimals also failed.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The surrounding emitted programs preserved the previous destination state on tested missing fields, malformed operands and overflowing prefixes. File I/O belongs to the surrounding providers.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Interleaved compound keys retained independent sums. Duplicate positions preserved encounter order. Repeated successful visits recomputed identical totals in the tested cases.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"General arithmetic equivalence and complexity bounds remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached domain records bounded executable examples.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Tested invalid selectors failed before source enumeration. Missing fields, invalid operands and overflowing prefixes failed during visitation before delivering a row.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The result captures its source producer by value. The source producer must keep its own captures valid during visitation.","evidence":["original/table.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent construction and visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter applies a DuckDB SUM window from the first row through the current row within an encounter-ordered partition and casts each prefix to BIGINT. The retained operator and signed source unit are pinned.","evidence":["original/adapter.cpp","original/table.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which field should be accumulated, and which keys define independent running sums?","evidence":["spec.json"]}
+  }
+}
