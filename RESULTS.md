@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H016 and H065 close the 15-request typed-conversion cohort. The supplied constructions have verified execution for all 20 roles and 75 saved fixtures. H016 needs the CSV input label and staged TSV writer. H065 uses the retained exact directory-component test and the same writer. [Typed-conversion closure and reproduction](replay-gaps/RESULTS.md#csv-and-directory-constructions-close-the-typed-conversion-cohort)
+
 The four typed URI-list requests passed 20 saved fixtures and eight fresh checks with the staged TSV writer. The tested first-occurrence variant for H077 also passed the saved fixtures and failed the fresh ordering check. H016 and H065 are the two remaining typed-conversion requests awaiting execution. [Typed URI-list replay](replay-gaps/RESULTS.md#typed-uri-list-constructions)
 
 The 15 typed-conversion requests reconcile to nine previously verified requests and six awaiting scoped execution. All 20 supplied roles plan on retained providers with the staged TSV writer and H016's CSV input correction. [Typed-conversion reconciliation](replay-gaps/RESULTS.md#typed-conversion-requests-and-retained-execution-evidence)

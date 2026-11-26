@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H016 and H065 replays close all 15 archived typed-conversion cases on supplied operations, with 20 output roles and 75 saved fixture passes. Fresh tests distinguish aggregate bank totals from any negative bank entry and exact lowercase `build` components from similarly named paths. Prepare a joined per-request audit across all five archived blocker cohorts before following up remaining capability needs. [Typed-conversion closure and evidence](../replay-gaps/RESULTS.md#csv-and-directory-constructions-close-the-typed-conversion-cohort)
+
 The typed URI-list replay verifies H073, H075, H077 and H079 across five output roles and 20 saved fixtures. Exact writer removal blocks all five roles. Fresh controls distinguish URI identity, scheme matching, second-occurrence order and duplicate counting. H016 and H065 remain queued for scoped execution. [Typed URI-list replay and reproduction](../replay-gaps/RESULTS.md#typed-uri-list-constructions)
 
 The typed-conversion reconciliation verifies prior executions for nine of the 15 requests and complete supplied plans for all 20 roles. The staged writer clears ten archived occurrences. H016 also needs the CSV input type. Six requests await scoped execution, with four URI-list cases forming the largest group. [Typed-conversion reconciliation and reproduction](../replay-gaps/RESULTS.md#typed-conversion-requests-and-retained-execution-evidence)
