@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b booking replay resolved H096's archived graph-to-text stop with retained JSON rows, grouped state counts and the text writer. Both fixed field projections passed all archived cases. Evidence covers the two supplied constructions on this generation. [Booking-state replay and controls](../replay-gaps/RESULTS.md#prerequisite-graphs-and-booking-states-h096)
+
 The H1b sensor-history replay reused the qualified H035 reader projection for H037. Both fixed text routes passed on the existing bundle. Reader and aggregate removal isolated the two dependencies, and new boundary observations distinguished four predicate errors. [Sensor-history replay and controls](../replay-gaps/RESULTS.md#named-lists-and-sensor-histories-h037)
 
 The H1b reachability replay reproduced H085's archived scheduling input gap, then passed the fixed downstream request through the retained TSV and reachability bindings. H086 transferred that route to upstream prerequisites by reversing the edge columns. [Reachability and schedule controls](../replay-gaps/RESULTS.md#a-scheduling-input-gap-in-a-reachability-request-h085-h086)

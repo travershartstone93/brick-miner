@@ -164,3 +164,22 @@ Reproduce from the miner checkout with the corpus volume mounted. The C++ langua
 make .build/sensor-history-replay
 .build/sensor-history-replay
 ```
+
+## Prerequisite graphs and booking states (H096)
+
+H096 asks for two alphabetized lists of rooms, with each room emitted once. The first report requires cancellations and zero active bookings. The second requires at least one of each status in the same room. The saved 104-card response uses `named_sets` for both roles and leaves the filters, sort and text output in prose. The 127-card replay kept that response byte for byte. Its menu offered `read_json_records`, `aggregate_groups` and `ordered_column`, and omitted the per-row aggregate, filter, deduplication and sort used by the fixed route. [Saved interpretation and menu ledger](../row-ops/english-construction.tsv) · [Fixed recipes](../shared/request-recipes.json)
+
+On the pinned V5 bundle the saved response reproduced `prerequisites → out:text/plain` in both roles and passed 0/5. Replacing just the reader left both roles at `rows → out:text/plain`, also 0/5. The full fixed recipe uses the retained JSON-object reader with the exact booking field projection, annotates each room's active and canceled counts, applies the two independent predicates, then projects, deduplicates and sorts the names for the existing text writer. A second authored route projects only `room,state` and remaps the count and report columns. Both routes passed 5/5 with byte-identical reports. An independent presence-based grouping check matched both routes on the five archived inputs and the fresh witness. [Independent oracle](</run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-booking-state-replay-XXSn4lGn/independent-oracle.ndjson>)
+
+Removing the exact reader or aggregate binding blocked both reports and left both destinations absent. The ordinary emitter still compiled a fallback converter for each removal. An extra ordinary scheduling program used the same graph-reader callable as `named_sets`. It emitted two dependency waves for a valid graph and rejected the booking array before writing any output. The archived `prerequisites` gap describes the saved route. The booking task has a complete route on the existing row providers.
+
+All archived mixed-status rooms have exactly one canceled booking. A mutation requiring exactly one cancellation in the mixed report therefore also scored 5/5. A fresh ten-booking fixture contains an interleaved mixed room with two cancellations and two active bookings, a second mixed room, two cancellation-only rooms and an active-only room. The full and compact routes wrote `Alpha`, `Omega` and `Beta`, `Zeta` to their respective reports. The mutation dropped `Zeta` from the second report. A separate out-of-domain probe containing only `room` and `state` was accepted by the compact route and rejected by the full projection. These are observations on fixed specifications. Fresh selection from English remains unmeasured.
+
+Each clean run recorded 35 archived fixture verdicts and seven additional executions. Both runs reproduced all plans, executable hashes, outputs and verdicts. The timed raw receipt hashes differed. All fifteen receipt and plan hashes verified in each run. Both released the scratch executables after recording their hashes. The first full run took 110.47 wall seconds. Its report has SHA-256 `2a954d81d08f485e1cb8ded584a836907fad82026e0ead01dd3f370e43083048`. The repeat report has SHA-256 `9c9c7109e492b27605b597598ab684f1cb59cfbb9f6768406951f94ff597d61b`. [Sealed report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-booking-state-replay-XXSn4lGn/report.json) · [Clean repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-booking-state-replay-XXMYr3pG/report.json)
+
+Reproduce with the corpus volume mounted. The language gate inspected 859 files with zero violations. Cross-file and capability-gap regressions passed. [Gap regression receipts](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXw9U5v4/controls.json)
+
+```sh
+make .build/booking-state-replay
+.build/booking-state-replay
+```
