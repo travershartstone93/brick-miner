@@ -70,16 +70,7 @@ J runtime_files(const Path &bundle, const Path &base, const Strings &files) {
   return link_files;
 }
 
-void retain_adapter(const Path &stage, const Path &bundle, const Path &origin,
-                    const J &src, const J &binding, const J &provenance,
-                    const std::string &git_adapter) {
-  auto adapter = bytes(bundle / origin / "adapter.cpp");
-  check(sha(adapter) == provenance["adapter_sha256"].asString() &&
-            adapter ==
-                run({"git", "-C", root, "show",
-                     src["adapter_revision"].asString() + ":" + git_adapter}),
-        "retained adapter differs from recorded source");
-  save(stage / "original/adapter.cpp", adapter);
+void retain_provider_abi(const Path &stage, const Path &bundle, const J &src) {
   const auto sibling_revision = src["provider_abi_revision"].asString();
   auto abi = run({"git", "-C", main_repo, "show",
                   sibling_revision + ":experiments/boilerplate/component-trial/"
@@ -90,12 +81,25 @@ void retain_adapter(const Path &stage, const Path &bundle, const Path &origin,
             sha(notice) == src["provider_abi_notice_sha256"].asString(),
         "retained provider ABI or notice changed");
   save(stage / "original/provider_types.hpp", abi);
+  save(stage / "notices/provider-abi-MIT", notice);
+}
+
+void retain_adapter(const Path &stage, const Path &bundle, const Path &origin,
+                    const J &src, const J &binding, const J &provenance,
+                    const std::string &git_adapter) {
+  auto adapter = bytes(bundle / origin / "adapter.cpp");
+  check(sha(adapter) == provenance["adapter_sha256"].asString() &&
+            adapter ==
+                run({"git", "-C", root, "show",
+                     src["adapter_revision"].asString() + ":" + git_adapter}),
+        "retained adapter differs from recorded source");
+  save(stage / "original/adapter.cpp", adapter);
+  retain_provider_abi(stage, bundle, src);
   fs::copy_file(bundle / origin / "source.json", stage / "legacy-source.json");
   fs::copy_file(bundle / origin / "contracts.json",
                 stage / "legacy-contracts.json");
   fs::copy_file(bundle / "headers" / binding["header"].asString(),
                 stage / "original" / binding["header"].asString());
-  save(stage / "notices/provider-abi-MIT", notice);
 }
 
 namespace {

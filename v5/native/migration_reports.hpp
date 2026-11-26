@@ -14,6 +14,8 @@ void retain_adapter(const miner::Path &stage, const miner::Path &bundle,
                     const miner::Path &origin, const miner::J &src,
                     const miner::J &binding, const miner::J &provenance,
                     const std::string &git_adapter);
+void retain_provider_abi(const miner::Path &stage, const miner::Path &bundle,
+                         const miner::J &src);
 std::string verified_runtime_package(const miner::Path &work,
                                      const miner::J &source);
 miner::J complete_file_plan(const miner::Path &bundle, const miner::Path &out,
@@ -90,6 +92,10 @@ miner::Path qualify_report_fields(const miner::Path &package,
                                  const std::string &pin,
                                  const miner::Path &registry,
                                  const std::string &registry_pin);
+miner::Path qualify_group_rows(const miner::Path &package,
+                               const std::string &pin,
+                               const miner::Path &registry,
+                               const std::string &registry_pin);
 miner::Path binding_identity_fixture(const miner::Path &package,
                                      const std::string &pin);
 } // namespace v5

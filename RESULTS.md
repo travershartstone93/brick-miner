@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+`group_rows` passed scoped qualification for the retained binding used by 51 supplied requests. The direct oracle verified exact composite keys, all three group orders and row preservation. Two emitted programs passed through flattening and grouped counts. [Grouping qualification](v5/RECONCILIATION.md#h1b-exact-row-grouping)
+
 `report_fields` passed scoped qualification as the next retained binding, used by 58 supplied requests. Direct checks distinguished field and position order, empty fields and raw delimiter bytes. Plain and explicit TSV emission reproduced the same binaries and results. [Qualification and reproduction](v5/RECONCILIATION.md#h1b-ordered-row-reports)
 
 The supplied-use ranking joined 39 exact bindings to the frozen migration ledger and accounted separately for the staged TSV registration. The highest pending binding, `filter_records`, passed scoped direct and ordinary program checks. [Qualification and reproduction](v5/RECONCILIATION.md#h1b-typed-row-filter)

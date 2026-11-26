@@ -8,16 +8,111 @@
 
 namespace v5 {
 namespace {
-const std::string kernel = "libbrick_shared_relational.so";
 const Path runtime = "runtime/duckdb/lib";
 const Path history = "qualifications/shared/relational";
+const Path group_history = "qualifications/row-operations";
 
 struct RowScope {
   std::string operation, source_id, fixture, output, unit;
   J arguments;
   std::string qualification, fingerprint;
   bool report() const { return operation == "report_fields"; }
+  bool groups() const { return operation == "group_rows"; }
+  bool filter() const { return !report() && !groups(); }
+  std::string kernel() const {
+    return groups() ? "libbrick_row_kernels.so"
+                    : "libbrick_shared_relational.so";
+  }
+  std::string pkg_config() const {
+    return groups() ? "brick-row-kernels" : "brick_shared_relational";
+  }
 };
+
+J group_materials(const Path &stage, const Path &bundle, const J &src,
+                  const J &debug, const J &row, const RowScope &scope,
+                  J receipt) {
+  const auto original = bundle / group_history / "native";
+  const auto prior = load(original / "provenance.json");
+  const auto &partition = prior["physical_partition"];
+  const auto &list = prior["factories"]["brick_list"];
+  auto library = bundle / runtime / scope.kernel();
+  const auto symbols = run({"nm", "-D", "--defined-only", library});
+  const std::string list_symbol = "_ZN6duckdb7ListFun11GetFunctionEv";
+  auto symbol_present = [&](const std::string &name) {
+    return symbols.find(" " + name + "\n") != std::string::npos;
+  };
+  const auto register_file = original / "register.cpp";
+  check(prior["source"]["source_id"] == src["upstream_source_id"] &&
+            prior["source"]["signer"] == src["signer"] &&
+            prior["outputs"][scope.kernel()] == receipt["kernel_sha256"] &&
+            prior["outputs"]["register.cpp"].asString() ==
+                digest(register_file) &&
+            partition["method"] == "FindOrCreateGroupsInternal" &&
+            list["cls"] == "ListFun" &&
+            symbol_present(partition["symbol"].asString()) &&
+            symbol_present(list_symbol) &&
+            symbol_present("brick_register_row_kernels"),
+        "group kernel provenance or linked symbols differ");
+  for (const auto &unit : {partition["source"], list["source"]}) {
+    const auto path = unit.asString();
+    const auto &observed =
+        prior["native_checks"]["executed_source_functions"][path];
+    const auto expected_symbol = unit == partition["source"]
+                                     ? partition["symbol"].asString()
+                                     : list_symbol;
+    check(std::find(observed.begin(), observed.end(), J(expected_symbol)) !=
+              observed.end(),
+          "missing historical execution evidence for " + path);
+  }
+
+  const auto members = src["source_units"].getMemberNames();
+  check(string_array(members) == array({list["source"], partition["source"]}),
+        "reviewed grouped source closure differs");
+  auto extracted = stage.parent_path() / ".signed-group-units";
+  fs::create_directory(extracted);
+  Strings command{"bsdtar", "-xf", debug["archive"].asString(), "-C",
+                  extracted};
+  const Path prefix = "usr/src/debug/duckdb/duckdb";
+  for (const auto &member : members)
+    command.push_back((prefix / member).string());
+  run(command);
+  for (const auto &member : members) {
+    const auto pin = digest(extracted / prefix / member);
+    check(pin == src["source_units"][member].asString() &&
+              pin == prior["upstream_files"][member].asString() &&
+              pin == digest(original / "original" / member),
+          "signed DuckDB grouping source member changed: " + member);
+    fs::copy_file(extracted / prefix / member,
+                  stage / "original" / Path(member).filename());
+  }
+  fs::remove_all(extracted);
+
+  const auto header = row["header"].asString();
+  const auto adapter = bytes(bundle / "headers" / header);
+  check(adapter == run({"git", "-C", root, "show",
+                        src["adapter_revision"].asString() +
+                            ":row-ops/mined/include/" + header}),
+        "retained grouping adapter differs from original");
+  save(stage / "original" / header, adapter);
+  retain_provider_abi(stage, bundle, src);
+  const auto sdk = archive_member(src, "usr/include/duckdb.h");
+  check(sha(sdk) == prior["outputs"]["duckdb.h"].asString() &&
+            sdk == bytes(bundle / "runtime/duckdb/include/duckdb.h"),
+        "retained DuckDB C SDK header differs from signed binary package");
+  save(stage / "original/duckdb.h", sdk);
+  fs::copy_file(register_file, stage / "original/register.cpp");
+  fs::copy_file(original / "provenance.json", stage / "legacy-source.json");
+  fs::copy_file(bundle / group_history / "contracts.json",
+                stage / "legacy-contracts.json");
+  receipt["source_units"] = src["source_units"];
+  receipt["partition"] = partition;
+  receipt["list_factory"] = list;
+  receipt["sdk_header_sha256"] = sha(sdk);
+  receipt["registration_sha256"] = digest(register_file);
+  receipt["historical_instrumentation_sha256"] =
+      digest(original / "provenance.json");
+  return receipt;
+}
 
 J verify_materials(const Path &stage, const Path &bundle, const Path &base,
                    const J &src, const J &row, const RowScope &scope) {
@@ -38,12 +133,35 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
   save(stage / "arch-pkgbuild.txt", bytes(recipe));
   save(stage / "notices/duckdb-LICENSE",
        archive_member(src, "usr/share/licenses/duckdb/LICENSE"));
+  const auto packed = stage.parent_path() / "retained-duckdb.so";
+  run({"bsdtar", "-xOf", archive, "usr/lib/libduckdb.so"}, {.output = packed});
+  check(digest(packed) == digest(bundle / runtime / "libduckdb.so"),
+        "retained DuckDB shared object differs from signed package");
+  fs::remove(packed);
+  const auto kernel = scope.kernel();
+  const auto kernel_pin = digest(bundle / runtime / kernel);
+  const auto links = runtime_files(
+      bundle, base,
+      {kernel, "libduckdb.so", "pkgconfig/" + scope.pkg_config() + ".pc"});
+  auto result = object({{"binding", row},
+                        {"source_id", scope.source_id},
+                        {"kernel_sha256", kernel_pin},
+                        {"arch_keyring_sha256", digest(ring)},
+                        {"arch_signer", src["signer"]},
+                        {"arch_buildinfo_sha256", sha(build)},
+                        {"arch_debug_buildinfo_sha256", sha(debug_build)},
+                        {"runtime_files", links}});
+  fs::create_directories(stage / "original");
+  if (scope.groups()) {
+    result = group_materials(stage, bundle, src, debug, row, scope, result);
+    write(stage / "source.json", result);
+    return result;
+  }
 
   const auto provenance = load(bundle / history / "source.json");
   const auto symbol = src["symbols"][0].asString();
   const auto unit = provenance["source_units"][symbol].asString();
   const auto definition = provenance["definitions"][symbol];
-  const auto kernel_pin = digest(bundle / runtime / kernel);
   Strings symbols{"nm", "--defined-only"};
   if (!scope.report())
     symbols.push_back("-D");
@@ -55,7 +173,6 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
             run(symbols).find(" " + definition["name"].asString() + "\n") !=
                 std::string::npos,
         "retained DuckDB symbol, source unit or kernel differs");
-  fs::create_directories(stage / "original");
   const auto source = stage / "original" / Path(unit).filename();
   run({"bsdtar", "-xOf", debug["archive"].asString(),
        "usr/src/debug/duckdb/duckdb/" + unit},
@@ -63,12 +180,6 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
   const auto source_pin = digest(source);
   check(source_pin == src["source_unit_sha256"].asString(),
         "signed relational source member differs");
-  const auto packed = stage.parent_path() / "retained-duckdb.so";
-  run({"bsdtar", "-xOf", archive, "usr/lib/libduckdb.so"}, {.output = packed});
-  check(digest(packed) == digest(bundle / runtime / "libduckdb.so"),
-        "retained DuckDB shared object differs from signed package");
-  fs::remove(packed);
-
   retain_adapter(stage, bundle, history, src, row, provenance,
                  "shared/relational/adapter.cpp");
   const auto table = bytes(bundle / history / "table.hpp");
@@ -77,20 +188,9 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
                  src["adapter_revision"].asString() + ":shared/table.hpp"}),
         "retained table implementation differs from original");
   save(stage / "original/table.hpp", table);
-  const auto links = runtime_files(
-      bundle, base,
-      {kernel, "libduckdb.so", "pkgconfig/brick_shared_relational.pc"});
-  const auto result = object({{"binding", row},
-                              {"source_id", scope.source_id},
-                              {"kernel_sha256", kernel_pin},
-                              {"upstream_symbol", definition},
-                              {"source_unit", unit},
-                              {"source_unit_sha256", source_pin},
-                              {"arch_keyring_sha256", digest(ring)},
-                              {"arch_signer", src["signer"]},
-                              {"arch_buildinfo_sha256", sha(build)},
-                              {"arch_debug_buildinfo_sha256", sha(debug_build)},
-                              {"runtime_files", links}});
+  result["upstream_symbol"] = definition;
+  result["source_unit"] = unit;
+  result["source_unit_sha256"] = source_pin;
   write(stage / "source.json", result);
   return result;
 }
@@ -104,12 +204,23 @@ Strings runtime_sandbox(const Path &exe, const Path &directory,
   return cmd;
 }
 
-J goal(const RowScope &scope, const J &parameters, bool tsv = false) {
-  auto steps = array(
-      {object({{"outcome", scope.operation}, {"parameters", parameters}})});
-  if (!scope.report())
+J goal(const RowScope &scope, const J &trial, bool tsv = false) {
+  auto steps = array({object(
+      {{"outcome", scope.operation}, {"parameters", trial["parameters"]}})});
+  if (scope.filter()) {
     steps.append(object({{"outcome", "ordered_column"},
                          {"parameters", object({{"column", 0}})}}));
+  } else if (scope.groups()) {
+    if (trial["count"].asBool())
+      steps.append(
+          object({{"outcome", "aggregate_groups"},
+                  {"parameters", object({{"measure", "count"},
+                                         {"value_column", 0},
+                                         {"result_order", "group"}})}}));
+    steps.append(
+        object({{"outcome", "report_fields"},
+                {"parameters", object({{"fields", trial["fields"]}})}}));
+  }
   return spec_for("text/tab-separated-values",
                   tsv ? "text/tab-separated-values" : "text/plain",
                   object({{"operations", steps}, {"uncovered", array()}}));
@@ -121,7 +232,9 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
       scope.report() ? array({"tab_records", "report_fields", "write_lines"})
                      : array({"tab_records", "op_0_filter_records",
                               "op_1_column", "write_lines"});
-  auto report = object({{"chain", chain}, {"trials", array()}});
+  auto report = object({{"trials", array()}});
+  if (!scope.groups())
+    report["chain"] = chain;
   std::map<std::string, Path> arms{{"baseline", base}, {"staged", bundle}};
   auto tsv_chain = chain;
   if (!tsv.empty()) {
@@ -131,18 +244,28 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
   }
   for (const auto &trial : spec["ordinary"]) {
     const auto name = trial["name"].asString();
-    const auto spec = goal(scope, trial["parameters"]);
+    const auto spec = goal(scope, trial);
     auto result = object({{"name", name}, {"goal", spec}});
+    auto expected = chain;
+    if (scope.groups()) {
+      expected =
+          trial["count"].asBool()
+              ? array({"tab_records", "op_0_group_rows",
+                       "op_1_aggregate_groups", "op_2_report_fields",
+                       "write_lines"})
+              : array({"tab_records", "op_0_group_rows", "flatten_row_groups",
+                       "op_1_report_fields", "write_lines"});
+      result["chain"] = expected;
+    }
     for (const auto &[arm, catalog] : arms) {
       auto dir = work / arm / name;
       auto exe = work / ".test-programs" / (arm + "-" + name);
       const auto explicit_tsv = arm == "tsv";
-      const auto selected_goal =
-          explicit_tsv ? goal(scope, trial["parameters"], true) : spec;
+      const auto selected_goal = explicit_tsv ? goal(scope, trial, true) : spec;
       if (explicit_tsv)
         result["tsv_goal"] = selected_goal;
       const auto compiled = complete_file_plan(
-          catalog, dir, selected_goal, explicit_tsv ? tsv_chain : chain);
+          catalog, dir, selected_goal, explicit_tsv ? tsv_chain : expected);
       build_emission(compiled, dir, exe, "g++-15");
       auto observations = array();
       for (const auto &fixture : trial["cases"]) {
@@ -196,7 +319,7 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
     auto gaps = array();
     for (const auto &trial : spec["ordinary"]) {
       const auto result =
-          plan(cut, goal(scope, trial["parameters"], explicit_tsv),
+          plan(cut, goal(scope, trial, explicit_tsv),
                work / (explicit_tsv ? "removed-tsv" : "removed") /
                    trial["name"].asString());
       check(result["providers"].isArray() && result["providers"].empty() &&
@@ -206,8 +329,21 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
             "exact relational row removal left a provider chain");
       gaps.append(result["gaps"]);
     }
-    return object(
-        {{"bundle_sha256", digest(cut / "SHA256SUMS")}, {"gaps", gaps}});
+    auto receipt =
+        object({{"bundle_sha256", digest(cut / "SHA256SUMS")}, {"gaps", gaps}});
+    if (scope.groups()) {
+      const auto providers =
+          load(cut / "providers/contracts.json")["providers"];
+      auto sibling =
+          std::find_if(providers.begin(), providers.end(), [](const auto &p) {
+            return p["id"] == "flatten_row_groups" &&
+                   p["brick"] == "miner_group_rows";
+          });
+      check(sibling != providers.end(),
+            "exact removal lost the flatten sibling");
+      receipt["retained_sibling"] = *sibling;
+    }
+    return receipt;
   };
   report["removed"] = removed(bundle, false);
   if (!tsv.empty())
@@ -217,7 +353,7 @@ J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
 
 J observe(const Path &work, const Path &stage, const Path &bundle,
           const J &source, const J &spec, const RowScope &scope) {
-  const auto compiler_options = flags({"jsoncpp", "brick_shared_relational"});
+  const auto compiler_options = flags({"jsoncpp", scope.pkg_config()});
   auto exe = work / ".test-programs/client";
   Strings command{"g++-15",           "-std=c++17",         "-O1", "-I",
                   stage / "original", stage / "client.cpp", "-o",  exe};
@@ -231,6 +367,7 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
       run({"ldd", exe},
           {.environment = {{"LD_LIBRARY_PATH", (bundle / runtime).string()}}}));
   auto libraries = object();
+  const auto kernel = scope.kernel();
   for (std::string line; std::getline(linked, line);) {
     std::istringstream fields(line);
     std::string name, arrow, path;
@@ -256,12 +393,14 @@ J observe(const Path &work, const Path &stage, const Path &bundle,
   check(first["errors"].size() == spec["errors"].size() &&
             parse(run(cmd, {.seconds = 30, .probe_limits = true})) == first,
         "standalone relational suite failed to reproduce");
-  if (scope.report()) {
-    check(first["reports"].size() == spec["direct"].size(),
-          "incomplete direct row report observations");
-    return object({{"fresh_processes", 2},
-                   {"calls_per_report", 2},
-                   {"observations", first}});
+  if (!scope.filter()) {
+    check(first[scope.groups() ? "groupings" : "reports"].size() ==
+              spec["direct"].size(),
+          "incomplete direct relational observations");
+    return object(
+        {{"fresh_processes", 2},
+         {scope.groups() ? "calls_per_grouping" : "calls_per_report", 2},
+         {"observations", first}});
   }
   check(first["comparisons"].size() == 24,
         "incomplete direct filter observations");
@@ -334,7 +473,8 @@ Path qualify_rows(const Path &package, const std::string &pin,
       retained_binding_job(v5_root() / "sources.json", scope.operation);
   check(src["approval"] == "local-pilot" &&
             src["method"] == "signed-local-package" &&
-            job["source"] == scope.source_id.c_str() && job["route"] == "api" &&
+            job["source"] == scope.source_id.c_str() &&
+            job["route"] == (scope.groups() ? "direct" : "api") &&
             job["stream"] == "foundational" &&
             job["tests"].asString() == "v5/fixtures/" + scope.fixture + ".json",
         "unapproved retained relational job");
@@ -358,8 +498,8 @@ Path qualify_rows(const Path &package, const std::string &pin,
   const auto record = file_binding_identity(row, bundle);
   const auto selection = select_scope(priority, job, pin);
   const auto &selected = selection["selected"];
-  const auto legacy =
-      load(bundle / history / "contracts.json")[scope.operation];
+  const auto legacy = load(bundle / (scope.groups() ? group_history : history) /
+                           "contracts.json")[scope.operation];
   check(selected["binding_id"] == scope.operation.c_str() &&
             selected["binding_sha256"] == record["binding_sha256"] &&
             selected["header_sha256"] == record["header_sha256"] &&
@@ -388,6 +528,8 @@ Path qualify_rows(const Path &package, const std::string &pin,
                 {"bundle_sha256", tsv_manifest["files"]["bundle/SHA256SUMS"]},
                 {"writer", writer}});
     write(stage / "selection.json", qualified_selection);
+  } else if (scope.groups()) {
+    write(stage / "selection.json", selection);
   }
   const auto source = verify_materials(stage, bundle, base, src, row, scope);
   const auto tools = file_qualification_tools();
@@ -432,12 +574,17 @@ Path qualify_rows(const Path &package, const std::string &pin,
        {"ordinary_cases", spec["ordinary"]},
        {"scope", "Detached observations for the named fixtures and "
                  "recorded implementation. No unrestricted row admission."}});
-  if (scope.report()) {
+  if (!scope.filter()) {
     domain["selector_fixture_sha256"] = digest(stage / "spec.json");
     domain["selection_sha256"] = digest(stage / "selection.json");
-    domain["selector"] = object({{"argument_index", 1},
-                                 {"argument_type", "const std::string&"},
-                                 {"direct_cases", spec["direct"]}});
+    if (scope.groups()) {
+      domain["grouping"] = object(
+          {{"arguments", scope.arguments}, {"direct_cases", spec["direct"]}});
+    } else {
+      domain["selector"] = object({{"argument_index", 1},
+                                   {"argument_type", "const std::string&"},
+                                   {"direct_cases", spec["direct"]}});
+    }
   } else {
     domain["comparison_fixture_sha256"] = digest(stage / "spec.json");
     domain["modes"] = spec["modes"];
@@ -474,5 +621,18 @@ Path qualify_report_fields(const Path &package, const std::string &pin,
        "with the recorded DuckDB runtime and provider ABI.",
        "Exact field and position rendering on the frozen ordered fixture "
        "rows."});
+}
+
+Path qualify_group_rows(const Path &package, const std::string &pin,
+                        const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"group_rows", "retained-group-rows", "group-rows", "row_groups", "",
+       array({"keys", "group_order"}),
+       "Detached finite grouping fixtures and two ordinary constructions using "
+       "the recorded DuckDB row kernels and provider ABI.",
+       "Exact selected key tuples, group order and positioned member rows on "
+       "the "
+       "frozen grouping fixtures."});
 }
 } // namespace v5

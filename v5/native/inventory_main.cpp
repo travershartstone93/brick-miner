@@ -331,6 +331,7 @@ int main(int argc, char **argv) try {
       {"--qualify-json-records", qualify_json_records},
       {"--qualify-filter-records", qualify_filter_records},
       {"--qualify-report-fields", qualify_report_fields},
+      {"--qualify-group-rows", qualify_group_rows},
       {"--qualify-filter-extension", qualify_filter_extension},
       {"--qualify-json-writer", qualify_json_writer}};
   if ((argc == 4 || argc == 7) && file_trials.contains(argv[1])) {
@@ -354,7 +355,8 @@ int main(int argc, char **argv) try {
       "--qualify-recursive-files "
       "--qualify-parent-paths, --qualify-archive-names, --qualify-zip-records, "
       "--qualify-tree-records, --qualify-json-records, --qualify-filter-extension, "
-      "--qualify-json-writer, --qualify-filter-records, --qualify-report-fields "
+      "--qualify-json-writer, --qualify-filter-records, --qualify-report-fields, "
+      "--qualify-group-rows "
       "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);

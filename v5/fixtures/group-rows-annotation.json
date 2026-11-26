@@ -1,0 +1,32 @@
+{
+  "description":"Partition complete rows by exact selected field tuples, with caller-specified group order and original member order.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"An ordered finite row producer with source positions and byte-valued fields, plus a nonempty list of key columns and a group-order selector.",
+    "semantic_output":"Owned ordered groups with exact key tuples and complete positioned input rows in encounter order within each group.",
+    "parameters":{"keys":"text","group_order":"text"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","keyed grouping"],
+    "application":["tabular reports","stock histories","ledger reports"],
+    "construction_role":["partitioner"],"abstraction":["ordered row producer to ordered groups"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB grouping kernels"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick-row-kernels","DuckDB C API 1.5.6-1","C++17"],
+    "resources":["The adapter materializes input rows and grouping keys before returning owned groups. Maximum input size, throughput and memory use are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply a valid nonempty list of zero-based key indices and encounter, asc or desc. Selected columns must exist in each reached row.","evidence":["original/miner_group_rows.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"Grouping matched exact frozen key tuples. Encounter, ascending and descending order agreed with the reference, and member fields, duplicate occurrences and signed source positions were preserved.","evidence":["standalone.json"]},
+    "refinements":{"status":"observed","detail":"Frozen tests covered prefix-related composite keys, case-sensitive keys, an empty key, embedded NUL, repeated key columns and byte-ordered numeric spellings.","evidence":["standalone.json","spec.json"]},
+    "effects":{"status":"observed","detail":"Ordinary flatten and count programs wrote the expected bytes. The late missing-key case preserved an existing destination or left an absent one absent.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Two sequential calls on each frozen producer returned identical groups and consumed the producer once per call.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"General partition laws and complexity have no formal proof in this package.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached domain identifies finite tested arguments and fixtures.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Recorded malformed arguments failed before reading. A missing selected field or upstream error prevented return of the groups.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The eager call returns owned groups. A complete row is copied into local storage during visitation.","evidence":["original/miner_group_rows.hpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent grouping and upstream producer side effects were outside the measured tests.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread-affinity requirements were untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter uses BLOB keys and the registered brick_list aggregate. Retained historical instrumentation records the list factory and group partition symbol executing.","evidence":["original/miner_group_rows.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which field tuple defines a group, and should groups follow first encounter or ascending or descending key order?","evidence":["spec.json"]}
+  }
+}
