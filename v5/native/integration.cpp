@@ -9,7 +9,8 @@ std::string unhex(const std::string &hex) {
   check(data.toHex().toStdString() == hex, "invalid byte fixture");
   return data.toStdString();
 }
-J probes(const Path &exe, const Path &dest, const J &cases) {
+} // namespace
+J ordinary_file_probes(const Path &exe, const Path &dest, const J &cases) {
   J observed = array();
   for (unsigned i = 0; i < cases.size(); ++i) {
     const auto &c = cases[i];
@@ -38,6 +39,7 @@ J probes(const Path &exe, const Path &dest, const J &cases) {
   }
   return observed;
 }
+namespace {
 J ordinary_trial(const std::string &key, const J &row, const J &probe,
                  bool retained, const Files &stage, const Path &base,
                  const Path &draft, const Path &dest) {
@@ -90,7 +92,7 @@ J ordinary_trial(const std::string &key, const J &row, const J &probe,
          {"bricks", p["bricks"]},
          {"emitted_sha256", sha(p["source"].asString())},
          {"binary_sha256", digest(binary)},
-         {"probes", probes(binary, d, probe["cases"])},
+         {"probes", ordinary_file_probes(binary, d, probe["cases"])},
          {"packages", string_array({packages.begin(), packages.end()})}});
     if (key == "prefixed_lines") {
       auto chain = array();

@@ -1,7 +1,6 @@
 #include "bundle.hpp"
 #include "migration_reports.hpp"
 #include "pilot.hpp"
-#include <sstream>
 #include <sys/stat.h>
 
 namespace v5 {
@@ -228,21 +227,7 @@ Path qualify_recursive_files(const Path &package, const std::string &pin,
   write(stage / "integration.json", trial(work, bundle, raw, spec["cases"]));
   check(env == file_qualification_tools(),
         "directory toolchain changed during qualification");
-  env["compiler_version"] = run({"g++-15", "-dumpfullversion"});
-  env["jsoncpp_version"] = run({"pkg-config", "--modversion", "jsoncpp"});
-  std::istringstream linked(run({"ldd", exe}));
-  for (std::string line; std::getline(linked, line);) {
-    std::istringstream fields(line);
-    std::string soname, arrow, path;
-    if (fields >> soname >> arrow >> path && arrow == "=>" &&
-        (soname == "libstdc++.so.6" || soname.starts_with("libjsoncpp.so.")))
-      env["direct_libraries"][soname] = object(
-          {{"path", fs::canonical(path).string()}, {"sha256", digest(path)}});
-  }
-  check(env["direct_libraries"].size() == 2 &&
-            env["direct_libraries"].isMember("libstdc++.so.6"),
-        "missing direct client libraries");
-  write(stage / "environment.json", env);
+  write(stage / "environment.json", path_client_environment(exe, env));
   auto contract =
       file_contract(stage, package, record, src, stage / "sources.json");
   return seal_file_qualification(work, package, pin, array({record}), 0,

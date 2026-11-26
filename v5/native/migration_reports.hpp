@@ -31,6 +31,11 @@ miner::Path seal_file_qualification(const miner::Path &work,
                                     Json::ArrayIndex selected,
                                     const miner::J &contract);
 miner::J file_qualification_tools();
+miner::J path_client_environment(const miner::Path &exe, miner::J tools);
+miner::Path qualify_parent_paths(const miner::Path &package,
+                               const std::string &pin,
+                               const miner::Path &registry,
+                               const std::string &registry_pin);
 void save_file_registry(const miner::Path &stage, const miner::J &source,
                         const miner::Path &registry, const std::string &pin);
 miner::Path qualify_recursive_files(const miner::Path &package,

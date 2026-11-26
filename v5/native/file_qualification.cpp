@@ -2,6 +2,7 @@
 #include "migration_reports.hpp"
 #include "pilot.hpp"
 #include <QStandardPaths>
+#include <sstream>
 namespace v5 {
 std::string archive_member(const J &s, const std::string &file) {
   return run({"bsdtar", "-xOf", s["archive"].asString(), file});
@@ -70,6 +71,23 @@ J file_qualification_tools() {
   pins["qt_version"] = run({"pkg-config", "--modversion", "Qt6Core"});
   pins["qt_flags"] = string_array(flags({"Qt6Core"}));
   return pins;
+}
+J path_client_environment(const Path &exe, J env) {
+  env["compiler_version"] = run({"g++-15", "-dumpfullversion"});
+  env["jsoncpp_version"] = run({"pkg-config", "--modversion", "jsoncpp"});
+  std::istringstream linked(run({"ldd", exe}));
+  for (std::string line; std::getline(linked, line);) {
+    std::istringstream fields(line);
+    std::string soname, arrow, path;
+    if (fields >> soname >> arrow >> path && arrow == "=>" &&
+        (soname == "libstdc++.so.6" || soname.starts_with("libjsoncpp.so.")))
+      env["direct_libraries"][soname] = object(
+          {{"path", fs::canonical(path).string()}, {"sha256", digest(path)}});
+  }
+  check(env["direct_libraries"].size() == 2 &&
+            env["direct_libraries"].isMember("libstdc++.so.6"),
+        "missing direct client libraries");
+  return env;
 }
 J file_contract(const Path &stage, const Path &package, const J &record,
                 const J &src, const Path &registry) {

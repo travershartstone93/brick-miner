@@ -808,6 +808,14 @@
   ],
   "jobs": [
     {
+      "source": "retained-recursive-files",
+      "route": "direct",
+      "target": "parent_paths",
+      "callable": "bricks::parent",
+      "tests": "v5/fixtures/parent-paths.json",
+      "stream": "foundational"
+    },
+    {
       "source": "gcc-libstdcxx",
       "route": "api",
       "target": "reverse_record_bytes",

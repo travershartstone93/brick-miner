@@ -1,0 +1,12 @@
+{
+  "binding":{"component_id":"x29","binding_id":"parent_paths","from":"strings","to":"strings"},
+  "cases":[
+    {"name":"archived-example","records":["dir/../log/a.tar.gz","f","dir/b.log"],"expected":["dir/../log","","dir"]},
+    {"name":"archive-members","records":["root.csv","a/z.csv","a/z.csv","a/sub/t.CSV","./u","a","z.csv"],"expected":["","a","a","a/sub",".","",""]},
+    {"name":"empty-sequence","records":[],"expected":[]},
+    {"name":"single-components","records":["",".","..",".hidden","a","C:\\dir\\file"],"expected":["","","","","",""]},
+    {"name":"relative-spelling","records":["./a","../a","a/./b","a/../b","a//b///c","a/b/"],"expected":[".","..","a/.","a/..","a/b","a/b"]},
+    {"name":"absolute-spelling","records":["/","/file","/missing/deep/name","/a/../x","/a/"],"expected":["/","/","/missing/deep","/a/..","/a"]},
+    {"name":"stored-text","records":["café/µ","a\u0000b/c","with space/t","a\\b/c"],"expected":["café","a\u0000b","with space","a\\b"]}
+  ]
+}

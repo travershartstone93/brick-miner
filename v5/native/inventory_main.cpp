@@ -315,6 +315,7 @@ int main(int argc, char **argv) try {
   }
   const std::map<std::string, decltype(&qualify_uri_reader)> file_trials{
       {"--qualify-recursive-files", qualify_recursive_files},
+      {"--qualify-parent-paths", qualify_parent_paths},
       {"--qualify-uri-reader", qualify_uri_reader},
       {"--qualify-archive-names", qualify_archive_names},
       {"--qualify-json-writer", qualify_json_writer}};
@@ -335,7 +336,8 @@ int main(int argc, char **argv) try {
       "usage: v5-inventory STAGED_PACKAGE EXPECTED_MANIFEST_SHA256 [--frozen "
       "SNAPSHOT LEDGER_SHA256], --replay-usage SNAPSHOT LEDGER_SHA256 or "
       "--binding-identity-fixture, --qualify-writer, --qualify-recursive-files "
-      "--qualify-archive-names, --qualify-json-writer or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
+      "--qualify-parent-paths, --qualify-archive-names, --qualify-json-writer "
+      "or --qualify-uri-reader STAGED_PACKAGE EXPECTED_MANIFEST_SHA256");
   auto pack = fs::canonical(argv[1]), base = verified_base();
   auto ids = verify(pack, argv[2]);
   std::unique_ptr<Frozen> prior;

@@ -1,0 +1,26 @@
+{
+  "description":"Return the lexical parent of each supplied path string on the tested Linux implementation.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"Ordered path strings using POSIX separators.","semantic_output":"One parent string per input. A bare relative filename has an empty parent, while ./file has parent dot.","parameters":{}},
+  "facets":{
+    "technical_hierarchy":["files_storage","path decomposition"],"application":["archive inventories","file reports"],"construction_role":["transform"],
+    "abstraction":["ordered sequence of path strings"],"implementation_form":["retained C++ header over std::filesystem::path"],
+    "platform":["tested Linux x86_64"],"dependencies":["C++17 standard library and filesystem support"],
+    "resources":["Allocates the output vector and constructs path objects. Peak memory and input-size limits are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"The function takes an in-memory vector of strings. It applies lexical decomposition without looking up a filesystem entry.","evidence":["original/headers/path_ops.hpp","client.cpp"]},
+    "postconditions":{"status":"observed","detail":"Returned one lexical parent per input in encounter order, preserving repeated results on the fixed and constructed Linux cases.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Bare relative names produced the empty string. An explicit ./ prefix produced dot. A sole slash and a file directly under slash both produced slash.","evidence":["standalone.json"]},
+    "effects":{"status":"observed","detail":"The direct client observed unchanged input strings. File reads and destination writes in the ordinary program belong to its surrounding reader and writer.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Earlier dot and dot-dot components survived, repeated separators were rendered in generic form, and a trailing slash had an empty final component in the tested cases.","evidence":["standalone.json"]},
+    "mathematical_properties":{"status":"observed","detail":"On the recorded finite set of constructed triples, each result vector contained the known parent, the supplied path, and the known parent again.","evidence":["client.cpp","standalone.json"]},
+    "formal_predicates":{"status":"unknown","detail":"No general proof or cross-platform pathname equivalence was established.","evidence":[]},
+    "state_protocol":{"status":"not-applicable","detail":"The interface exposes a synchronous function with no retained client object.","evidence":["original/headers/path_ops.hpp"]},
+    "ownership":{"status":"declared","detail":"Borrows the vector by const reference and returns a vector of owned strings by value.","evidence":["client.cpp","original/headers/path_ops.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent calls were not tested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The retained catalog example projects one parent per record, including an empty string for a bare name.","evidence":["source.json"]},
+    "specification_question":{"status":"declared","detail":"Should a bare filename have an empty parent or be displayed under dot? This binding produces an empty parent.","evidence":["source.json","standalone.json"]}
+  }
+}

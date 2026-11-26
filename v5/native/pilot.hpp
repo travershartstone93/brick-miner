@@ -26,6 +26,7 @@ const inline Strings sequence_keys = {"sort_lines", "reverse_order",
                                       "unique_lines", "adjacent_unique", "nonempty_lines"};
 void qualify_sequences(const Path &extracted, const Path &out, J &report);
 J sequence_requirements(const J &cases, const std::string &key);
+J ordinary_file_probes(const Path &exe, const Path &dest, const J &cases);
 void check_sequence_evidence(const Path &pack, const J &c, const J &binding);
 Path probe_program(const Path &logical_output);
 std::string digest(const Path &file);
