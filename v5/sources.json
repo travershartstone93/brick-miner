@@ -34,7 +34,17 @@
         "/usr/lib/gcc/x86_64-pc-linux-gnu/15.3.0/include/c++/bits/stl_algo.h": "869229536e11501ccb63374f0794f106e71ce98c055bdc731dc5dd4c9cf44c81"
       },
       "approval": "local-pilot",
-      "approval_reference": "retained gcc15 signed input from row-ops/sources.json; V5 local foundational slice"
+      "approval_reference": "retained gcc15 signed input from row-ops/sources.json; V5 local foundational slice",
+      "jobs": [
+        {
+          "route": "api",
+          "selector": "std-reverse",
+          "stream": "foundational",
+          "coverage_gain": 1,
+          "reuse": 2,
+          "cost_units": 1
+        }
+      ]
     },
     {
       "id": "gnu-lzip",
@@ -71,7 +81,25 @@
         "redistribute": "unreviewed; preserve file notices"
       },
       "approval": "local-pilot",
-      "approval_reference": "retained project-input/lzip.json; V5 local extraction and call-site pilot"
+      "approval_reference": "retained project-input/lzip.json; V5 local extraction and call-site pilot",
+      "jobs": [
+        {
+          "route": "direct",
+          "selector": "lzip-number-prefix",
+          "stream": "foundational",
+          "coverage_gain": 1,
+          "reuse": 1,
+          "cost_units": 2
+        },
+        {
+          "route": "composition",
+          "selector": "lzip-index-reverse",
+          "stream": "exploratory",
+          "coverage_gain": 1,
+          "reuse": 1,
+          "cost_units": 1
+        }
+      ]
     },
     {
       "id": "boost-algorithm",
@@ -491,5 +519,24 @@
       "leverage": 2,
       "cost": 2
     }
-  ]
+  ],
+  "queue_policy": {
+    "version": "unllm.pilot-queue/1",
+    "scope": "H1 local staging on the two approved sources. Estimates order these reviewed jobs only.",
+    "stream_weights": {
+      "foundational": 2,
+      "demand-driven": 1,
+      "exploratory": 1
+    },
+    "limits": {
+      "workers": 1,
+      "wall_seconds_per_step": 240,
+      "cpu_seconds_per_process": 120,
+      "address_space_mib_per_process": 2048,
+      "disk_mib_per_run": 1024,
+      "reserve_mib": 512,
+      "download_bytes": 0,
+      "max_attempts": 2
+    }
+  }
 }

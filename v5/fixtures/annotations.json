@@ -114,7 +114,12 @@
         "option_parsing"
       ]
     },
-    "source_id": "gnu-lzip"
+    "source_id": "gnu-lzip",
+    "binding": {
+      "brick": "miner_number_option_prefix",
+      "from": "rows",
+      "to": "integers"
+    }
   },
   {
     "id": "reverse_record_bytes",
@@ -231,6 +236,11 @@
         "sequence_transform"
       ]
     },
-    "source_id": "gcc-libstdcxx"
+    "source_id": "gcc-libstdcxx",
+    "binding": {
+      "brick": "miner_reverse_record_bytes",
+      "from": "strings",
+      "to": "strings"
+    }
   }
 ]

@@ -6,6 +6,24 @@
 #include <sstream>
 
 namespace v5 {
+Path tantivy_reference() {
+  const char *value = std::getenv("UNLLM_TANTIVY_REFERENCE_DIR");
+  return fs::canonical(value && *value ? Path(value)
+                                       : main_repo / "search/target/release");
+}
+J select_binding(const J &rows, const std::string &capability,
+                 const std::string &brick, const std::string &input,
+                 const std::string &output) {
+  J match;
+  for (const auto &row : rows)
+    if (row["effect"] == capability && row["brick"] == brick &&
+        row["from"] == input && row["to"] == output) {
+      check(match.isNull(), "ambiguous provider binding for " + brick);
+      match = row;
+    }
+  check(!match.isNull(), "missing provider binding for " + brick);
+  return match;
+}
 namespace {
 bool contains(const J &values, const J &v) {
   return std::find(values.begin(), values.end(), v) != values.end();
@@ -58,15 +76,13 @@ void validate_field(const J &v, const J &s, const std::string &path) {
 J contract(const J &a, const Path &work, const J &registry, const J &bindings) {
   auto key = a["id"].asString();
   auto src = registry[a["source_id"].asString()];
-  J row;
-  for (const auto &p : bindings["providers"])
-    if (p["id"] == key) {
-      check(row.isNull(), "duplicate binding");
-      row = p;
-    }
+  const auto &selector = a["binding"];
+  J row =
+      select_binding(bindings["providers"], key, selector["brick"].asString(),
+                     selector["from"].asString(), selector["to"].asString());
   auto test = "evidence/standalone.json#" + key,
        end = "evidence/integration.json#" + key;
-  auto standalone = load(work / "standalone/standalone.json")[key];
+  auto standalone = load(work / "materials/standalone/standalone.json")[key];
   auto integration = load(work / "integration/integration.json")[key];
   check(!row.isNull() && !standalone["outcome"].asString().empty() &&
             integration["staged"]["result"] == "passed",
@@ -199,10 +215,11 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
   J logical = object();
   for (const auto &[name, sql] : std::map<std::string, std::string>{
            {"TestedTransform",
-            "SELECT capability,input,output FROM provider JOIN port "
+            "SELECT DISTINCT capability,input,output FROM provider JOIN port "
             "USING(provider) WHERE level='ordinary-emission-tested'"},
-           {"Observed", "SELECT capability,name FROM provider JOIN property "
-                        "USING(provider) WHERE status='observed'"}}) {
+           {"Observed",
+            "SELECT DISTINCT capability,name FROM provider JOIN property "
+            "USING(provider) WHERE status='observed'"}}) {
     std::istringstream input(bytes(deduced / (name + ".csv")));
     Strings derived, expected;
     std::string line;
@@ -215,8 +232,7 @@ void project(const Path &package, const Path &scratch, const J &contracts) {
     check(derived == expected, "Soufflé and SQLite disagree on " + name);
     logical[name] = string_array(expected);
   }
-  auto rust = main_repo / "search/target/release",
-       reader = scratch / "tantivy-query";
+  auto rust = tantivy_reference(), reader = scratch / "tantivy-query";
   run({"env", "-u", "HOME", rust / "unllm_index", pack, "--threads", "1",
        "--heap-mb", "32"});
   run({"c++", "-std=c++17", v5_root() / "fixtures/tantivy-query.cpp",
@@ -250,17 +266,32 @@ void validate(const J &c, const J &schema) {
 void assemble(const Path &work, const Path &dest) {
   auto package = dest / ".package", e = package / "evidence";
   fs::create_directories(e);
+  auto checkpoints = array();
+  for (const auto *name :
+       {"inventory", "extract-api", "test-api", "extract-direct", "test-direct",
+        "extract-composition", "test-composition", "materials", "integration"})
+    checkpoints.append(load(work / name / "checkpoint.json"));
+  write(e / "acquisition.json",
+        object({{"schema", "unllm.acquisition-evidence/1"},
+                {"registry_sha256", digest(v5_root() / "sources.json")},
+                {"activation", "pending main-project review"},
+                {"checkpoints", checkpoints},
+                {"human_time", "not measured for this replay"}}));
   for (auto [stage, f] : std::vector<std::pair<std::string, std::string>>{
            {"inventory", "inputs.json"},
            {"extract", "extraction.json"},
            {"extract", "sketch.json"},
            {"standalone", "standalone.json"},
            {"integration", "integration.json"}})
-    fs::copy_file(work / stage / f, e / f);
+    fs::copy_file((stage == "extract" || stage == "standalone"
+                       ? work / "materials"
+                       : work) /
+                      stage / f,
+                  e / f);
   for (const auto *f :
        {"contract.schema.json", "vocabulary.json", "sources.json", "facts.dl"})
     fs::copy_file(v5_root() / f, package / f);
-  fs::copy(work / "extract/notices", package / "notices",
+  fs::copy(work / "materials/extract/notices", package / "notices",
            fs::copy_options::recursive);
   fs::copy_file(v5_root() / "fixtures/requirements.json",
                 e / "requirements.json");
@@ -282,7 +313,7 @@ void assemble(const Path &work, const Path &dest) {
   for (const auto &family : guide.getMemberNames()) {
     auto caps = array();
     for (const auto &c : contracts)
-      if (c["primary_family"] == family)
+      if (c["primary_family"] == family && !contains(caps, c["capability_id"]))
         caps.append(c["capability_id"]);
     families[family] = object(
         {{"guidance", guide[family]},
@@ -327,9 +358,21 @@ J verify(const Path &package, const std::string &expected) {
   auto schema = load(package / "contract.schema.json"),
        contracts = load(package / "contracts.json"), ids = array();
   Database db(package / "contracts.sqlite", true);
+  const auto bindings =
+      load(package / "bundle/providers/contracts.json")["providers"];
   std::vector<Strings> rows;
   for (const auto &c : contracts) {
     validate(c, schema);
+    auto iface = c["interface"];
+    auto binding = select_binding(bindings, c["capability_id"].asString(),
+                                  c["legacy_brick"].asString(),
+                                  iface["structural_input"].asString(),
+                                  iface["structural_output"].asString());
+    check(c["provider_id"] == binding["brick"] &&
+              iface["callable"] == binding["call"] &&
+              c["source"]["header"].asString() ==
+                  "headers/" + binding["header"].asString(),
+          "contract implementation does not match selected binding");
     check(digest(project_file(package / "bundle",
                               c["source"]["header"].asString())) ==
               c["source"]["implementation_sha256"].asString(),

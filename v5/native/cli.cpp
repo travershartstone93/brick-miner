@@ -1,47 +1,66 @@
-#include "pilot.hpp"
+#include "queue.hpp"
+#include <charconv>
 #include <iostream>
+#include <limits>
 using namespace v5;
 int main(int argc, char **argv) try {
-  if (argc == 4 && std::string(argv[1]) == "verify") {
+  std::string cmd = argc > 1 ? argv[1] : "--help";
+  if (cmd == "--help") {
+    std::cout << "v5-miner pilot [--steps N] | resume DIR [--steps N] | status "
+                 "DIR | cancel DIR | verify PACKAGE SHA256\n";
+    return 0;
+  }
+  if (cmd == "--worker") {
+    check(argc == 5 && fs::current_path() == Path(argv[4]) &&
+              fs::exists("/opt/brick-worker") &&
+              fs::equivalent("/proc/self/exe", "/opt/brick-worker"),
+          "expected private step worker");
+    auto resources = worker_step(argv[2], argv[3], argv[4]);
+    write(Path(argv[4]) / "resource-use.json", resources);
+    return 0;
+  }
+  if (cmd == "verify") {
+    check(argc == 4, "expected package and manifest digest");
     std::cout << dump(verify(fs::canonical(argv[2]), argv[3]));
     return 0;
   }
-  check(argc == 2 && std::string(argv[1]) == "pilot",
-        "usage: v5-miner pilot | verify PACKAGE MANIFEST_SHA256");
-  run({"make", "--no-print-directory", "-s", "-C", root, ".build/brick-scan"});
-  auto work = fresh_run("v5-native");
-  std::cout << work << std::endl;
-  for (const auto *s :
-       {"inventory", "extract", "standalone", "integration", "stage"})
-    fs::create_directory(work / s);
-  inventory(work / "inventory");
-  J checked = object();
-  for (const auto *route : {"api", "direct", "composition"}) {
-    auto partial = work / route;
-    fs::create_directories(partial);
-    extract(partial, route);
-    standalone(partial, partial, route);
-    for (const auto &entry : fs::directory_iterator(partial)) {
-      auto p = entry.path();
-      auto name = p.filename();
-      if (name == "notices")
-        fs::copy(p, work / "extract/notices",
-                 fs::copy_options::recursive | fs::copy_options::skip_existing);
-      else if (p.extension() == ".hpp" ||
-               (p.extension() == ".json" && name != "standalone.json"))
-        fs::copy_file(p, work / "extract" / name);
-    }
-    auto results = load(partial / "standalone.json");
-    for (const auto &key : results.getMemberNames())
-      checked[key] = results[key];
+  if (cmd == "status" || cmd == "cancel") {
+    check(argc == 3, "expected run directory");
+    auto p = fs::canonical(argv[2]);
+    if (cmd == "cancel")
+      cancel_queue(p);
+    std::cout << dump(queue_status(p));
+    return 0;
   }
-  write(work / "standalone/standalone.json", checked);
-  integrate(work / "extract", work / "integration");
-  assemble(work, work / "stage");
-  std::cout << (work / "stage/package") << " "
-            << digest(work / "stage/package/manifest.json") << "\n";
+  check(cmd == "pilot" || cmd == "resume", "unknown command " + cmd);
+  int offset = cmd == "pilot" ? 2 : 3;
+  check(argc == offset || argc == offset + 2, "invalid pilot options");
+  unsigned steps = std::numeric_limits<unsigned>::max();
+  if (argc > offset) {
+    check(std::string(argv[offset]) == "--steps", "expected --steps");
+    std::string s = argv[offset + 1];
+    auto n = std::from_chars(s.data(), s.data() + s.size(), steps);
+    check(n.ec == std::errc{} && n.ptr == s.data() + s.size(),
+          "invalid step bound");
+  }
+  Path work;
+  if (cmd == "pilot") {
+    run({"make", "--no-print-directory", "-s", "-C", root,
+         ".build/brick-scan"});
+    work = fresh_run("v5-queue");
+    std::cout << work.string() << std::endl;
+    initialize_queue(work);
+  } else
+    work = fs::canonical(argv[2]);
+  advance(work, steps);
+  auto state = queue_status(work);
+  if (state.isMember("manifest_sha256"))
+    std::cout << (work / "stage/package").string() << " "
+              << state["manifest_sha256"].asString() << "\n";
+  else
+    std::cout << dump(state);
   return 0;
 } catch (const std::exception &e) {
-  std::cerr << e.what() << "\n";
+  std::cerr << e.what() << '\n';
   return 1;
 }

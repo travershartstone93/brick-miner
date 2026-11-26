@@ -34,7 +34,7 @@ check-project: $(BUILD_DIR)/project-miner $(BUILD_DIR)/brick-scan $(BUILD_DIR)/p
 $(BUILD_DIR)/package-pilot: project-input/package.cpp $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,common probes project link))
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
 
-V5_OBJECTS = acquisition integration projections database cli
+V5_OBJECTS = acquisition integration projections database worker queue cli
 $(BUILD_DIR)/v5/%.o: v5/native/%.cpp v5/native/pilot.hpp
 	mkdir -p "$(dir $@)"
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) -MMD -MP -c "$(abspath $<)" -o "$@"
@@ -81,3 +81,10 @@ $(BUILD_DIR)/language-check: tests/language.cpp
 check-language: $(BUILD_DIR)/language-check
 	"$<" .
 check: check-language check-project
+
+$(BUILD_DIR)/v5-recovery: tests/v5/recovery.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,acquisition integration projections database worker queue)) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS)))
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host -Iv5/native $(HOST_FLAGS) $^ $(HOST_LIBS) -lsqlite3 -o "$@"
+
+.PHONY: check-v5-queue
+check-v5-queue: $(BUILD_DIR)/v5-miner $(BUILD_DIR)/v5-recovery $(BUILD_DIR)/brick-scan
+	"$(BUILD_DIR)/v5-recovery"

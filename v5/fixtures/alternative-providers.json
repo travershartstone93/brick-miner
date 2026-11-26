@@ -1,0 +1,14 @@
+{
+  "scope": "Synthetic identity test. These rows have no qualification or catalog membership.",
+  "providers": [
+    {"id":"other_implementation","effect":"reverse_record_bytes","brick":"component_b","from":"strings","to":"strings"},
+    {"id":"same_component_other_port","effect":"reverse_record_bytes","brick":"component_a","from":"rows","to":"strings"},
+    {"id":"different_effect","effect":"reverse_records","brick":"component_a","from":"strings","to":"strings"},
+    {"id":"reference_implementation","effect":"reverse_record_bytes","brick":"component_a","from":"strings","to":"strings"}
+  ],
+  "queries": [
+    {"capability_id":"reverse_record_bytes","provider_id":"component_a","from":"strings","to":"strings","expected":"reference_implementation"},
+    {"capability_id":"reverse_record_bytes","provider_id":"component_b","from":"strings","to":"strings","expected":"other_implementation"},
+    {"capability_id":"reverse_record_bytes","provider_id":"component_a","from":"strings","to":"integers","expected":null}
+  ]
+}

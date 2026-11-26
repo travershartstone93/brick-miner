@@ -15,6 +15,10 @@ std::string digest(const Path &file);
 J tree_hashes(const Path &base);
 Path verified_base();
 J sources();
+Path tantivy_reference();
+J select_binding(const J &rows, const std::string &capability,
+                 const std::string &brick, const std::string &input,
+                 const std::string &output);
 void inventory(const Path &dest);
 void extract(const Path &dest, const std::string &route);
 void standalone(const Path &extract, const Path &dest,
