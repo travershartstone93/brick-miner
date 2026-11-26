@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+`report_fields` passed scoped qualification as the next retained binding, used by 58 supplied requests. Direct checks distinguished field and position order, empty fields and raw delimiter bytes. Plain and explicit TSV emission reproduced the same binaries and results. [Qualification and reproduction](v5/RECONCILIATION.md#h1b-ordered-row-reports)
+
 The supplied-use ranking joined 39 exact bindings to the frozen migration ledger and accounted separately for the staged TSV registration. The highest pending binding, `filter_records`, passed scoped direct and ordinary program checks. [Qualification and reproduction](v5/RECONCILIATION.md#h1b-typed-row-filter)
 
 The joined audit verifies all 100 supplied constructions across 110 output roles and 500 saved fixture passes. The original reference harness used plain text in place of 47 requested TSV output roles. The two documented fresh-English trials failed. The audit ranks retained bindings by request use for V5 backfill. [100-request audit](replay-gaps/RESULTS.md#joined-audit-of-all-100-requests)

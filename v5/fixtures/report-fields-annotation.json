@@ -1,0 +1,32 @@
+{
+  "description":"Render ordered fields or original positions as tab-separated strings, retaining empty slots and duplicate selector entries.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"An ordered producer of finite rows with UTF-8 text fields and signed source positions. A comma-separated selector names zero-based columns or pos.",
+    "semantic_output":"One report string per input row in encounter order. Selected values are copied and separated by a single tab.",
+    "parameters":{"fields":"text"}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","field rendering"],
+    "application":["tabular reports","inventory","ledger reports"],
+    "construction_role":["formatter"],"abstraction":["ordered row producer to string sequence"],
+    "implementation_form":["retained authored DuckDB relational adapter"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_relational","DuckDB 1.5.6-1","C++17"],
+    "resources":["Input rows are materialized in a local table before report construction. Throughput and maximum successful input size are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply a nonempty comma-separated list of valid zero-based column tokens or pos. Selected columns must exist in reached rows. A downstream TSV consumer requires a separately compatible field and record domain.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The frozen fixtures retained row order and duplicate rows, selector order and repetition, original signed positions, and leading or trailing empty selected fields.","evidence":["standalone.json"]},
+    "refinements":{"status":"observed","detail":"A sole empty selected field yielded an empty string for that row. No rows yielded no strings. Embedded tabs, line breaks and NUL in direct output preserved raw bytes in the tested case, without quoting or escaping.","evidence":["standalone.json","spec.json"]},
+    "effects":{"status":"observed","detail":"The emitted plain and TSV programs wrote the expected bytes for valid inputs. The tested late short row preserved an existing destination and left an absent one absent.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Sequential calls on the stable fixtures consumed the producer once per call and returned the same results.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"General correctness and resource bounds have no formal proof in this package.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached selector domain identifies finite tested cases. It supplies no universal record validation.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Tested selector syntax errors occurred before producer access. A missing selected column and an upstream failure prevented the report vector from being returned.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The call returns an owning vector of strings and visits the given producer synchronously.","evidence":["original/adapter.cpp","original/table.hpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent calls and arbitrary upstream side effects were outside the measured scope.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No particular thread-affinity requirement was assessed.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter submits DuckDB concat_ws(chr(9), ...) ordered by the encounter ordinal. The retained library contains the pinned local ConcatWSFunction symbol.","evidence":["original/adapter.cpp","source.json"]},
+    "specification_question":{"status":"declared","detail":"Which columns and original positions belong in each report row, and in what order?","evidence":["spec.json"]}
+  }
+}

@@ -1,0 +1,478 @@
+#include "bundle.hpp"
+#include "migration_reports.hpp"
+#include "pilot.hpp"
+#include <QScopeGuard>
+#include <QStandardPaths>
+#include <algorithm>
+#include <sstream>
+
+namespace v5 {
+namespace {
+const std::string kernel = "libbrick_shared_relational.so";
+const Path runtime = "runtime/duckdb/lib";
+const Path history = "qualifications/shared/relational";
+
+struct RowScope {
+  std::string operation, source_id, fixture, output, unit;
+  J arguments;
+  std::string qualification, fingerprint;
+  bool report() const { return operation == "report_fields"; }
+};
+
+J verify_materials(const Path &stage, const Path &bundle, const Path &base,
+                   const J &src, const J &row, const RowScope &scope) {
+  const Path archive = src["archive"].asString();
+  const auto recipe = archive.parent_path() / "PKGBUILD";
+  const auto ring = arch_keyring(stage);
+  const auto build = signed_build_info(src, recipe, ring);
+  auto debug = src;
+  debug["archive"] =
+      (archive.parent_path() / src["debug_archive"].asString()).string();
+  debug["sha256"] = src["debug_sha256"];
+  debug["signature_sha256"] = src["debug_signature_sha256"];
+  const auto debug_build = signed_build_info(debug, recipe, ring);
+  const auto info = package_info(src, "duckdb");
+  check(info.find("\nlicense = MIT\n") != std::string::npos,
+        "signed package license changed");
+  save(stage / "arch-pkginfo.txt", info);
+  save(stage / "arch-pkgbuild.txt", bytes(recipe));
+  save(stage / "notices/duckdb-LICENSE",
+       archive_member(src, "usr/share/licenses/duckdb/LICENSE"));
+
+  const auto provenance = load(bundle / history / "source.json");
+  const auto symbol = src["symbols"][0].asString();
+  const auto unit = provenance["source_units"][symbol].asString();
+  const auto definition = provenance["definitions"][symbol];
+  const auto kernel_pin = digest(bundle / runtime / kernel);
+  Strings symbols{"nm", "--defined-only"};
+  if (!scope.report())
+    symbols.push_back("-D");
+  symbols.push_back((bundle / runtime / kernel).string());
+  check(provenance["source_id"] == src["upstream_source_id"] &&
+            unit == scope.unit &&
+            provenance["kernel_sha256"].asString() == kernel_pin &&
+            definition["name"].isString() &&
+            run(symbols).find(" " + definition["name"].asString() + "\n") !=
+                std::string::npos,
+        "retained DuckDB symbol, source unit or kernel differs");
+  fs::create_directories(stage / "original");
+  const auto source = stage / "original" / Path(unit).filename();
+  run({"bsdtar", "-xOf", debug["archive"].asString(),
+       "usr/src/debug/duckdb/duckdb/" + unit},
+      {.output = source});
+  const auto source_pin = digest(source);
+  check(source_pin == src["source_unit_sha256"].asString(),
+        "signed relational source member differs");
+  const auto packed = stage.parent_path() / "retained-duckdb.so";
+  run({"bsdtar", "-xOf", archive, "usr/lib/libduckdb.so"}, {.output = packed});
+  check(digest(packed) == digest(bundle / runtime / "libduckdb.so"),
+        "retained DuckDB shared object differs from signed package");
+  fs::remove(packed);
+
+  retain_adapter(stage, bundle, history, src, row, provenance,
+                 "shared/relational/adapter.cpp");
+  const auto table = bytes(bundle / history / "table.hpp");
+  check(table ==
+            run({"git", "-C", root, "show",
+                 src["adapter_revision"].asString() + ":shared/table.hpp"}),
+        "retained table implementation differs from original");
+  save(stage / "original/table.hpp", table);
+  const auto links = runtime_files(
+      bundle, base,
+      {kernel, "libduckdb.so", "pkgconfig/brick_shared_relational.pc"});
+  const auto result = object({{"binding", row},
+                              {"source_id", scope.source_id},
+                              {"kernel_sha256", kernel_pin},
+                              {"upstream_symbol", definition},
+                              {"source_unit", unit},
+                              {"source_unit_sha256", source_pin},
+                              {"arch_keyring_sha256", digest(ring)},
+                              {"arch_signer", src["signer"]},
+                              {"arch_buildinfo_sha256", sha(build)},
+                              {"arch_debug_buildinfo_sha256", sha(debug_build)},
+                              {"runtime_files", links}});
+  write(stage / "source.json", result);
+  return result;
+}
+
+Strings runtime_sandbox(const Path &exe, const Path &directory,
+                        const Path &bundle) {
+  auto cmd = sandbox(exe, directory);
+  cmd.pop_back();
+  append(cmd, {"--ro-bind", bundle / runtime, "/runtime", "--setenv",
+               "LD_LIBRARY_PATH", "/runtime"});
+  return cmd;
+}
+
+J goal(const RowScope &scope, const J &parameters, bool tsv = false) {
+  auto steps = array(
+      {object({{"outcome", scope.operation}, {"parameters", parameters}})});
+  if (!scope.report())
+    steps.append(object({{"outcome", "ordered_column"},
+                         {"parameters", object({{"column", 0}})}}));
+  return spec_for("text/tab-separated-values",
+                  tsv ? "text/tab-separated-values" : "text/plain",
+                  object({{"operations", steps}, {"uncovered", array()}}));
+}
+
+J ordinary(const Path &work, const Path &bundle, const Path &base, const J &row,
+           const J &spec, const RowScope &scope, const Path &tsv) {
+  const auto chain =
+      scope.report() ? array({"tab_records", "report_fields", "write_lines"})
+                     : array({"tab_records", "op_0_filter_records",
+                              "op_1_column", "write_lines"});
+  auto report = object({{"chain", chain}, {"trials", array()}});
+  std::map<std::string, Path> arms{{"baseline", base}, {"staged", bundle}};
+  auto tsv_chain = chain;
+  if (!tsv.empty()) {
+    arms.emplace("tsv", tsv);
+    tsv_chain[tsv_chain.size() - 1] = "write_tsv_lines";
+    report["tsv_chain"] = tsv_chain;
+  }
+  for (const auto &trial : spec["ordinary"]) {
+    const auto name = trial["name"].asString();
+    const auto spec = goal(scope, trial["parameters"]);
+    auto result = object({{"name", name}, {"goal", spec}});
+    for (const auto &[arm, catalog] : arms) {
+      auto dir = work / arm / name;
+      auto exe = work / ".test-programs" / (arm + "-" + name);
+      const auto explicit_tsv = arm == "tsv";
+      const auto selected_goal =
+          explicit_tsv ? goal(scope, trial["parameters"], true) : spec;
+      if (explicit_tsv)
+        result["tsv_goal"] = selected_goal;
+      const auto compiled = complete_file_plan(
+          catalog, dir, selected_goal, explicit_tsv ? tsv_chain : chain);
+      build_emission(compiled, dir, exe, "g++-15");
+      auto observations = array();
+      for (const auto &fixture : trial["cases"]) {
+        const auto case_name = fixture["name"].asString();
+        for (const bool existing : {false, true}) {
+          auto input =
+              dir / "cases" / case_name / (existing ? "present" : "absent");
+          save(input / "input", fixture["input"].asString());
+          auto dest = input / "output";
+          const std::string sentinel = "unchanged output\n";
+          if (existing)
+            save(dest, sentinel);
+          auto cmd = runtime_sandbox(exe, input, catalog);
+          append(cmd, {"/probe", "input", "output"});
+          auto proc = execute(cmd, {.seconds = 10, .probe_limits = true});
+          const bool failure = fixture.get("error", false).asBool();
+          check(proc.status == (failure ? 1 : 0) &&
+                    fs::exists(dest) == (!failure || existing),
+                "unexpected emitted relational exit or output presence " +
+                    case_name);
+          J output;
+          if (fs::exists(dest)) {
+            check(bytes(dest) ==
+                      (failure ? sentinel : fixture["output"].asString()),
+                  "emitted relational program changed output bytes " +
+                      case_name);
+            output = bytes(dest);
+          }
+          observations.append(object({{"case", case_name},
+                                      {"destination_existed", existing},
+                                      {"exit", proc.status},
+                                      {"output", output}}));
+        }
+      }
+      result[arm] = object({{"source_sha256", digest(dir / "component.hpp")},
+                            {"program_sha256", digest(exe)},
+                            {"observations", observations}});
+    }
+    check(result["baseline"] == result["staged"],
+          "retained program differs between baseline and staged programs");
+    if (!tsv.empty())
+      check(result["staged"]["observations"] == result["tsv"]["observations"],
+            "explicit TSV differs from the retained plain writer");
+    report["trials"].append(result);
+  }
+  auto removed = [&](const Path &catalog, bool explicit_tsv) {
+    auto cut = work / "control-bundle";
+    if (explicit_tsv)
+      cut /= "tsv";
+    write_tree(cut, remove_binding(read_tree(catalog), row));
+    auto gaps = array();
+    for (const auto &trial : spec["ordinary"]) {
+      const auto result =
+          plan(cut, goal(scope, trial["parameters"], explicit_tsv),
+               work / (explicit_tsv ? "removed-tsv" : "removed") /
+                   trial["name"].asString());
+      check(result["providers"].isArray() && result["providers"].empty() &&
+                result["interpretation_errors"].empty() &&
+                result["gaps"]["r"].asString().find(scope.operation) !=
+                    std::string::npos,
+            "exact relational row removal left a provider chain");
+      gaps.append(result["gaps"]);
+    }
+    return object(
+        {{"bundle_sha256", digest(cut / "SHA256SUMS")}, {"gaps", gaps}});
+  };
+  report["removed"] = removed(bundle, false);
+  if (!tsv.empty())
+    report["removed_tsv"] = removed(tsv, true);
+  return report;
+}
+
+J observe(const Path &work, const Path &stage, const Path &bundle,
+          const J &source, const J &spec, const RowScope &scope) {
+  const auto compiler_options = flags({"jsoncpp", "brick_shared_relational"});
+  auto exe = work / ".test-programs/client";
+  Strings command{"g++-15",           "-std=c++17",         "-O1", "-I",
+                  stage / "original", stage / "client.cpp", "-o",  exe};
+  append(command, compiler_options);
+  run(command);
+  auto env = path_client_environment(exe, file_qualification_tools());
+  for (const auto *tool : {"gpgv", "bsdtar", "nm", "ldd"})
+    env["tool_sha256"][tool] =
+        digest(QStandardPaths::findExecutable(tool).toStdString());
+  std::istringstream linked(
+      run({"ldd", exe},
+          {.environment = {{"LD_LIBRARY_PATH", (bundle / runtime).string()}}}));
+  auto libraries = object();
+  for (std::string line; std::getline(linked, line);) {
+    std::istringstream fields(line);
+    std::string name, arrow, path;
+    if (fields >> name >> arrow >> path && arrow == "=>" &&
+        (name == kernel || name == "libduckdb.so")) {
+      check(fs::canonical(path) == fs::canonical(bundle / runtime / name),
+            "standalone client resolved the wrong retained runtime");
+      libraries[name] = digest(path);
+    }
+  }
+  check(libraries.size() == 2, "standalone client lacks retained runtime");
+  for (const auto &file : source["runtime_files"])
+    if (libraries.isMember(file["path"].asString()))
+      check(libraries[file["path"].asString()] == file["sha256"],
+            "standalone library digest mismatch");
+  env["retained_libraries"] = libraries;
+  env["compiler_flags"] = string_array(compiler_options);
+  write(stage / "environment.json", env);
+
+  auto cmd = runtime_sandbox(exe, {}, bundle);
+  append(cmd, {"--ro-bind", stage / "spec.json", "/spec", "/probe", "/spec"});
+  const auto first = parse(run(cmd, {.seconds = 30, .probe_limits = true}));
+  check(first["errors"].size() == spec["errors"].size() &&
+            parse(run(cmd, {.seconds = 30, .probe_limits = true})) == first,
+        "standalone relational suite failed to reproduce");
+  if (scope.report()) {
+    check(first["reports"].size() == spec["direct"].size(),
+          "incomplete direct row report observations");
+    return object({{"fresh_processes", 2},
+                   {"calls_per_report", 2},
+                   {"observations", first}});
+  }
+  check(first["comparisons"].size() == 24,
+        "incomplete direct filter observations");
+  return object({{"fresh_processes", 2},
+                 {"visits_per_comparison", 2},
+                 {"observations", first}});
+}
+J detached_manifest(const Path &stage, const std::string &pin,
+                    const std::string &parent, const std::string &schema) {
+  const auto raw = bytes(stage / "manifest.json");
+  const auto manifest = parse(raw);
+  check(sha(raw) == pin && manifest["schema"] == schema.c_str() &&
+            manifest["catalog_sha256"].asString() == parent &&
+            manifest["active_manifest_sha256"] == base_hash.c_str() &&
+            manifest["files"].isObject() && !manifest["files"].empty(),
+        "detached evidence manifest or catalog changed");
+  for (const auto &member : manifest["files"].getMemberNames())
+    check(digest(project_file(stage, member)) ==
+              manifest["files"][member].asString(),
+          "detached evidence file changed: " + member);
+  return manifest;
+}
+
+J select_scope(const J &priority, const J &job, const std::string &parent) {
+  auto next = priority["bindings"].begin();
+  const auto end = priority["bindings"].end();
+  const auto pending = [](const auto &row) {
+    return row["disposition"] == "structural inventory pending qualification";
+  };
+  auto reviewed = array();
+  for (const auto &previous : job["previous_scopes"]) {
+    next = std::find_if(next, end, pending);
+    check(next != end, "previous evidence exceeds ranked pending bindings");
+    const auto stage =
+        project_file(runs, previous["manifest"].asString()).parent_path();
+    const auto pin = previous["sha256"].asString();
+    const auto sealed =
+        detached_manifest(stage, pin, parent, "unllm.scoped-row-evidence/1");
+    const auto domain = load(stage / "domain.json");
+    const auto contract = load(stage / "contract.json");
+    check(
+        domain["binding_key"]["binding_id"] == (*next)["binding_id"] &&
+            domain["binding_key"]["component_id"] == (*next)["component_id"] &&
+            domain["raw_binding_sha256"] == (*next)["binding_sha256"] &&
+            domain["header_sha256"] == (*next)["header_sha256"] &&
+            domain["logical_id"] == sealed["binding_id"] &&
+            domain["contract_sha256"] == sealed["files"]["contract.json"] &&
+            domain["priority_sha256"] == sealed["files"]["priority.json"] &&
+            contract["qualification"]["level"] == "ordinary-emission-tested" &&
+            load(stage / "priority.json") == priority &&
+            load(stage / "tested-programs.json")["verdict"] == "passed",
+        "reviewed predecessor differs from the next ranked binding");
+    reviewed.append(
+        object({{"binding_id", (*next)["binding_id"]},
+                {"manifest_sha256", pin},
+                {"domain_sha256", sealed["files"]["domain.json"]}}));
+    ++next;
+  }
+  next = std::find_if(next, end, pending);
+  check(next != end, "no further ranked pending binding");
+  return object({{"selected", *next}, {"reviewed_predecessors", reviewed}});
+}
+
+Path qualify_rows(const Path &package, const std::string &pin,
+                  const Path &registry, const std::string &registry_pin,
+                  const RowScope &scope) {
+  verify(package, pin);
+  const auto src = sources()[scope.source_id];
+  const auto job =
+      retained_binding_job(v5_root() / "sources.json", scope.operation);
+  check(src["approval"] == "local-pilot" &&
+            src["method"] == "signed-local-package" &&
+            job["source"] == scope.source_id.c_str() && job["route"] == "api" &&
+            job["stream"] == "foundational" &&
+            job["tests"].asString() == "v5/fixtures/" + scope.fixture + ".json",
+        "unapproved retained relational job");
+  auto priority = rank_supplied_usage(
+      project_file(runs, job["coverage_audit"].asString()),
+      job["coverage_sha256"].asString(),
+      project_file(runs,
+                   job["migration_snapshot"].asString() + "/ledger.sqlite")
+          .parent_path(),
+      job["ledger_sha256"].asString());
+  const auto work = fresh_run("v5-" + scope.fixture), stage = work / ".stage";
+  const auto bundle = package / "bundle", base = verified_base();
+  fs::create_directory(work / ".test-programs");
+  save_file_registry(stage, src, registry, registry_pin);
+  check(retained_binding_job(stage / "sources.json", scope.operation) == job,
+        "changed retained relational job");
+  const auto defs = load(bundle / "providers/contracts.json");
+  const auto row =
+      select_binding(defs["providers"], scope.operation,
+                     "miner_" + scope.operation, "rows", scope.output);
+  const auto record = file_binding_identity(row, bundle);
+  const auto selection = select_scope(priority, job, pin);
+  const auto &selected = selection["selected"];
+  const auto legacy =
+      load(bundle / history / "contracts.json")[scope.operation];
+  check(selected["binding_id"] == scope.operation.c_str() &&
+            selected["binding_sha256"] == record["binding_sha256"] &&
+            selected["header_sha256"] == record["header_sha256"] &&
+            row["call"] == job["callable"] && row["args"] == scope.arguments &&
+            defs["outcomes"][scope.operation]["parameters"] == legacy["args"],
+        "qualification differs from ranked ledger or relational ABI");
+  write(stage / "priority.json", priority);
+  Path tsv;
+  if (scope.report()) {
+    const auto tsv_stage =
+        project_file(runs, job["tsv_manifest"].asString()).parent_path();
+    const auto tsv_manifest =
+        detached_manifest(tsv_stage, job["tsv_manifest_sha256"].asString(), pin,
+                          "unllm.scoped-file-evidence/1");
+    tsv = tsv_stage / "bundle";
+    const auto writer = load(tsv_stage / "source.json")["binding"];
+    check(writer["id"] == "write_tsv_lines" && writer["effect"].isNull() &&
+              writer["from"] == "strings" &&
+              writer["to"] == "out:text/tab-separated-values" &&
+              remove_binding(read_tree(tsv), writer).at("SHA256SUMS") ==
+                  bytes(bundle / "SHA256SUMS"),
+          "explicit TSV arm differs outside the retained writer registration");
+    auto qualified_selection = selection;
+    qualified_selection["tsv_context"] =
+        object({{"manifest_sha256", job["tsv_manifest_sha256"]},
+                {"bundle_sha256", tsv_manifest["files"]["bundle/SHA256SUMS"]},
+                {"writer", writer}});
+    write(stage / "selection.json", qualified_selection);
+  }
+  const auto source = verify_materials(stage, bundle, base, src, row, scope);
+  const auto tools = file_qualification_tools();
+  for (const auto &[from, to] : std::map<std::string, std::string>{
+           {scope.fixture + ".json", "spec.json"},
+           {scope.fixture + "-client.cpp", "client.cpp"},
+           {scope.fixture + "-annotation.json", "annotation.json"}})
+    fs::copy_file(v5_root() / "fixtures" / from, stage / to);
+  const auto spec = load(stage / "spec.json");
+  check(spec["binding"] == record["key"], "fixture names a different binding");
+  const auto previous = qgetenv("PKG_CONFIG_PATH");
+  const auto restore = qScopeGuard([&] {
+    if (previous.isNull())
+      qunsetenv("PKG_CONFIG_PATH");
+    else
+      qputenv("PKG_CONFIG_PATH", previous);
+  });
+  check(qputenv("PKG_CONFIG_PATH", (bundle / runtime / "pkgconfig").c_str()),
+        "cannot pin retained relational runtime for compilation");
+  write(stage / "standalone.json",
+        observe(work, stage, bundle, source, spec, scope));
+  write(stage / "integration.json",
+        ordinary(work, bundle, base, row, spec, scope, tsv));
+  check(file_qualification_tools() == tools, "qualification tools changed");
+  auto contract =
+      file_contract(stage, package, record, src, stage / "sources.json");
+  contract["source"]["implementation_sha256"] = source["kernel_sha256"];
+  contract["qualification"]["scope"] = scope.qualification;
+  contract["fingerprint"]["scope"] = scope.fingerprint;
+  validate(contract, load(package / "contract.schema.json"));
+  write(stage / "contract.json", contract);
+  auto domain = object(
+      {{"schema", "unllm.scoped-row-evidence-domain/1"},
+       {"binding_key", record["key"]},
+       {"raw_binding_sha256", record["binding_sha256"]},
+       {"logical_id", record["logical_id"]},
+       {"header_sha256", record["header_sha256"]},
+       {"implementation_sha256", source["kernel_sha256"]},
+       {"contract_sha256", digest(stage / "contract.json")},
+       {"environment_sha256", digest(stage / "environment.json")},
+       {"priority_sha256", digest(stage / "priority.json")},
+       {"ordinary_cases", spec["ordinary"]},
+       {"scope", "Detached observations for the named fixtures and "
+                 "recorded implementation. No unrestricted row admission."}});
+  if (scope.report()) {
+    domain["selector_fixture_sha256"] = digest(stage / "spec.json");
+    domain["selection_sha256"] = digest(stage / "selection.json");
+    domain["selector"] = object({{"argument_index", 1},
+                                 {"argument_type", "const std::string&"},
+                                 {"direct_cases", spec["direct"]}});
+  } else {
+    domain["comparison_fixture_sha256"] = digest(stage / "spec.json");
+    domain["modes"] = spec["modes"];
+    domain["comparisons"] = spec["comparisons"];
+  }
+  write(stage / "domain.json", domain);
+  return finish_file_stage(work, package, pin, record["logical_id"].asString(),
+                           "unllm.scoped-row-evidence/1");
+}
+} // namespace
+
+Path qualify_filter_records(const Path &package, const std::string &pin,
+                            const Path &registry,
+                            const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"filter_records", "retained-relational-filter", "filter-records", "rows",
+       "src/execution/operator/filter/physical_filter.cpp",
+       array({"column", "type", "comparison", "value"}),
+       "Detached finite comparison fixtures and two ordinary TSV constructions "
+       "with the recorded DuckDB runtime and provider ABI.",
+       "Four typed operand modes crossed with six comparisons on ordered "
+       "fixture rows."});
+}
+
+Path qualify_report_fields(const Path &package, const std::string &pin,
+                           const Path &registry,
+                           const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"report_fields", "retained-relational-report", "report-fields",
+       "strings", "src/function/scalar/string/concat_ws.cpp", array({"fields"}),
+       "Detached field-selector fixtures and ordinary line and TSV emission "
+       "with the recorded DuckDB runtime and provider ABI.",
+       "Exact field and position rendering on the frozen ordered fixture "
+       "rows."});
+}
+} // namespace v5
