@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The seven room-booking replies with zero operations use the retained JSON reader and interval operations in their supplied constructions. Fresh controls distinguish half-open intervals, departure-first occupancy and summing each canceled duration. [Room-booking replay and reproduction](replay-gaps/RESULTS.md#archived-room-bookings-with-no-ordered-operations)
+
 The nine finance requests are the largest family among the 32 archived replies with zero ordered operations. Correcting CSV input and supplying retained operations passed all 45 saved fixtures using the staged TSV writer where required. A new signed-amount fixture exposed and verified corrections for two reference recipes. [Finance replay and frequency ranking](replay-gaps/RESULTS.md#archived-replies-with-no-ordered-operations-and-the-finance-cohort)
 
 H080 completed the audits of the 13 disconnected archived chains. The retained URI route passed all five fixtures. A fresh input caught a lowercase-only filter that passes the archived suite and verified exact URI spelling, fragment presence, deduplication and sorting. [URI fragment export and reproduction](replay-gaps/RESULTS.md#disconnected-uri-fragment-export-h080)
