@@ -27,6 +27,9 @@ $(BUILD_DIR)/project-miner: $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST
 $(BUILD_DIR)/project-regression: tests/project/regression.cpp $(BUILD_DIR)/host/common.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
 
+$(BUILD_DIR)/rsi-score: rsi/score.cpp $(BUILD_DIR)/host/common.o
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
+
 .PHONY: check-project
 check-project: $(BUILD_DIR)/project-miner $(BUILD_DIR)/brick-scan $(BUILD_DIR)/project-regression
 	"$(BUILD_DIR)/project-regression"
