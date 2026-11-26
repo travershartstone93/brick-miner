@@ -7,6 +7,8 @@ miner::J tools();
 miner::J input_hashes(const miner::Path &trial, const std::string &name);
 miner::J scores(const miner::J &receipt);
 miner::J operations(const miner::J &recipe);
+miner::J plan_probe(const miner::Path &bundle, const miner::Path &dest,
+                    const miner::J &spec);
 miner::J trial(const miner::Path &work, const std::string &arm,
                const std::string &request, const miner::Path &bundle,
                const miner::Path &spec_file);

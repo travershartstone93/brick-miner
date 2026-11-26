@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The disconnected ZIP audit covers `top,size`, `ext,size` and `parent,path,size` on the retained input kernel. All 15 fixed fixtures pass. H059 and H060 use the existing TSV registration. The two scalar name and size views differ in length when the name view includes directory entries. [ZIP chain diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-zip-size-chains-h054-h059-h060)
+
 The seven XML chain failures replayed through the retained article projection and appropriate row operations. The fixed recipes passed all 35 fixtures, with the staged TSV binding for four reports. Three single-XPath alternatives also passed. [XML chain diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-xml-article-chains-seven-requests)
 
 H039 closes the audit of the 21 archived first-error argument-validation cases. Its fixed route reuses the exact qualified telemetry projection, separate extrema and the detached TSV writer. A numeric-minute variant corrects a signed-zero grouping failure witnessed on legal JSON integer input. [H039 replay evidence](../replay-gaps/RESULTS.md#conflicting-readings-and-numeric-minute-keys-h039)

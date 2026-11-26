@@ -49,6 +49,26 @@ J operations(const J &recipe) {
   return list;
 }
 
+J plan_probe(const Path &bundle, const Path &dest, const J &spec) {
+  check(spec["roles"].size() == 1, "plan probe requires one role");
+  const auto &role = spec["roles"][0];
+  const auto p =
+      plan(bundle,
+           spec_for(spec["input_type"].asString(),
+                    role["output_type"].asString(), role["requirement"]),
+           dest);
+  auto routes = array();
+  for (const auto &r : p["providers"])
+    routes.append(object({{"status", r["status"]},
+                          {"ports", ports(r)},
+                          {"steps", r["plan"]["steps"]},
+                          {"uncovered", r["uncovered"]}}));
+  return object({{"plan_sha256", hash(dest / "components/emission.json")},
+                 {"validation", p["interpretation_errors"]},
+                 {"gaps", p["gaps"]},
+                 {"routes", routes}});
+}
+
 static J requirements(const J &spec, unsigned slot) {
   return spec["roles"][slot]["requirement"]["uncovered"];
 }

@@ -51,23 +51,6 @@ const std::string feed = R"(<feed>
   <article editor="Nora" section="draft-only" state="draft"><title>Hidden</title></article>
 </feed>)";
 
-J probe(const Path &bundle, const Path &dest, const J &spec) {
-  const auto &role = spec["roles"][0];
-  const auto p = plan(
-      bundle,
-      spec_for(xml, role["output_type"].asString(), role["requirement"]), dest);
-  auto routes = array();
-  for (const auto &r : p["providers"])
-    routes.append(object({{"status", r["status"]},
-                          {"ports", ports(r)},
-                          {"steps", r["plan"]["steps"]},
-                          {"uncovered", r["uncovered"]}}));
-  return object({{"plan_sha256", hash(dest / "components/emission.json")},
-                 {"validation", p["interpretation_errors"]},
-                 {"gaps", p["gaps"]},
-                 {"routes", routes}});
-}
-
 J replace_reads(J spec, const J &reader) {
   auto &ops = spec["roles"][0]["requirement"]["operations"];
   auto updated = array({reader});
@@ -178,7 +161,7 @@ int main() try {
     const auto parameters = work / "parameters" / id;
     const auto retired_plan = archive / id / "run/components/emission.json";
     item["archived_plan_sha256"] = hash(retired_plan);
-    const auto archived_plan = probe(base, parameters / "archived", saved);
+    const auto archived_plan = plan_probe(base, parameters / "archived", saved);
     const auto historical = load(retired_plan);
     const auto gap = archived_plan["gaps"]["r"].asString();
     check(gap.starts_with("No provider chain for requested outcomes: ") &&
@@ -207,7 +190,7 @@ int main() try {
     for (unsigned i = 0; i <= predecessor; ++i)
       prefix_req["operations"].append(ops[i]);
     prefix_req["uncovered"] = array();
-    const auto prefix_plan = probe(base, parameters / "prefix", prefix);
+    const auto prefix_plan = plan_probe(base, parameters / "prefix", prefix);
     check(prefix_plan["validation"].empty() &&
               prefix_plan["routes"].size() == 1 &&
               complete(prefix_plan["routes"][0]) &&
@@ -226,8 +209,8 @@ int main() try {
             projection_op["parameters"] ==
                 object({{"fields", projection}, {"records", "/feed/article"}}),
         "changed correlated article projection for " + id);
-    const auto only_reader = probe(base, parameters / "reader-only",
-                                   replace_reads(saved, projection_op));
+    const auto only_reader = plan_probe(base, parameters / "reader-only",
+                                        replace_reads(saved, projection_op));
     check(only_reader["validation"].empty(),
           "projection-only arm failed validation");
     for (const auto &route : only_reader["routes"])

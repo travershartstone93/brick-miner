@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+Three disconnected ZIP chains pass all 15 fixtures with retained correlated path and size projections. On the new archive the all-member reader returned 27 names and the size reader returned 21 values, demonstrating the directory-entry mismatch. [ZIP chains and reproduction](replay-gaps/RESULTS.md#disconnected-zip-size-chains-h054-h059-h060)
+
 All seven disconnected XML routes stopped at incompatible operations in their saved plans. The complete row recipes passed 35/35. Three scalar XPath alternatives also passed, and the existing staged TSV writer covered four reports. [XML chains and reproduction](replay-gaps/RESULTS.md#disconnected-xml-article-chains-seven-requests)
 
 H039 completed the archived validation cohort. Retained minimum and maximum operations reached the TSV boundary, and the existing staged writer brought the supplied recipe to 5/5. A fresh signed-zero fixture exposed a missed conflict that the retained numeric-minute normalization recovers. [H039 results and reproduction](replay-gaps/RESULTS.md#conflicting-readings-and-numeric-minute-keys-h039)
