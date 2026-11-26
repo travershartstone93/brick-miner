@@ -780,3 +780,33 @@ The closure report joins the nine earlier executions, the four typed URI executi
 Two sealed runs took 52.74 and 53.50 wall seconds. Each recorded 35 checker verdicts, ten additional executions on exact saved inputs and four fresh executions. An independent check verified 132 file hashes per run. Plans, executable hashes, outputs and verdicts reproduced. Only the new raw receipt hashes differed. The first two attempts completed the execution checks before a JSON integer comparison stopped the cohort join. The corrected join reproduced those execution records. The retained evidence includes the raw plans and receipts, and all four runs retired their scratch executables. `make check check-v5-gap` passed. [Primary report, SHA-256 `06893b54b4d0d56431ea5c40cba6bdd5a516721313b3f09ad62748f4288476ca`](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-closure-replay-XXnzoeMp/report.json) · [Repeat, SHA-256 `d04b65776209ce97cc6cccfa635a5b96e5cc0069512e545270a5e92a38cd880f`](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-closure-replay-XXE3lA9p/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXD0cE4N/controls.json)
 
 Build with `make .build/typed-closure-replay`. Use `.build/typed-closure-replay` and set `pinned="$runs/v5-typed-uri-tools-MOpUkV7w"` in the [read-only replay command](#grouped-row-selection-validation-ten-requests). Include `--tmpfs /tmp` before the command separator. [Tool hashes](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-typed-uri-tools-MOpUkV7w/SHA256SUMS)
+
+## Joined audit of all 100 requests
+
+The C++ audit joins all five archived blocker cohorts against hash-pinned construction evidence. Each request record carries its English input, original row-brick mapping and residual, saved interpretation and planner diagnostics, tested supplied operations and provider chain per output role, and any recorded fresh-English result. The 71 requests mapped to at least one row brick and the other 29 all have passing supplied constructions. The mapping describes where a row brick could contribute. The verified paths include the other operations needed to finish the requests.
+
+| First archived blocker | Requests | Mapped to a row brick | Saved fixture passes | Verified supplied roles |
+|---|---:|---:|---:|---:|
+| No ordered outcomes | 32 | 22 | 0/160 | 32 |
+| Invalid argument | 21 | 19 | Checker did not run | 23 |
+| Uncovered prose and no typed gap | 19 | 8 | 27/95 | 22 |
+| Typed conversion gap | 15 | 11 | 0/75 | 20 |
+| No chain for requested operations | 13 | 11 | 0/65 | 13 |
+
+The archived replies produced zero accepted programs and passed 27 of 395 executed fixture checks. Only H004 and H010 have documented fresh-English trials in this audit, and each went 0/5. The supplied replays passed all 500 fixture checks with complete plans for 110 roles. Their plans preserve the archived output MIME labels, and the ten finance requests use the CSV input label supported by their English descriptions and fixtures.
+
+The original 100/100 reference evaluation used the plain-text sink for 47 roles across 45 requests that the archived replies labelled TSV. The later supplied replays use the staged TSV registration for all 47. Eight requests with ten roles had the original ranked string-to-TSV blocker. The other 37 supplied TSV roles reached the sink after changes upstream. H011's direct FIFO diagnostic remains a single optional integer-to-text boundary, with zero such occurrences in the archived first-blocker ranking and a passing row-based construction. The 100 tested supplied constructions leave zero demonstrated required implementation gaps in this scope. Catalog completeness and fresh-English success on the other 98 requests remain unmeasured.
+
+| Retained binding | Distinct requests using it in passing supplied plans |
+|---|---:|
+| `filter_records` | 72 |
+| `report_fields` | 58 |
+| `group_rows` | 51 |
+| `write_tsv_lines` | 45 |
+| `write_lines` | 42 |
+| `column` | 36 |
+| `select_group_row` | 32 |
+
+The ranking contains all 40 observed bindings and carries their exact staged row hashes. Historical `zip_file_records` and `uri_records` rows have extra metadata and matching callable interfaces. The report retains those row variants with their request IDs. These are frequencies for backfill and qualification review. Archived menus omit at least one operation used by the supplied route for 79 requests, most often `filter_records` (61) and `report_fields` (29). Other valid constructions can have different menu requirements.
+
+Build and run with `make .build/coverage-audit && .build/coverage-audit` on the mounted corpus volume. The join reads the saved plans, receipts and registry rows directly. Two runs produced byte-identical reports at SHA-256 `ab8b368e3c9b666c0613a09669fa711669f7774296e888e271a9f546665594f6`. An independent checksum pass verified all 1,146 file hashes in each report. `make check check-v5-gap` passed. [Primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-coverage-audit-XX5WboAN/report.json) · [Repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-coverage-audit-XX13Cxrb/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXus9pqv/controls.json)

@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The joined audit covers all 100 archived requests, retaining each saved blocker, exact supplied plan, row-map residual and available fresh-English result. Its frequency ranking starts with `filter_records` at 72 requests, `report_fields` at 58 and `group_rows` at 51. Join these exact staged binding hashes to the migration ledger before choosing the highest-frequency binding still due for V5 qualification. [Joined audit and reproduction](../replay-gaps/RESULTS.md#joined-audit-of-all-100-requests)
+
 The H016 and H065 replays close all 15 archived typed-conversion cases on supplied operations, with 20 output roles and 75 saved fixture passes. Fresh tests distinguish aggregate bank totals from any negative bank entry and exact lowercase `build` components from similarly named paths. Prepare a joined per-request audit across all five archived blocker cohorts before following up remaining capability needs. [Typed-conversion closure and evidence](../replay-gaps/RESULTS.md#csv-and-directory-constructions-close-the-typed-conversion-cohort)
 
 The typed URI-list replay verifies H073, H075, H077 and H079 across five output roles and 20 saved fixtures. Exact writer removal blocks all five roles. Fresh controls distinguish URI identity, scheme matching, second-occurrence order and duplicate counting. H016 and H065 remain queued for scoped execution. [Typed URI-list replay and reproduction](../replay-gaps/RESULTS.md#typed-uri-list-constructions)
