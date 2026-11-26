@@ -1,0 +1,82 @@
+{
+  "binding": {
+    "component_id": "j85",
+    "binding_id": "write_texts",
+    "from": "strings",
+    "to": "out:application/json"
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "records": [],
+      "expected_hex": "5b5d"
+    },
+    {
+      "name": "project-example",
+      "records": [
+        "612262",
+        ""
+      ],
+      "expected_hex": "5b22615c2262222c22225d"
+    },
+    {
+      "name": "ordered-and-repeated",
+      "records": [
+        "7a",
+        "32",
+        "32",
+        "c3a9",
+        ""
+      ],
+      "expected_hex": "5b227a222c2232222c2232222c22c3a9222c22225d"
+    },
+    {
+      "name": "embedded-nul-and-escapes",
+      "records": [
+        "610062",
+        "09",
+        "5c",
+        "0d"
+      ],
+      "expected_hex": "5b22615c753030303062222c225c74222c225c5c222c225c72225d"
+    },
+    {
+      "name": "internal-newline",
+      "records": [
+        "610a62"
+      ],
+      "expected_hex": "5b22615c6e62225d",
+      "direct_only": true
+    },
+    {
+      "name": "invalid-utf8",
+      "records": [
+        "80"
+      ],
+      "expected_hex": "5b2280225d",
+      "outside_utf8": true
+    },
+    {
+      "name": "directory",
+      "records": [
+        "61"
+      ],
+      "fault": "directory"
+    },
+    {
+      "name": "missing-parent",
+      "records": [
+        "61"
+      ],
+      "fault": "missing-parent"
+    },
+    {
+      "name": "short-write",
+      "records": [
+        "30313233343536373839616263646566"
+      ],
+      "expected_hex": "5b22303132333435",
+      "fault": "limit-8"
+    }
+  ]
+}

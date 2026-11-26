@@ -8,26 +8,8 @@
 namespace v5 {
 namespace {
 const std::string id = "gir_g_uri_list_extract_uris";
-std::string member(const J &s, const std::string &file) {
-  return run({"bsdtar", "-xOf", s["archive"].asString(), file});
-}
 J runtime(const Path &work, const J &s) {
-  Path arc = s["archive"].asString(), sig = arc.string() + ".sig",
-       ring = work / "runtime-keyring.gpg";
-  check(digest(arc) == s["sha256"].asString() &&
-            digest(sig) == s["signature_sha256"].asString(),
-        "changed installed GLib archive or signature");
-  run({"gpg", "--batch", "--dearmor", "--output", ring,
-       "/usr/share/pacman/keyrings/cachyos.gpg"});
-  auto status = run({"gpgv", "--keyring", ring, "--status-fd", "1", sig, arc});
-  check(status.find("[GNUPG:] VALIDSIG " + s["signer"].asString() + " ") !=
-            std::string::npos,
-        "unexpected installed GLib signer");
-  for (const auto &f : s["files"].getMemberNames())
-    check(sha(member(s, f)) == s["files"][f].asString() &&
-              digest(Path("/") / f) == s["files"][f].asString(),
-          "installed GLib differs from signed package: " + f);
-  auto info = member(s, ".PKGINFO");
+  auto info = verified_runtime_package(work, s);
   const std::string license = "SPDX-License-Identifier: LGPL-2.1-or-later";
   check(bytes("/usr/include/glib-2.0/glib/gconvert.h").find(license) !=
             std::string::npos,
@@ -41,7 +23,7 @@ J runtime(const Path &work, const J &s) {
   return object({{"archive", s},
                  {"pkginfo_sha256", sha(info)},
                  {"version", run({"pkg-config", "--modversion", "glib-2.0"})},
-                 {"keyring_sha256", digest(ring)},
+                 {"keyring_sha256", digest(work / "runtime-keyring.gpg")},
                  {"dependency_header_license", license}});
 }
 void build(const Path &include, const Path &source, const Path &exe,
@@ -192,10 +174,10 @@ Path qualify_uri_reader(const Path &package, const std::string &pin,
   const Path generator = main_repo / "build/native/brick-gir-adapter",
              gir = s["documentation"].asString();
   auto generator_sha = digest(generator);
-  auto generator_source = member(s, s["generator"].asString());
+  auto generator_source = archive_member(s, s["generator"].asString());
   check(sha(generator_source) == digest(main_repo / s["generator"].asString()),
         "generator source revision mismatch");
-  save(stage / "historical-client.cpp", member(s, s["examples"].asString()));
+  save(stage / "historical-client.cpp", archive_member(s, s["examples"].asString()));
   save_file_registry(stage, s, registry, registry_pin);
   for (auto [f, d] : std::vector<std::pair<std::string, std::string>>{
            {"uri-reader-client.cpp", "client.cpp"},

@@ -3,6 +3,43 @@
 #include "pilot.hpp"
 #include <QStandardPaths>
 namespace v5 {
+std::string archive_member(const J &s, const std::string &file) {
+  return run({"bsdtar", "-xOf", s["archive"].asString(), file});
+}
+std::string verified_runtime_package(const Path &work, const J &s) {
+  Path arc = s["archive"].asString(), sig = arc.string() + ".sig",
+       ring = work / "runtime-keyring.gpg";
+  check(digest(arc) == s["sha256"].asString() &&
+            digest(sig) == s["signature_sha256"].asString(),
+        "changed installed runtime archive or signature");
+  run({"gpg", "--batch", "--dearmor", "--output", ring,
+       "/usr/share/pacman/keyrings/cachyos.gpg"});
+  auto status = run({"gpgv", "--keyring", ring, "--status-fd", "1", sig, arc});
+  check(status.find("[GNUPG:] VALIDSIG " + s["signer"].asString() + " ") !=
+            std::string::npos,
+        "unexpected installed runtime signer");
+  for (const auto &f : s["files"].getMemberNames())
+    check(sha(archive_member(s, f)) == s["files"][f].asString() &&
+              digest(Path("/") / f) == s["files"][f].asString(),
+          "installed runtime differs from signed package: " + f);
+  return archive_member(s, ".PKGINFO");
+}
+J complete_file_plan(const Path &bundle, const Path &out, const J &spec,
+                     const J &expected) {
+  auto emitted = plan(bundle, spec, out);
+  check(emitted["providers"].size() == 1 &&
+            emitted["interpretation_errors"].empty() &&
+            emitted["clarifications"].empty(),
+        "file interpretation did not bind");
+  auto p = emitted["providers"][0];
+  J ids = array();
+  for (const auto &step : p["plan"]["steps"])
+    ids.append(step["provider"]);
+  check(p["status"] == "complete" && p["uncovered"].empty() &&
+            p["typed_gaps"].empty() && ids == expected,
+        "unexpected emitted bindings " + dump(ids));
+  return p;
+}
 void save_file_registry(const Path &stage, const J &source,
                         const Path &registry, const std::string &pin) {
   auto data = bytes(registry);
@@ -78,7 +115,7 @@ J file_contract(const Path &stage, const Path &package, const J &record,
 Path seal_file_qualification(const Path &work, const Path &package,
                              const std::string &pin, J bindings,
                              Json::ArrayIndex selected, const J &contract) {
-  auto stage = work / ".stage", scratch = work / ".test-programs";
+  auto stage = work / ".stage";
   auto &record = bindings[selected];
   write(stage / "contract.json", contract);
   record["contract_sha256"] = digest(stage / "contract.json");
@@ -90,6 +127,13 @@ Path seal_file_qualification(const Path &work, const Path &package,
                 {"contract_file", "contract.json"},
                 {"qualified_logical_id", record["logical_id"]}}));
   project_binding_records(stage);
+  return finish_file_stage(work, package, pin, record["logical_id"].asString(),
+                           "unllm.binding-qualification-stage/1");
+}
+Path finish_file_stage(const Path &work, const Path &package,
+                       const std::string &pin, const std::string &id,
+                       const std::string &schema) {
+  auto stage = work / ".stage", scratch = work / ".test-programs";
   auto programs = tree_hashes(scratch);
   write(stage / "tested-programs.json",
         object({{"programs_sha256", programs},
@@ -106,12 +150,11 @@ Path seal_file_qualification(const Path &work, const Path &package,
   check(digest(package / "manifest.json") == pin &&
             digest(verified_base() / "SHA256SUMS") == base_hash,
         "parent changed before sealing");
-  write(stage / "manifest.json",
-        object({{"schema", "unllm.binding-qualification-stage/1"},
-                {"catalog_sha256", pin},
-                {"active_manifest_sha256", base_hash},
-                {"binding_id", record["logical_id"]},
-                {"files", tree_hashes(stage)}}));
+  write(stage / "manifest.json", object({{"schema", schema},
+                                         {"catalog_sha256", pin},
+                                         {"active_manifest_sha256", base_hash},
+                                         {"binding_id", id},
+                                         {"files", tree_hashes(stage)}}));
   run({"sync", "-f", stage / "manifest.json"});
   fs::rename(stage, work / "stage");
   return work / "stage/manifest.json";

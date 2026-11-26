@@ -2,6 +2,19 @@
 #include "common.hpp"
 
 namespace v5 {
+std::string archive_member(const miner::J &source, const std::string &name);
+std::string verified_runtime_package(const miner::Path &work,
+                                     const miner::J &source);
+miner::J complete_file_plan(const miner::Path &bundle, const miner::Path &out,
+                            const miner::J &spec, const miner::J &expected);
+miner::Path finish_file_stage(const miner::Path &work,
+                              const miner::Path &package,
+                              const std::string &pin, const std::string &id,
+                              const std::string &schema);
+miner::Path qualify_json_writer(const miner::Path &package,
+                                const std::string &pin,
+                                const miner::Path &registry,
+                                const std::string &registry_pin);
 miner::J sequence_writer_identities(const miner::Path &package);
 miner::J file_binding_identity(const miner::J &row, const miner::Path &bundle);
 void project_binding_records(const miner::Path &stage);

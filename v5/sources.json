@@ -771,6 +771,23 @@
       "rights":{"scope":"Local compilation and isolated qualification of the retained project header.","upstream_files":"MIT per the archived project LICENSE. The header declares no separate license.","redistribute":"Local review with the archived MIT notice.","notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"},
       "approval":"local-pilot",
       "approval_reference":"V5 H1b local migration of the retained active binding and its project-owned source."
+    },
+    {
+      "id":"retained-json-text-writer","family":"retained project provider","upstream":"../unllm-upgrade",
+      "revision":"a13caea53e2db128e4a2b62ffd1d38c3ae3a709a","method":"reviewed-local-git-archive",
+      "archive":"/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-json-writer-source-dDoRKlJ2/json-writer.tar",
+      "sha256":"7a7b946e679f35de5001340ec965fe60d95815eb417a1a1a60ab0289df0a886c",
+      "members":{"headers/json_sequence.hpp":["experiments/boilerplate/component-trial/include/json_sequence.hpp","c8c235d3566cc36afcbc38e1f8f91ea6c4bc44517163aa28309e67c2da4cc3af"]},
+      "symbols":["unllm::write_json_sequence"],"families":["files_storage"],
+      "documentation":"experiments/boilerplate/component-trial/providers/contracts.json","documentation_sha256":"bd6df939424b8d141bd6bd556e902dba0dede6277799e6a38a8c9984e7c8f99d",
+      "examples":"experiments/boilerplate/component-trial/test-components.cpp","examples_sha256":"016e3bb6e040e1c2b504deac0df92d1ee7627cf5a42a3b05e6f5768c9801f794",
+      "tests":"v5/fixtures/write-texts.json","dependencies":["C++17 standard library","json-c"],
+      "rights":{"scope":"Local compilation and detached evidence for the retained string writer.","upstream_files":"Project MIT license, with no separate notice in the retained header.","redistribute":"Local stage retains the MIT project notice and the installed json-c COPYING file. Dependency is dynamically linked.","notice_sha256":"8c0715f164dad8db85ddd3d9fc0bc8c89af92bf59a9a8db1f97f7da34fe72c0e"},
+      "approval":"local-pilot","approval_reference":"V5 H1b local qualification of a retained header and already-installed runtime.",
+      "runtime":{"name":"json-c","upstream":"https://github.com/json-c/json-c/wiki","pkgver":"0.19-1.1","arch":"x86_64_v3","license":"MIT",
+        "archive":"/var/cache/pacman/pkg/json-c-0.19-1.1-x86_64_v3.pkg.tar.zst","sha256":"61ffd05cb782f9b7e0b3d59f44b2549e0e7b37012c3be196c04e35dc4af21be2",
+        "signature_sha256":"cb775cc33007915e87e77c7b20ff1741805cf4f6967720da2f3b950c7699cc92","signer":"882DCFE48E2051D48E2562ABF3B607488DB35A47",
+        "files":{"usr/include/json-c/json.h":"05408079f9d62dbec3c4ebc2c05babdc0f70cf130fdbda39c95337805a358f25","usr/include/json-c/json_object.h":"20499c79777b310c8347319b93a07ecc04c92eb117e00b5197f7be02be88e09e","usr/lib/libjson-c.so.5.5.0":"5519671516f5f73cdfd9988b47f40c08a0d8d5a9fa44bcfb5a8fdf12c9429d46","usr/share/licenses/json-c/COPYING":"74c1e6ca5eba76b54d0ad00d4815c8315c1b3bc45ff99de61d103dc92486284c"}}
     }
   ],
   "jobs": [

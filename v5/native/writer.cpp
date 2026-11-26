@@ -133,22 +133,6 @@ J standalone(const Path &stage, const Path &work, const J &fixture) {
                  {"client_sha256", digest(client)},
                  {"program_sha256", digest(exe)}});
 }
-J complete(const Path &bundle, const Path &out, const J &spec,
-           const J &expected) {
-  auto emitted = plan(bundle, spec, out);
-  check(emitted["providers"].size() == 1 &&
-            emitted["interpretation_errors"].empty() &&
-            emitted["clarifications"].empty(),
-        "writer interpretation did not bind");
-  auto p = emitted["providers"][0];
-  J ids = array();
-  for (const auto &step : p["plan"]["steps"])
-    ids.append(step["provider"]);
-  check(p["status"] == "complete" && p["uncovered"].empty() &&
-            p["typed_gaps"].empty() && ids == expected,
-        "unexpected emitted bindings " + dump(ids));
-  return p;
-}
 J integration(const Path &base, const Path &bundle, const J &binding,
               const Path &work, const J &fixture) {
   J requirement = object({{"outcome", "sort_lines"},
@@ -159,7 +143,7 @@ J integration(const Path &base, const Path &bundle, const J &binding,
   J result = object({{"spec", spec}, {"bindings", chain}});
   for (std::string label : {"baseline", "staged"}) {
     auto dir = work / label, bin = work / ".test-programs" / label;
-    auto p = complete(label == "baseline" ? base : bundle, dir, spec, chain);
+    auto p = complete_file_plan(label == "baseline" ? base : bundle, dir, spec, chain);
     build_emission(p, dir, bin, "g++-15");
     result[label] =
         object({{"program_sha256", digest(bin)},
@@ -191,7 +175,7 @@ J integration(const Path &base, const Path &bundle, const J &binding,
   auto alt = work / "sort-to-json",
        exe = work / ".test-programs" / "sort-to-json";
   const auto ids = array({"read_lines", "sort_lines", "write_texts"});
-  auto json = complete(
+  auto json = complete_file_plan(
       cut, alt, spec_for("text/plain", "application/json", requirement), ids);
   build_emission(json, alt, exe, "g++-15");
   fs::create_directory(alt / "case");

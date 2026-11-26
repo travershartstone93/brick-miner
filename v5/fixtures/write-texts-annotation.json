@@ -1,0 +1,26 @@
+{
+  "description":"Write an ordered string sequence to a local file as compact JSON using json-c, subject to the recorded input and destination conditions.",
+  "primary_family":"files_storage",
+  "interface":{"semantic_input":"Ordered UTF-8 strings, each byte length representable by the tested signed int ABI, and a writable destination path.","semantic_output":"A JSON array in the named file on successful completion within the tested domain.","parameters":{}},
+  "facets":{
+    "technical_hierarchy":["files_storage","file output","JSON serialization"],"application":["text utilities","data exchange"],"construction_role":["file writer"],
+    "abstraction":["synchronous output"],"implementation_form":["retained C++ header template, string specialization"],
+    "platform":["tested Linux x86_64 ext4"],"dependencies":["C++17 standard library","json-c 0.19"],
+    "resources":["Builds an array and its serialized representation before writing. Aggregate allocation and output-size limits are uncharacterized."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Successful JSON text requires valid UTF-8 records, a representable byte length for json_object_new_string_len, and a writable destination. These are input obligations. They do not guarantee available memory or successful output.","evidence":["source.json","original/headers/json_sequence.hpp","environment.json"]},
+    "refinements":{"status":"observed","detail":"On the tested ABI INT_MAX was 2147483647. The source converts each record size to int. No boundary-sized allocation was made. A one-byte malformed input was serialized with exit zero into an invalid UTF-8 file.","evidence":["client.cpp","standalone.json","integration.json","source.json"]},
+    "postconditions":{"status":"observed","detail":"On successful in-domain cases the destination contained the exact compact UTF-8 JSON array, without a final newline. Embedded NUL and control characters round-tripped.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Opening a destination directory or a file with a missing parent failed. Under an eight-byte file-size limit the writer reported failure and left a partial file, both when creating and when replacing the target.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Order, duplicates, empty strings and embedded NUL round-tripped in the tested arrays.","evidence":["standalone.json"]},
+    "formal_predicates":{"status":"unknown","detail":"No total correctness proof, automatic runtime guard or general discharge of input obligations.","evidence":[]},
+    "mathematical_properties":{"status":"unknown","detail":"No universal encoding or inverse property was established.","evidence":[]},
+    "state_protocol":{"status":"declared","detail":"Builds a json-c array, opens a local output stream, writes and closes it synchronously.","evidence":["original/headers/json_sequence.hpp"]},
+    "ownership":{"status":"declared","detail":"Borrows the destination and sequence. The array owns appended items; a smart pointer releases the array.","evidence":["original/headers/json_sequence.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent changes and concurrent writers were not tested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was not tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The pinned project's client writes a quote and an empty string and checks serialized output.","evidence":["source.json","upstream-example.cpp"]},
+    "specification_question":{"status":"not-applicable","detail":"The caller supplies the destination and output format. There are no extra row parameters.","evidence":[]}
+  }
+}
