@@ -1,0 +1,32 @@
+{
+  "description":"Append a one-based row number within each key partition and retain the input visit order.",
+  "primary_family":"algorithms",
+  "interface":{
+    "semantic_input":"Finite positioned rows with fields for the selected partition and ordering keys.",
+    "semantic_output":"Each original positioned row in encounter order with a decimal row number appended.",
+    "parameters":{"keys":"all for one partition, or a comma-separated list of zero-based key columns","order_by":"encounter, or comma-separated column:type:direction keys. Use a zero-based column or pos, type int or text, and direction asc or desc."}
+  },
+  "facets":{
+    "technical_hierarchy":["algorithms","rows","partition row numbering"],
+    "application":["ranked lists","tabular reports","per-group sequencing"],
+    "construction_role":["transform"],"abstraction":["positioned rows to annotated positioned rows"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB row-number operator"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_history","DuckDB 1.5.6-1","C++17"],
+    "resources":["Materializes input and query results. The table helper configures one DuckDB thread and a 64MB DuckDB memory setting. Peak process memory and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply valid partition and order selectors. Each selected column must exist in every input row. Integer order keys must parse as signed decimal int64 text.","evidence":["original/adapter.cpp","original/table.hpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The tested partitions each started at one. Every row retained its original fields, position and visit order and received the expected number under the requested ordering.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Compound partition keys preserved field boundaries. Tested keys with embedded NUL remained distinct. Numeric sort keys compared signed values across different spellings and int64 extrema.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"The surrounding file programs preserved the previous destination state on tested missing fields and invalid or overflowing sort operands. File I/O belongs to the surrounding providers.","evidence":["integration.json"]},
+    "invariants":{"status":"observed","detail":"Rows tied on requested keys received separate consecutive numbers in encounter order in the tested partitions. Duplicate original positions were preserved.","evidence":["standalone.json","integration.json"]},
+    "mathematical_properties":{"status":"unknown","detail":"A general ranking-equivalence proof and complexity bound remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached scope records bounded executable observations.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Tested invalid selectors failed before consuming input. Tested bad data failed during visitation before emitting rows. Repeated successful visitation consumed the source again.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The returned producer captures the source producer by value. The source producer must keep its own captures valid during visitation.","evidence":["original/table.hpp","client.cpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent construction and visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter issues a DuckDB row_number window query with encounter ordinal as the final order key and renders rows in encounter order. The retained row-number operator and its source unit are pinned.","evidence":["original/adapter.cpp","original/table.hpp","source.json","legacy-source.json"]},
+    "specification_question":{"status":"declared","detail":"Which fields define each partition, and in what order should rows receive numbers within it?","evidence":["spec.json"]}
+  }
+}

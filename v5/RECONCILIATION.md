@@ -1,6 +1,8 @@
 # V5 reconciliation and handoff
 
-The H1b worker qualified `order_records` at 12 supplied requests. Three ordinary TSV programs preserved original row positions and passed on both catalog arms. Exact removal blocked all three. The next pending binding is `rank_records` at 10. [Row ordering qualification](#h1b-stable-row-ordering)
+The H1b worker qualified `rank_records` at 10 supplied requests. All three ordinary TSV programs appended one-based row numbers while preserving source positions and visit order. Exact removal blocked all three. The next pending binding is `read_csv_records` at 10. [Partition row numbering](#h1b-partition-row-numbering)
+
+The H1b worker qualified `order_records` at 12 supplied requests. Three ordinary TSV programs preserved original row positions and passed on both catalog arms. Exact removal blocked all three. [Row ordering qualification](#h1b-stable-row-ordering)
 
 The H1b worker reconciled the bounded `write_texts` scope at 13 supplied requests and qualified `derive_integer` at 12. All four integer operations passed ordinary TSV execution and exact removal blocked delivery. [Writer and integer arithmetic qualification](#h1b-json-writer-and-checked-integer-derivation)
 
@@ -909,3 +911,22 @@ registry="$r/v5-order-records-XXLV4JLB/stage/sources.json"
 ```
 
 The primary and clean replay took 30.59 and 38.80 wall seconds. Both reproduced all 24 file pins and manifest SHA-256 `5847db06b312936ef9fa00b646845bc26c27c387cd5c82e2e61a3f45405e9151`, including contract `5dec46bc56712950749b8cec8b1b29c7604ff994a15e4150bf1452927210d10a` and domain `9645618fa6dcab0c5c6222371defa167a86e2b01689f2afffc97b0d71bb3e9a3`. Both runs kept seven program digests and released their scratch executables. The worker rejected an incorrect registry pin and a rehashed job that omitted the reviewed integer-derivation scope. The ordinary verifier rejected this detached schema. Integer derivation, field rendering and group aggregation reproduced their previous manifests. C++ language, cross-file and capability-gap checks passed. [Primary manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-order-records-XXLV4JLB/stage/manifest.json) · [Clean replay](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-order-records-XXAOr8BJ/stage/manifest.json) · [Rejection controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-order-records-controls-l1qaA9IK) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXWOyw2j/controls.json)
+
+## H1b partition row numbering
+
+The frozen usage ranking selected `rank_records` at 10 supplied requests after thirteen pinned predecessor scopes. The worker matched the C++ history adapter and table helper against Git, checked the retained `WindowRowNumberExecutor::EvaluateInternal` symbol and source against the historical extraction and signed Arch DuckDB debug inputs, and matched the linked library to the signed Arch binary. All source inputs were local. [Ranked selection](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXIbrCYj/stage/selection.json) · [Source evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXIbrCYj/stage/source.json)
+
+The standalone client verified nine successful cases, twelve failures and five alternate parameter choices in two fresh processes. Each partition started at one, numeric and text keys respected their requested directions, and exact ties received consecutive numbers in encounter order. The output retained every original field, position and visit order. The suite covered compound keys, embedded NUL in partition keys, signed positions, and the difference between global and per-group numbering. Invalid selectors failed before consuming rows. Tested missing, malformed and overflowing input fields failed before any row reached the visitor. [Frozen cases](fixtures/rank-records.json) · [Standalone results](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXIbrCYj/stage/standalone.json)
+
+Three programs composed the TSV reader, row numbering, field rendering and line writing. Each catalog arm passed 24 executions across the mixed compound-key, global numeric and compound-key encounter cases. Both arms produced identical binaries. Tested failures preserved an existing destination or left it absent. Removing only the exact ranking binding blocked all three plans. Qualification remains detached and establishes zero additional passing archived requests and zero production activations. [Ordinary and removal evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXIbrCYj/stage/integration.json)
+
+```sh
+make .build/v5-inventory
+r=/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner
+pkg="$r/v5-queue-XXH5XMi9/stage/package"
+registry="$r/v5-rank-records-XXIbrCYj/stage/sources.json"
+.build/v5-inventory --qualify-rank-records "$pkg" d15aee96917ff440f58f76270e3ca48575268dcfcf2bce951805c865aae3af63 \
+  --source-registry "$registry" e9fe43f2f20032003423bf895648b785cebcc9472b34b8ff9b791c4e6b923b28
+```
+
+The primary and clean replay took 34.37 and 90.56 wall seconds. Both reproduced all 24 files and manifest SHA-256 `1b76b0589900ef37c6813f450ea21ca895f47c23e197048671243df760f6569d`, including contract `0df0c0af4372b04b462036e1e1c91c44ca3a7e8710e94b9ceae6714de925614b` and domain `ce723b4265c95a0d620c69f48d06b6ab83f3fc073034800afbad191d88a9b165`. Both kept seven program digests and released scratch executables. The worker rejected a wrong registry pin and a rehashed job that omitted the reviewed ordering scope. The ordinary verifier rejected the detached schema. The previous ordering and group-measure manifests reproduced. C++ language, cross-file and capability-gap checks passed. [Primary manifest](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXIbrCYj/stage/manifest.json) · [Clean replay](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-XXRD8RcG/stage/manifest.json) · [Rejection controls](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-rank-records-controls-p6F4SJ2c) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXrw9cV4/controls.json)

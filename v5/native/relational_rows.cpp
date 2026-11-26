@@ -10,7 +10,6 @@
 namespace v5 {
 namespace {
 const Path runtime = "runtime/duckdb/lib";
-const Path history = "qualifications/shared/relational";
 const Path group_history = "qualifications/row-operations";
 
 struct RowScope {
@@ -18,11 +17,11 @@ struct RowScope {
   J arguments;
   std::string qualification, fingerprint;
   std::string observation_key{}, call_count_key{}, domain_kind{};
+  std::string source_family = "relational";
   bool report() const { return operation == "report_fields"; }
   bool groups() const { return operation == "group_rows"; }
   bool selects() const { return operation == "select_group_row"; }
   bool aggregates() const { return operation == "aggregate_groups"; }
-  bool annotates() const { return operation == "annotate_group_measure"; }
   bool group_transform() const { return selects() || aggregates(); }
   bool row_kernels() const { return groups() || group_transform(); }
   bool renders_rows() const { return !domain_kind.empty(); }
@@ -30,7 +29,7 @@ struct RowScope {
   Path origin() const {
     if (row_kernels())
       return group_history;
-    return annotates() ? Path("qualifications/shared/analytics") : history;
+    return Path("qualifications/shared") / source_family;
   }
   std::string kernel() const {
     if (row_kernels())
@@ -40,7 +39,7 @@ struct RowScope {
   std::string pkg_config() const {
     if (row_kernels())
       return "brick-row-kernels";
-    return annotates() ? "brick_shared_analytics" : "brick_shared_relational";
+    return "brick_shared_" + source_family;
   }
 };
 
@@ -223,8 +222,7 @@ J verify_materials(const Path &stage, const Path &bundle, const Path &base,
              source_pin == provenance["headers"][unit].asString()),
         "signed relational source member differs");
   retain_adapter(stage, bundle, origin, src, row, provenance,
-                 scope.annotates() ? "shared/analytics/adapter.cpp"
-                                   : "shared/relational/adapter.cpp");
+                 "shared/" + scope.source_family + "/adapter.cpp");
   const auto table = bytes(bundle / origin / "table.hpp");
   check(table ==
             run({"git", "-C", root, "show",
@@ -923,7 +921,7 @@ Path qualify_annotate_group_measure(const Path &package, const std::string &pin,
        array({"keys", "column", "measure", "value"}),
        "Detached count-equal, min, max and lower-median fixtures on the pinned DuckDB window adapter.",
        "Exact original fields and positions, encounter order, appended partition measures and failure outcomes.",
-       "annotations", "calls_per_annotation", "group_measure_annotation"});
+       "annotations", "calls_per_annotation", "group_measure_annotation", "analytics"});
 }
 
 Path qualify_derive_integer(const Path &package, const std::string &pin,
@@ -947,5 +945,17 @@ Path qualify_order_records(const Path &package, const std::string &pin,
        "Detached stable row ordering fixtures on the pinned DuckDB order adapter.",
        "Exact complete rows and original positions across encounter, signed numeric, text and mixed sort orders.",
        "orderings", "calls_per_ordering", "stable_row_ordering"});
+}
+
+Path qualify_rank_records(const Path &package, const std::string &pin,
+                          const Path &registry, const std::string &registry_pin) {
+  return qualify_rows(
+      package, pin, registry, registry_pin,
+      {"rank_records", "retained-rank-records", "rank-records", "rows",
+       "src/function/window/window_rownumber_function.cpp",
+       array({"keys", "order_by"}),
+       "Detached one-based partition row numbering on the pinned DuckDB window adapter.",
+       "Exact positions, original fields, encounter order and stable row numbers within the tested partitions.",
+       "rankings", "calls_per_ranking", "partition_row_numbering", "history"});
 }
 } // namespace v5
