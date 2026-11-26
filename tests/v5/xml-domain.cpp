@@ -1,6 +1,7 @@
 #include "../../src/experiments/original_adapter.hpp"
 #include "bundle.hpp"
 #include "pilot.hpp"
+#include "xml-restricted.hpp"
 #include <iostream>
 using namespace v5;
 
@@ -87,7 +88,10 @@ J probe(const Path &exe, const Path &dir, const J &c) {
 }
 } // namespace
 
-int main() try {
+int main(int argc, char **argv) try {
+  check(argc == 1 ||
+            (argc == 2 && std::string(argv[1]) == "--restricted-fixture"),
+        "usage: v5-xml-domain [--restricted-fixture]");
   const std::string key = "line_xml_escape", brick = "miner_line_xml_escape";
   const auto fixture = root / "tests/v5/xml-domain.json",
              guard_client = root / "tests/v5/xml-bound.cpp";
@@ -240,6 +244,11 @@ int main() try {
   fs::rename(work / ".receipt.json", work / "receipt.json");
   run({"sync", "-f", work / "receipt.json"});
   fs::remove_all(scratch);
+  if (argc == 2) {
+    xml_fixture::write_fixture(work, bundle, receipt);
+    auto manifest = work / "restricted-fixture/manifest.json";
+    std::cout << manifest.string() << " " << digest(manifest) << '\n';
+  }
   std::cout << (work / "receipt.json").string() << " "
             << digest(work / "receipt.json") << "\n";
   return 0;

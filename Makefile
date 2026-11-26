@@ -102,7 +102,7 @@ $(BUILD_DIR)/v5-gap-check: tests/v5/gap.cpp $(addprefix $(BUILD_DIR)/v5/,$(addsu
 check-v5-gap: $(BUILD_DIR)/v5-gap-review $(BUILD_DIR)/v5-gap-check
 	"$(BUILD_DIR)/v5-gap-check"
 
-$(BUILD_DIR)/v5-xml-domain: tests/v5/xml-domain.cpp src/experiments/original_adapter.hpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS))) | $(BUILD_DIR)/brick-mine
+$(BUILD_DIR)/v5-xml-domain: tests/v5/xml-domain.cpp tests/v5/xml-restricted.hpp src/experiments/original_adapter.hpp $(addprefix $(BUILD_DIR)/v5/,$(addsuffix .o,$(filter-out cli,$(V5_OBJECTS)))) $(addprefix $(BUILD_DIR)/host/,$(addsuffix .o,$(HOST_OBJECTS))) | $(BUILD_DIR)/brick-mine
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host -Iv5/native $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -lsqlite3 -o "$@"
 
 .PHONY: check-v5-xml-domain
