@@ -32,7 +32,8 @@ J source_pins(const Path &base, const Path &file) {
   if (file.empty())
     return {};
   auto p = load(file);
-  check(!p["package"].empty() && !p["archive_sha256"].asString().empty() &&
+  check(!p["package"].asString().empty() &&
+            !p["archive_sha256"].asString().empty() &&
             !p["license_files"].empty(),
         "missing package provenance");
   for (const auto &name : p["file_evidence"].getMemberNames())
@@ -50,7 +51,10 @@ J source_pins(const Path &base, const Path &file) {
 MiningResult mine_native(const Path &base, const Path &db, const Path &dest,
                          const J &units, const J &provenance,
                          const J &contracts) {
+  using Clock = std::chrono::steady_clock;
+  const auto start = Clock::now();
   auto records = scan(base, db, units.getMemberNames());
+  const auto scanned = Clock::now();
   J checks = object();
   for (auto &r : records) {
     if (r["status"] == "rejected")
@@ -65,6 +69,8 @@ MiningResult mine_native(const Path &base, const Path &db, const Path &dest,
     checks[id] = exercise(r, base, units, work, contracts);
   }
   write(dest / "inventory.json", records);
-  return {std::move(records), std::move(checks)};
+  return {std::move(records), std::move(checks),
+          std::chrono::duration<double>(scanned - start).count(),
+          std::chrono::duration<double>(Clock::now() - scanned).count()};
 }
 } // namespace miner

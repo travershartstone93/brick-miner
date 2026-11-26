@@ -11,11 +11,11 @@
   "client_sha256": "44aa677470d1dee4d39b03def74086fb7e78ccefd98fbae1d8b190a5b65ebd3d",
   "base_tree_sha256": "8fc92f33a5e1a44318ee2922c8dd710f5372541ba74ed379d715631c158f794c",
   "planner_files": {
-    "build/native/brick-provider-plan": "01f5acdabe65884546e7499ae38b44a73fc7120011b290b7a8d369ebafc8c22a",
+    "build/native/brick-provider-plan": "933fbdea46ef2ec74937098b2adcdb0033d6e0a5af2ecfd33328d0da03b63923",
     "build/native/unllm_logic_worker": "fd4fa25f543f9e425ae85ab6c442ecccc13564328f11527ddab97cbdde8de78c",
     "build/native/libunllm_native_logic.so": "889d6561dacccfe045d3fed0091c1505467281cd798d7e82ffc5b046bdab3df5",
+    "build/native/brick-index-formats": "cf0498c29a61481cb9f087f8fd4b90819731ba24b7848d16a34d73cb77e66a68",
     "experiments/boilerplate/integrated/cli-guarantees.json": "50256863cbf15ffb302802dfc359784a60d18576075b9963289ab832bb52d23e",
-    "experiments/boilerplate/integrated/provider-stage.sh": "98e0a297f9b9b795995df9b4a38746f659822a999a1aed299a1aef93f44424ed",
-    "experiments/boilerplate/component-trial/expanded/index-formats.py": "f66c55bc6f59b995f7099fa31b4ec593cfd0c6e4a35a92d04cab0b3e766fcc65"
+    "experiments/boilerplate/integrated/provider-stage.sh": "281ba2f169b3c528c4951e88551b46ba7d629d34e9162bae0d0b5433d9540a99"
   }
 }

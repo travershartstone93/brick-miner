@@ -50,3 +50,34 @@ $(BUILD_DIR)/library-pilot: src/experiments/discovery.cpp src/experiments/pilot.
 
 $(BUILD_DIR)/shared-review: shared/requests.cpp shared/consumer.cpp shared/review.cpp shared/qualification.hpp $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
 	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host $(HOST_FLAGS) $(filter %.cpp %.o,$^) $(HOST_LIBS) -larchive -lsqlite3 -o "$@"
+
+$(BUILD_DIR)/experiments/%.o: src/experiments/%.cpp
+	mkdir -p "$(dir $@)"
+	$(CXX) $(CXXFLAGS) -Isrc/host -fPIC -std=c++20 -Wall -Wextra $(HOST_FLAGS) -MMD -MP -c "$(abspath $<)" -o "$@"
+-include $(wildcard $(BUILD_DIR)/experiments/*.d)
+
+$(BUILD_DIR)/extract-row-kernels: row-ops/mined/source/extract.cpp $(BUILD_DIR)/experiments/duckdb.o $(BUILD_DIR)/host/common.o
+	$(CXX) $(CXXFLAGS) -std=c++20 -fPIC -Isrc/host -Isrc/experiments $(HOST_FLAGS) $^ $(HOST_LIBS) -o "$@"
+
+QUALIFICATION_OBJECTS = $(addprefix $(BUILD_DIR)/experiments/,$(addsuffix .o,discovery duckdb qualification)) $(BUILD_DIR)/host/common.o $(BUILD_DIR)/host/bundle.o
+$(BUILD_DIR)/row-pilot: row-ops/driver.cpp row-ops/qualification.cpp shared/requests.cpp $(QUALIFICATION_OBJECTS)
+	$(CXX) $(CXXFLAGS) -std=c++20 -fPIC -Isrc/host -Isrc/experiments $(HOST_FLAGS) $^ $(HOST_LIBS) -lpugixml -o "$@"
+
+$(BUILD_DIR)/shared/%.o: shared/%.cpp
+	mkdir -p "$(dir $@)"
+	$(CXX) $(CXXFLAGS) -fPIC -std=c++20 -Isrc/host -Isrc/experiments $(HOST_FLAGS) -MMD -MP -c "$(abspath $<)" -o "$@"
+-include $(wildcard $(BUILD_DIR)/shared/*.d)
+$(BUILD_DIR)/shared-pilot: $(addprefix $(BUILD_DIR)/shared/,$(addsuffix .o,start build qualify requests consumer)) $(QUALIFICATION_OBJECTS)
+	$(CXX) $^ $(HOST_LIBS) -larchive -lsqlite3 -lpugixml -o "$@"
+
+$(BUILD_DIR)/shared-ledger: $(addprefix $(BUILD_DIR)/shared/,$(addsuffix .o,ledger requests)) $(BUILD_DIR)/experiments/discovery.o $(BUILD_DIR)/host/bundle.o $(BUILD_DIR)/host/common.o
+	$(CXX) $^ $(HOST_LIBS) -lpugixml -o "$@"
+
+$(BUILD_DIR)/language-check: tests/language.cpp
+	mkdir -p "$(BUILD_DIR)"
+	$(CXX) $(CXXFLAGS) -std=c++20 -Wall -Wextra $< -o "$@"
+
+.PHONY: check-language check
+check-language: $(BUILD_DIR)/language-check
+	"$<" .
+check: check-language check-project

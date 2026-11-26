@@ -4,7 +4,7 @@ The [V5 Master Construction and Research Plan](../unllm-upgrade/docs/UNLLM_MASTE
 
 ## Implementation language
 
-Write first-party tools, tests, discovery jobs, research harnesses and ordinary entry points in C++. Keep source trees free of Python files, bytecode, shebangs and embedded Python invocations. Preserve original experiment receipts and historical source archives on the configured corpus volume.
+Write first-party tools, tests, discovery jobs, research harnesses and ordinary entry points in C++. Keep source trees free of Python files, bytecode, shebangs and embedded Python invocations. Run `make check-language` to audit the working tree, including ignored and extensionless files. Preserve original experiment receipts and historical source archives on the configured corpus volume.
 
 ## Ownership and storage
 

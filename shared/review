@@ -1,37 +1,5 @@
-#!/usr/bin/env python3
-"""Test compositions and reference bindings from a saved cumulative bundle."""
-import argparse
-from concurrent.futures import ThreadPoolExecutor
-import json
-from pathlib import Path
-import subprocess
-import shutil
-import tempfile
-import mine
-p=argparse.ArgumentParser()
-p.add_argument('pair',type=Path)
-p.add_argument('--build-snapshot',type=Path,help=argparse.SUPPRESS)
-p.add_argument('--through',choices=mine.BATCHES,default=mine.BATCHES[-1])
-p.add_argument('--arm',choices=['all','transfer','compare','baseline'],default='all')
-args=p.parse_args()
-subprocess.run(['mountpoint','-q','/run/media/whisper/UNLLM_CORPUS'],check=True)
-pair=args.pair.resolve()
-bundle=pair/'run-1'/args.through/'bundle'
-subprocess.run(['sha256sum','--strict','--quiet','-c','SHA256SUMS'],cwd=bundle,check=True)
-if json.loads((pair/'reproduction.json').read_bytes())[args.through]!=mine.digest(bundle/'SHA256SUMS'):
-    raise RuntimeError('bundle differs from repeat receipt')
-dest=Path(tempfile.mkdtemp(prefix='shared-review-',dir=mine.CACHE.parent))
-(dest/'review.json').write_text(json.dumps({'bundle':str(bundle),'manifest_sha256':mine.digest(bundle/'SHA256SUMS')},indent=2)+'\n')
-print(dest,flush=True)
-snapshot=dest/'miner-inputs'
-shutil.copytree(args.build_snapshot if args.build_snapshot else mine.HERE,snapshot,ignore=shutil.ignore_patterns('__pycache__','*.profraw'))
-def execute(name):
-    folder=dest/name;folder.mkdir()
-    opts=[pair,bundle] if name=='compare' else ([bundle] if name=='transfer' else [])
-    subprocess.run(['bwrap','--die-with-parent','--unshare-net','--ro-bind','/','/','--dev','/dev','--proc','/proc',
-                    '--ro-bind',snapshot,mine.HERE,'--ro-bind',bundle/'runtime/duckdb/lib','/usr/local/lib','--tmpfs','/tmp','--bind',folder,'/tmp/brick-trial',
-                    '--chdir','/tmp/brick-trial','python3','-B',mine.HERE/(name+'.py'),*opts],check=True)
-with ThreadPoolExecutor(max_workers=3) as pool:
-    list(pool.map(execute,('transfer','compare','baseline') if args.arm=='all' else (args.arm,)))
-if args.build_snapshot:
-    (pair/'review-location.json').write_text(json.dumps({'directory':str(dest),'manifest_sha256':mine.digest(bundle/'SHA256SUMS')},indent=2)+'\n')
+#!/bin/sh
+set -eu
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+make --no-print-directory -s -C "$root" .build/shared-review
+exec "$root/.build/shared-review" "$@"

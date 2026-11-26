@@ -110,7 +110,9 @@ int main(int argc, char **argv) try {
                                       ? J(sha(bytes(args.at("--contracts"))))
                                       : J()},
               {"inventory_sha256", sha(bytes(dest / "inventory.json"))},
-              {"seconds", object({{"total", seconds}})}});
+              {"seconds", object({{"scan_and_build", mined.scan_seconds},
+                                  {"client_checks", mined.client_seconds},
+                                  {"total", seconds}})}});
   write(dest / "report.json", report);
   std::cout << units.size() << " project units, " << mined.inventory.size()
             << " definitions, " << mined.checks.size() << " extracted. Report "

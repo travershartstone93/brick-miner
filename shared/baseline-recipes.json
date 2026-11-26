@@ -1,0 +1,88 @@
+{
+  "H041": [
+    [
+      [
+        "xml_text",
+        {
+          "xpath": "/feed/article[@state='live']/title"
+        }
+      ],
+      [
+        "unique_lines",
+        {}
+      ]
+    ]
+  ],
+  "H043": [
+    [
+      [
+        "xml_text",
+        {
+          "xpath": "/feed/article[@state='live'][title=../article[@state='draft']/title]/title"
+        }
+      ],
+      [
+        "unique_lines",
+        {}
+      ],
+      [
+        "sort_lines",
+        {}
+      ]
+    ]
+  ],
+  "H044": [
+    [
+      [
+        "xml_text",
+        {
+          "xpath": "/feed/article/@section"
+        }
+      ],
+      [
+        "reverse_order",
+        {}
+      ],
+      [
+        "unique_lines",
+        {}
+      ]
+    ]
+  ],
+  "H050": [
+    [
+      [
+        "xml_text",
+        {
+          "xpath": "/feed/article[@state='live']/@editor"
+        }
+      ],
+      [
+        "unique_lines",
+        {}
+      ],
+      [
+        "first_items",
+        {
+          "count": 3
+        }
+      ]
+    ]
+  ],
+  "H078": [
+    [
+      [
+        "reverse_order",
+        {}
+      ],
+      [
+        "unique_lines",
+        {}
+      ],
+      [
+        "reverse_order",
+        {}
+      ]
+    ]
+  ]
+}

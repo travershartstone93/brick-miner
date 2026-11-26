@@ -1,25 +1,5 @@
-#!/usr/bin/env python3
-import json
-from pathlib import Path
-import subprocess
-import tempfile
-
-here = Path(__file__).resolve().parent
-volume = Path("/run/media/whisper/UNLLM_CORPUS")
-subprocess.run(["mountpoint","-q",volume],check=True)
-root = volume/"unllm/experiments/brick-miner"
-root.mkdir(parents=True,exist_ok=True)
-pair = Path(tempfile.mkdtemp(prefix="row-ops-",dir=root))
-print(f"Saving to {pair}", flush=True)
-for i in (1,2):
-    work = pair/f"run-{i}"
-    work.mkdir()
-    subprocess.run(["bwrap","--die-with-parent","--ro-bind","/","/","--dev","/dev","--proc","/proc",
-                    "--tmpfs","/tmp","--bind",work,"/tmp/brick-trial","--chdir","/tmp/brick-trial",
-                    "--setenv","LC_ALL","C","--setenv","PYTHONHASHSEED","0",
-                    "python3","-B",here/"qualify.py"],check=True)
-first, second = [json.loads((pair/f"run-{i}/report.json").read_bytes()) for i in (1,2)]
-for key in ("manifest_sha256","programs","end_user_evaluator","sources"):
-    if first[key] != second[key]:
-        raise SystemExit(f"Clean repeat differs: {key}")
-print(f"Clean repeat matched. Candidate bundle: {pair}/run-1/bundle")
+#!/bin/sh
+set -eu
+root=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
+make --no-print-directory -s -C "$root" .build/row-pilot
+exec "$root/.build/row-pilot" authored "$@"

@@ -1,0 +1,75 @@
+# Shared needs in the 100 requests
+
+All 100 requests have an emitted program that passed the five original fixtures. The @CARDS@-card review bundle adds @COUNT@ verified bricks to the 104-card first batch. The interpretations, fields, source selectors, adapter code and acceptance examples were chosen manually. The miner and evaluator replay them without a model.
+
+[Cumulative bundle](@BUNDLE@) · [Both clean-build manifests](@PAIR@/reproduction.json) · [All 100 final programs and fixture results](@REVIEW@/transfer/transfer.json) · [Binding comparison](@COMPARISON@/compare/comparison.json)
+
+Final SHA-256 of `SHA256SUMS` is `@HASH@`. The base was the [first mined bundle](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/mined-rows-3ej65t4_/run-1/bundle) at `79dcd99668d0cec01d192d81e01ae1c7bb18222a4581013c937c5eea4ea07a91`. The published catalog resolved to `boilerplate-B32-FObAiR/release-101` with verification-manifest SHA-256 `8a681bd7b9a598873ce4c9cc46b9549ea4c9a1ed706e0b96b869dc88daeb2202`.
+
+@REPLAY@## Ready bricks
+
+The IDs show observed use in the passing compositions. Each native client checked every selected field and source position on the named datasets.
+
+| Brick and behavior | Upstream code | Independent datasets | Requests |
+|---|---|---|---|
+@BRICKS@
+
+## Already covered
+
+| Existing operation | Evidence and users |
+|---|---|
+@LEGACY@
+
+The published TSV and URI-list readers and the text and JSON writers also supply implicit planner conversions. The original opposite-side FIFO matcher returns integers. H011 needs decimal lines, so its tested composition uses row positions and the row-report writer. Single-column SQLite and XPath projections and independent ZIP sizes had narrower output contracts than the correlated readers. The candidate inventory credits the broader readers once each. [First batch and potential uses](row-ops/request-map.tsv)
+
+## End-user verification
+
+| Workflow | Requests | Passing fixtures |
+|---|---|---|
+| Inventory | H001–H010 | 50/50 |
+| Finance | H011–H020 | 50/50 |
+| Parcel dispatch | H021–H030 | 50/50 |
+| Telemetry | H031–H040 | 50/50 |
+| Publishing | H041–H050 | 50/50 |
+| ZIP archives | H051–H060 | 50/50 |
+| Project files | H061–H070 | 50/50 |
+| Bookmarks | H071–H080 | 50/50 |
+| Build scheduling | H081–H090 | 50/50 |
+| Room bookings | H091–H100 | 50/50 |
+
+@CHECKED@ fixed request specifications failed to plan against the preceding bundle, passed all five fixtures after staging, and failed to plan again when a required provider was removed. The final review re-emitted and tested all 100 from the saved bundle, including @ADDITIONAL@ additional compositions. For multi-output requests the harness planned each role and linked the emitted roles into one CLI, then compared all output files together. The five original fixture sets were ordinary, boundary, empty, transfer and sparse. [Batch specifications](shared/request-batches.json) · [Additional compositions](shared/request-recipes.json) · [Independent evaluator](../unllm-upgrade/experiments/boilerplate/stress/end-user-100/check.cpp)
+
+The 104-card first batch passed @FIXED_COUNT@/100 of these same fixed recipes (@FIXED@). The staged bundle passed 100/100, a gain of @GAIN@ under fixed interpretations. Separate first-batch recipes also passed for @ALTERNATES@. These alternative solutions prevent interpreting that gain as the number of previously impossible English requests. The main pipeline’s interpretation of English remains a separate user-run check. [Baseline plans and executions](@REVIEW@/baseline/baseline.json)
+
+## Source and build evidence
+
+| Batch | New bricks | Independent client cases | Full requests with ablation | Clean manifest SHA-256 |
+|---|---:|---:|---:|---|
+@BATCHES@
+
+The @CLIENTS@ client specifications also ran against the extracted build and a separate instrumented build. The submeter client used independent three-column readings and checked the original window evaluator. The two earlier balance examples share numeric samples with different grouping. The emitted CLIs checked ordinary, empty, invalid and missing inputs. Packaged-library comparisons passed @BINDINGS@ client checks after compiling the same authored adapters directly against the unmodified official libraries. The comparison measures the cost of locating and rebuilding native code with provenance. It reuses the adapter and fixture authoring effort. Authoring time was unmeasured. [Per-batch timings](@COMPARISON@/compare/comparison.json)
+
+The program verifies official Arch package signatures and PKGBUILD hashes offline. For DuckDB it locates named implementations, verifies their Clang definitions, recompiles the original translation units and retains the used source and headers. The C++ adapter supplies row layout, options and SQL expressions. The DuckDB build uses the packaged SDK and recorded compiler flags. For pugixml it recompiles the signed debug source. For SQLite, libarchive and uriparser it checks declared signatures and exported symbols and uses the signed shared libraries. Instrumentation checks executed native code or calls at the packaged C API boundary on each independent dataset. [DuckDB source pins](row-ops/mined/source/arch.json) · [Format-library pins](shared/inputs/pins.json) · [Native build flags](shared/build.cpp) · [Format-library build flags and dependencies](shared/build.cpp)
+
+The run examined 23 distinct candidate contracts. They use 19 distinct selected upstream entry points, with shared native implementations counted once per distinct caller-visible operation. A newer signed libarchive binary failed qualification because it required libcrypto.so.4, absent on this host. The released reader uses signed core/libarchive 3.8.9-1, whose dependencies resolved here. DuckDB initially rewrote a full-partition window into a join. That candidate failed source-execution verification. The qualified build disables the window-to-join rewrite and passes the coverage check.
+
+
+| Batch | Source discovery and build (s) | Brick qualification (s) | Request evaluation and staging (s) | Direct binding build (s) |
+|---|---:|---:|---:|---:|
+@TIMES@
+
+Times are wall-clock measurements on the shared host. The extracted build includes an instrumented variant and its provenance checks. The direct binding builds one uninstrumented adapter. Shared DuckDB archive validation and unpacking happen before the per-batch timer. Individual candidate authoring times were unmeasured.
+
+## Reproduction and scope
+
+Run from the brick-miner workspace with the corpus drive mounted. The command rebuilds twice, compares all eight manifests, then evaluates the final bundle and its baseline. The pair directory records the review location.
+
+```sh
+./mine-project shared
+```
+
+To repeat only the saved-bundle checks, run `./mine-project shared review PAIR`. To regenerate this ledger after the review, run `./shared/ledger PAIR REVIEW SHARED-NEEDS.md` with the two printed directories.
+
+To compile programs using the saved bundle, set `PKG_CONFIG_PATH` to its `runtime/duckdb/lib/pkgconfig` directory. Package files and source pins are stored on the corpus drive. The binaries were qualified on x86-64 Linux.
+
+No shared need remains open in these 100 fixture-backed interpretations. General discovery of semantics from an arbitrary C++ application, natural-language interpretation quality and throughput at the 5,000-brick target were outside this run. Exact file-payload grouping materializes the requested bytes, and graph closure can grow rapidly with dense input. Only the recorded fixture sizes were measured.

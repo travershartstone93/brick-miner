@@ -32,3 +32,21 @@ make .build/v5-miner
 ```
 
 The original source snapshot is preserved on the corpus disk at `cpp-migration-h1HS2F9w/before.tar.gz`, SHA-256 `89a0f27fb1abace789d9f4934172633b135c40aff1936a0b9eab487f59a2e3e5`. Historical hashes continue to identify their original bytes. The H1 pilot breadth, persistent acquisition scheduler, full migration ledger and H1a experiments remain open.
+
+### C++ migration evidence
+
+The original tree had Python implementations of mining commands, qualification and experiment replay, including extensionless launchers. The first V5 draft repeated that choice. These were first-party host tools. The C++ tool policy applies to their implementation, their tests and the ordinary paths that invoke them.
+
+The native host tools now call the sibling's `brick-index-formats`, `brick-provider-plan`, `brick-row-replay` and `brick-end-user-check`. The saved recipes are declarative inputs. The review replans, compiles and runs each program against the independent fixtures. `make check` runs the working-tree language audit and the cross-file regression. Original manifests in the evidence directories retain the old tool names and hashes.
+
+| Reproduction | Result |
+|---|---|
+| 100 supplied recipes, staged and baseline | Both receipt files matched the archived bytes, including all 500 staged fixture verdicts. The separate comparison ran 156 packaged-library client checks across eight batches. [Native review](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/shared-review-XXlixZPb/review.json) |
+| Replay of English interpretations | Ranking, affected request scores and the two staged manifests matched the original experiment. The most frequent typed gap was the TSV writer in eight requests. [Native replay](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-XXUArbPQ/report.json) |
+| Signed library and application pilots | Both clean pairs reproduced their staged manifests. The five provider headers matched their archived counterparts. The older library package files were mounted in a read-only build sandbox. [First pilot](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/trial-XXU0DDbq/run-1/report.json) · [Second pilot](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/batch2-XXvb2P0H/run-1/report.json) |
+| Authored row operations | Both clean runs agreed. The eight program receipts, four independent benchmark clients, provenance and coverage matched the original report. The three component origin labels now record authored adapters as specified by the later frozen harness. [Native row report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/row-ops-XXJ1tvZr/run-1/report.json) |
+| Rows mined from DuckDB | Two builds from signed inputs produced identical payload manifests, including the native extraction recipe. The saved-bundle client resolved both shared libraries from that bundle, and the differential oracle retained its original hash. [Native extraction and program results](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/mined-rows-XXqAfqM8/run-1/report.json) |
+| Shared CSV and JSON readers | Both signed-source builds agreed, with matching case receipts against the historical run. The host compiler changed from Clang 23.1.1 to 23.1.5. New binaries and their manifests have new hashes. [Reader repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/shared-needs-XXJLwnc4/reproduction.json) |
+| Shared format libraries | Two fresh runs resumed from verified predecessor manifests. Both qualified five providers and produced matching staged manifests. All 26 stage-request receipts matched their archived bytes. [Format-library repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/shared-needs-XXUWgUjY/reproduction.json) |
+
+The full 100-request review used the saved final generation. Its result establishes parity on the supplied recipes. The per-request English replay records the separate interpretation and construction failures. [English-construction ledger](../row-ops/english-construction.tsv)

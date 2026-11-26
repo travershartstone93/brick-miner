@@ -1,0 +1,102 @@
+{
+  "descriptions": {
+    "read_csv_records": "Read quoted CSV in file order, with caller-chosen header handling.",
+    "read_json_records": "Read a list of objects, projecting caller-selected scalar fields in order.",
+    "filter_records": "Keep complete rows after a typed field-to-value or field-to-field comparison.",
+    "order_records": "Stable multi-column ordering of complete rows, with numeric/text keys and per-key directions.",
+    "report_fields": "Render chosen fields or original positions as tab-separated strings.",
+    "derive_integer": "Append checked integer arithmetic using a chosen field or constant.",
+    "previous_field": "Carry the previous value within a key tuple, including an explicit presence flag.",
+    "running_total": "Append an inclusive checked signed total, globally or per key.",
+    "rank_records": "Number rows within key tuples under stable caller ordering.",
+    "reachable_nodes": "Return distinct forward or reverse reachable nodes from one seed, excluding the seed.",
+    "sqlite_records": "Read multiple SQLite fields together in an explicit order from a read-only database.",
+    "xml_records": "Read correlated XML elements and attributes with caller-chosen XPath selectors.",
+    "zip_file_records": "Read regular ZIP entries in archive order, keeping selected metadata or exact payload bytes together.",
+    "tree_file_records": "Read regular files below a root with metadata or exact payload bytes, ordered by path. Skip symlinks.",
+    "uri_records": "Preserve original URI-list entries and project parsed scheme, host or fragment information.",
+    "annotate_group_measure": "Attach a group minimum, maximum, lower median or conditional count to every original row.",
+    "match_intervals": "Find overlapping, touching or strictly containing interval pairs within each key.",
+    "filter_membership": "Keep or exclude rows by membership in a literal set or the values of another column.",
+    "first_matching_field": "Carry the first matching field from a whole group or from rows strictly preceding the current one.",
+    "interval_endpoints": "Expand intervals into ordered signed endpoint events, processing departures before arrivals at the same minute.",
+    "conditional_field": "Append a value chosen by a typed comparison. Either branch can take a field or a literal.",
+    "field_text_length": "Append the length of a UTF-8 field in Unicode code points.",
+    "graph_witnesses": "Emit source, first hop, destination and a direct-edge flag for fixed-length walks or positive transitive closure."
+  },
+  "sources": {
+    "read_csv_records": "DuckDB, StringValueScanner::Flush",
+    "read_json_records": "DuckDB’s vendored yyjson, yyjson_read_file",
+    "filter_records": "DuckDB, PhysicalFilter::ExecuteInternal",
+    "order_records": "DuckDB, PhysicalOrder::Sink",
+    "report_fields": "DuckDB, ConcatWSFunction",
+    "derive_integer": "DuckDB, PhysicalProjection::Execute",
+    "previous_field": "DuckDB, WindowLeadLagExecutor::EvaluateInternal",
+    "running_total": "DuckDB, WindowAggregateExecutor::EvaluateInternal",
+    "rank_records": "DuckDB, WindowRowNumberExecutor::EvaluateInternal",
+    "reachable_nodes": "DuckDB, PhysicalRecursiveCTE::GetDataInternal",
+    "sqlite_records": "Arch SQLite, sqlite3_step",
+    "xml_records": "Arch pugixml, XPath evaluator",
+    "zip_file_records": "Arch libarchive, ZIP reader",
+    "tree_file_records": "Arch libarchive, physical disk traversal",
+    "uri_records": "Arch uriparser, URI parser, plus catalog GLib list reader",
+    "annotate_group_measure": "DuckDB, WindowAggregateExecutor::EvaluateInternal",
+    "match_intervals": "DuckDB, PhysicalHashJoin::ExecuteInternal",
+    "filter_membership": "DuckDB, PhysicalHashJoin::ExecuteInternal",
+    "first_matching_field": "DuckDB, WindowFirstValueExecutor::EvaluateInternal",
+    "interval_endpoints": "DuckDB, PhysicalUnnest::ExecuteInternal",
+    "conditional_field": "DuckDB, ExpressionExecutor::FillSwitch",
+    "field_text_length": "DuckDB, LengthFun::GetFunctions",
+    "graph_witnesses": "DuckDB, PhysicalRecursiveCTE::GetDataInternal"
+  },
+  "legacy": [
+    [
+      "group_rows",
+      "First batch. Partition complete rows on caller-selected composite keys"
+    ],
+    [
+      "aggregate_groups",
+      "First batch. Count, distinct-count or total per group"
+    ],
+    [
+      "select_group_row",
+      "First batch. Pick first/last under stable caller ordering"
+    ],
+    [
+      "ordered_column",
+      "Published catalog. Project one column without reordering"
+    ],
+    [
+      "threshold_entries",
+      "Published catalog. Trigger and rearm per key"
+    ],
+    [
+      "sort_lines",
+      "Published catalog. Sort strings in byte order"
+    ],
+    [
+      "unique_lines",
+      "Published catalog. Keep first exact occurrence"
+    ],
+    [
+      "reverse_order",
+      "Published catalog. Reverse the sequence"
+    ],
+    [
+      "adjacent_unique",
+      "Published catalog. Collapse adjacent repeats"
+    ],
+    [
+      "first_items",
+      "Published catalog. Keep a leading prefix"
+    ],
+    [
+      "archive_files",
+      "Published catalog. Read regular ZIP member paths"
+    ],
+    [
+      "basenames",
+      "Published catalog. Project final filenames"
+    ]
+  ]
+}
