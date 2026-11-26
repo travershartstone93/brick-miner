@@ -22,6 +22,30 @@ J sequence_requirements(const J &cases, const std::string &key) {
                  {"cases", files}});
 }
 namespace {
+J filter_controls(const J &cases, const J &observed) {
+  check(observed.size() == cases.size(), "missing filter observations");
+  J rejected = object();
+  for (std::string rule : {"drop_ascii_blank", "drop_empty_c_string"}) {
+    J witnesses = array();
+    for (Json::ArrayIndex i = 0; i < cases.size(); ++i) {
+      J alternative = array();
+      for (const auto &record : cases[i]["records"]) {
+        auto bytes = record.asString();
+        bool keep = rule == "drop_ascii_blank"
+                        ? bytes.find_first_not_of(" \t\r\n\f\v") != bytes.npos
+                        : !bytes.empty() && bytes.front() != '\0';
+        if (keep)
+          alternative.append(record);
+      }
+      if (alternative != observed[i])
+        witnesses.append(
+            object({{"case_index", i}, {"alternative_output", alternative}}));
+    }
+    check(!witnesses.empty(), "missing filter witness for " + rule);
+    rejected[rule] = witnesses;
+  }
+  return rejected;
+}
 J differences(const J &a, const J &b) {
   check(a.size() == 121 && b.size() == 121, "incomplete finite comparison");
   J first;
@@ -111,6 +135,8 @@ void qualify_sequences(const Path &extracted, const Path &out, J &report) {
                                    {"context", profile["context_hash"]},
                                    {"binary_sha256", lineage["binary"]},
                                    {"matched_probes", archive.size()}})}});
+    if (key == "nonempty_lines")
+      report[key]["filter_controls"] = filter_controls(cases, fixed);
   }
   for (const auto &key : sequence_keys)
     for (const auto &rival : sequence_keys)
@@ -146,12 +172,22 @@ void check_sequence_evidence(const Path &pack, const J &c, const J &binding) {
         "wrong retained sequence qualification context");
   for (unsigned i = 0; i < cases.size(); ++i)
     check(r["fixed"][i] == cases[i][key], "stale fixed sequence result");
-  for (const auto &rival : sequence_keys)
-    if (key != rival)
-      check(dump(r["substitutions"][rival]) ==
-                dump(differences(r["bounded_outputs"],
-                                 reports[rival]["bounded_outputs"])),
-            "sequence substitution witness mismatch");
+  // Each immutable package pins the oracle columns for its own comparison
+  // cohort.
+  auto cohort = cases[0].getMemberNames();
+  std::erase(cohort, "records");
+  check(std::erase(cohort, key) == 1 &&
+            r["substitutions"].getMemberNames() == cohort,
+        "wrong sequence substitution cohort");
+  for (const auto &rival : cohort)
+    check(dump(r["substitutions"][rival]) ==
+              dump(differences(r["bounded_outputs"],
+                               reports[rival]["bounded_outputs"])),
+          "sequence substitution witness mismatch");
+  if (key == "nonempty_lines")
+    check(dump(r["filter_controls"]) ==
+              dump(filter_controls(cases, r["fixed"])),
+          "sequence filter evidence mismatch");
   check(c["claims"]["mathematical_properties"]["status"] == "observed" &&
             c["claims"]["formal_predicates"]["status"] == "unknown",
         "unsupported finite verification strength");

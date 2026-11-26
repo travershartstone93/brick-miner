@@ -1,8 +1,9 @@
 [
-  {"records": [], "sort_lines": [], "reverse_order": [], "unique_lines": [], "adjacent_unique": []},
-  {"records": [""], "sort_lines": [""], "reverse_order": [""], "unique_lines": [""], "adjacent_unique": [""]},
-  {"records": ["z","b","z","z","a","b"], "sort_lines": ["a","b","b","z","z","z"], "reverse_order": ["b","a","z","z","b","z"], "unique_lines": ["z","b","a"], "adjacent_unique": ["z","b","z","a","b"]},
-  {"records": ["a","","","a"], "sort_lines": ["","","a","a"], "reverse_order": ["a","","","a"], "unique_lines": ["a",""], "adjacent_unique": ["a","","a"]},
-  {"records": ["b","a\u0000","a","b"], "sort_lines": ["a","a\u0000","b","b"], "reverse_order": ["b","a","a\u0000","b"], "unique_lines": ["b","a\u0000","a"], "adjacent_unique": ["b","a\u0000","a","b"]},
-  {"records": ["é","b","é"], "sort_lines": ["b","é","é"], "reverse_order": ["é","b","é"], "unique_lines": ["é","b"], "adjacent_unique": ["é","b","é"]}
+  {"records": [], "sort_lines": [], "reverse_order": [], "unique_lines": [], "adjacent_unique": [], "nonempty_lines": []},
+  {"records": [""], "sort_lines": [""], "reverse_order": [""], "unique_lines": [""], "adjacent_unique": [""], "nonempty_lines": []},
+  {"records": ["z","b","z","z","a","b"], "sort_lines": ["a","b","b","z","z","z"], "reverse_order": ["b","a","z","z","b","z"], "unique_lines": ["z","b","a"], "adjacent_unique": ["z","b","z","a","b"], "nonempty_lines": ["z","b","z","z","a","b"]},
+  {"records": ["a","","","a"], "sort_lines": ["","","a","a"], "reverse_order": ["a","","","a"], "unique_lines": ["a",""], "adjacent_unique": ["a","","a"], "nonempty_lines": ["a","a"]},
+  {"records": ["b","a\u0000","a","b"], "sort_lines": ["a","a\u0000","b","b"], "reverse_order": ["b","a","a\u0000","b"], "unique_lines": ["b","a\u0000","a"], "adjacent_unique": ["b","a\u0000","a","b"], "nonempty_lines": ["b","a\u0000","a","b"]},
+  {"records": ["é","b","é"], "sort_lines": ["b","é","é"], "reverse_order": ["é","b","é"], "unique_lines": ["é","b"], "adjacent_unique": ["é","b","é"], "nonempty_lines": ["é","b","é"]},
+  {"records": ["\t","\u0000"," ",""," ","","\r"," \t "], "sort_lines": ["","","\u0000","\t","\r"," "," "," \t "], "reverse_order": [" \t ","\r",""," ",""," ","\u0000","\t"], "unique_lines": ["\t","\u0000"," ","","\r"," \t "], "adjacent_unique": ["\t","\u0000"," ",""," ","","\r"," \t "], "nonempty_lines": ["\t","\u0000"," "," ","\r"," \t "]}
 ]

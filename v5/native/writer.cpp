@@ -282,12 +282,23 @@ Path qualify_writer(const Path &package, const std::string &pin) {
   check(pos != raw.end() && !pos->isMember("effect") &&
             (*pos)["args"] == array(),
         "unexpected writer source binding");
-  auto src = sources()[source_id];
-  check(src["approval"] == "local-pilot" &&
-            digest(src["archive"].asString()) == src["sha256"].asString() &&
-            digest(v5_root() / "sources.json") ==
-                digest(package / "sources.json"),
-        "unexpected source registry or archive");
+  auto approved = sources()[source_id];
+  const auto registry = load(package / "sources.json");
+  J src;
+  for (const auto &entry : registry["sources"])
+    if (entry["id"] == source_id) {
+      check(src.isNull(), "duplicate retained source in parent registry");
+      src = entry;
+    }
+  check(approved["approval"] == "local-pilot" &&
+            src["approval"] == "local-pilot",
+        "writer source lacks a scoped approval");
+  for (auto field : {"method", "upstream", "revision", "archive", "sha256",
+                     "members", "rights"})
+    check(src[field] == approved[field],
+          "writer source changed: " + std::string(field));
+  check(digest(src["archive"].asString()) == src["sha256"].asString(),
+        "writer archive pin mismatch");
   auto work = fresh_run("v5-writer"), stage = work / ".stage",
        scratch = work / ".test-programs";
   fs::create_directory(scratch);

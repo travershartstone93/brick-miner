@@ -421,7 +421,8 @@ void project(const Path &package, const Path &scratch, const J &contracts,
                                           {"ascending", "sort_lines"},
                                           {"outer", "reverse_order"},
                                           {"occurrence", "unique_lines"},
-                                          {"maximal", "adjacent_unique"}}) {
+                                          {"maximal", "adjacent_unique"},
+                                          {"whitespace", "nonempty_lines"}}) {
     auto id = std::to_string(std::stoll(run({reader, pack / "tantivy", q})));
     check(search.query("SELECT title FROM docs WHERE doc_id=?", {id}) ==
               std::vector<Strings>{{want}},

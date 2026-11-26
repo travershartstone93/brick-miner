@@ -676,7 +676,8 @@
         "bricks::sorted",
         "bricks::reversed",
         "bricks::unique",
-        "bricks::consecutive"
+        "bricks::consecutive",
+        "bricks::nonempty"
       ],
       "families": [
         "algorithms"

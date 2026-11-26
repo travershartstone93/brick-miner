@@ -1,4 +1,5 @@
 #include "queue.hpp"
+#include <algorithm>
 #include <chrono>
 #include <csignal>
 #include <fcntl.h>
@@ -112,16 +113,26 @@ J semantic_controls(const Path &pack, Database &db) {
                 .empty() &&
             match({"record_byte_length", "unknown", "per_input_item"}).empty(),
         "crossed semantic constraints passed");
-  check(db.query("SELECT provider FROM semantic_port WHERE direction='output' "
-                 "AND unit_status='unknown' AND unit IS NULL ORDER BY provider")
-                    .size() == 7 &&
+  auto canonical = load(pack / "semantic-ports.json");
+  std::vector<Strings> unknown;
+  for (const auto &port : canonical)
+    if (port["direction"] == "output" && port["unit_status"] == "unknown") {
+      check(port["unit"].isNull(), "unknown canonical output carries a unit");
+      unknown.push_back(
+          {port["provider"].asString(), port["binding"].asString()});
+    }
+  std::sort(unknown.begin(), unknown.end());
+  check(std::find(unknown.begin(), unknown.end(),
+                  Strings{"x14", "nonempty_lines"}) != unknown.end() &&
+            db.query("SELECT provider,binding FROM semantic_port WHERE "
+                     "direction='output' AND unit_status='unknown' AND unit "
+                     "IS NULL ORDER BY provider,binding") == unknown &&
             db.query("SELECT provider FROM semantic_port WHERE "
                      "direction='input' AND unit_status='not-applicable' AND "
                      "unit IS NULL ORDER BY provider") ==
                 std::vector<Strings>{{"miner_line_xxh32"}, {"x19"}, {"x20"}},
         "unknown, inapplicable and explicit dimensionless were conflated");
-  auto canonical = load(pack / "semantic-ports.json"),
-       contracts = load(pack / "contracts.json"),
+  auto contracts = load(pack / "contracts.json"),
        bindings = load(pack / "bundle/providers/contracts.json")["providers"];
   auto reject = [&](J changed) {
     bool rejected = false;
@@ -249,7 +260,7 @@ int main() try {
             array({"number_option_prefix", "reverse_record_bytes",
                    "threshold_entries", "byte_lengths", "item_count",
                    "line_xxh32", "sort_lines", "reverse_order", "unique_lines",
-                   "adjacent_unique", "u84"}),
+                   "adjacent_unique", "nonempty_lines", "u84"}),
         "unexpected distinct qualifications");
   Json::UInt64 released = 0;
   unsigned programs = 0;

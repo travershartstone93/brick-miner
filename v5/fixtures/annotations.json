@@ -883,5 +883,30 @@
       "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this string specialization to bricks::consecutive.","evidence":["evidence/measure-source.json"]},
       "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
     }
+  },
+  {
+    "id": "nonempty_lines",
+    "source_id": "retained-text-measures",
+    "binding": {"brick":"x14","from":"strings","to":"strings"},
+    "probe_suite": "sequence-probes.json",
+    "semantic_input": "ordered string records",
+    "semantic_output": "Keep ordered records of positive byte length, preserving whitespace, NUL bytes and duplicates.",
+    "primary_family": "algorithms",
+    "facets": {"technical_hierarchy":["algorithms","sequence_transform"],"application":["text utilities","report generation"],"construction_role":["transform"],"abstraction":["ordered record sequence"],"implementation_form":["retained C++ source"],"platform":["tested Linux x86_64"],"resources":["in-place compaction of a by-value vector; peak resources unmeasured"]},
+    "claims": {
+      "preconditions": {"status":"declared","detail":"An in-memory vector of strings is available to the callable.","evidence":["evidence/measure-source.json"]},
+      "postconditions": {"status":"observed","detail":"Keep ordered records of positive byte length, preserving whitespace, NUL bytes and duplicates.","evidence":["evidence/standalone.json#nonempty_lines","evidence/integration.json#nonempty_lines"]},
+      "effects": {"status":"observed","detail":"Produced an output sequence for each input sequence on the fixed and bounded probes.","evidence":["evidence/standalone.json#nonempty_lines"]},
+      "invariants": {"status":"observed","detail":"Only zero-length records were removed on the bounded and fixed probes. Whitespace-only and NUL-only records survived in encounter order.","evidence":["evidence/standalone.json#nonempty_lines"]},
+      "mathematical_properties": {"status":"observed","detail":"Idempotence on the finite test set. Domain: sequences of up to four elements over empty string, a and z.","evidence":["evidence/standalone.json#nonempty_lines"]},
+      "refinements": {"status":"unknown","detail":"No additional input or output refinement qualified.","evidence":[]},
+      "formal_predicates": {"status":"unknown","detail":"No formal proof for arbitrary sequences.","evidence":[]},
+      "state_protocol": {"status":"not-applicable","detail":"A single synchronous collection operation has no separate lifecycle.","evidence":[]},
+      "ownership": {"status":"declared","detail":"Input and result by value for this string-vector callable.","evidence":["evidence/measure-source.json"]},
+      "concurrency": {"status":"unknown","detail":"Concurrent execution was not qualified.","evidence":[]},
+      "thread_affinity": {"status":"unknown","detail":"No affinity claim was tested.","evidence":[]},
+      "upstream_usage": {"status":"declared","detail":"The pinned operation table maps this binding to bricks::nonempty.","evidence":["evidence/measure-source.json"]},
+      "specification_question": {"status":"not-applicable","detail":"No callable parameters for the selected binding.","evidence":[]}
+    }
   }
 ]

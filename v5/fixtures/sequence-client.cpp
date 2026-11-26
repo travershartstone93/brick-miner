@@ -14,6 +14,8 @@ Strings transform_records(const std::string &id, const Strings &records) {
     return bricks::unique(records);
   if (id == "adjacent_unique")
     return bricks::consecutive(records);
+  if (id == "nonempty_lines")
+    return bricks::nonempty(records);
   throw std::invalid_argument("unknown binding");
 }
 Json::Value array(const Strings &v) {
@@ -28,6 +30,13 @@ bool correct(const std::string &id, const Strings &in, const Strings &out) {
            std::is_permutation(in.begin(), in.end(), out.begin(), out.end());
   if (id == "reverse_order")
     return std::equal(out.begin(), out.end(), in.rbegin(), in.rend());
+  if (id == "nonempty_lines") {
+    Strings expected;
+    for (const auto &record : in)
+      if (record.size() != 0)
+        expected.push_back(record);
+    return out == expected;
+  }
   Strings expected;
   for (auto it = in.begin(); it != in.end(); ++it) {
     bool keep = id == "unique_lines"
