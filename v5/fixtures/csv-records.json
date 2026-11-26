@@ -1,0 +1,46 @@
+{
+  "binding":{"component_id":"miner_read_csv_records","binding_id":"read_csv_records","from":"in:text/csv","to":"rows"},
+  "parameters":{"header":["absent","present"]},
+  "inputs":{
+    "quoted":"name,note,code\r\nZoë,\"quoted, \r\nline\",+005\r\n東京,\"said \"\"yes\"\"\",\r\n",
+    "header-only":"name,note,code\r\n",
+    "empty":"",
+    "ragged":"a,b,c\r\n1,2,3\r\n4,5\r\n",
+    "open-quote":"a,b,c\r\n1,\"unterminated,3\r\n",
+    "invalid-utf8":{"hex":"612c622c630d0a312c322c330d0a342c802c360d0a"},
+    "nul":"a,b,c\r\n1,ab\u0000cd,3\r\n",
+    "blank":"a,b,c\r\n\r\n1,,3\r\n",
+    "multiline-header":"\"heading\r\nline\",b,c\r\n1,2,3\r\n",
+    "duplicate-records":"a,b,c\nsame,\"\",001\nsame,\"\",001\n",
+    "missing":null
+  },
+  "cases":{
+    "absent":[
+      {"name":"quoted","rows":[["name","note","code"],["Zoë","quoted, \r\nline","+005"],["東京","said \"yes\"",""]],"output":"1\tname\tnote\tcode\n2\tZoë\tquoted, \r\nline\t+005\n3\t東京\tsaid \"yes\"\t\n"},
+      {"name":"header-only","rows":[["name","note","code"]],"output":"1\tname\tnote\tcode\n"},
+      {"name":"empty","rows":[],"output":""},
+      {"name":"nul","rows":[["a","b","c"],["1","ab\u0000cd","3"]],"output":"1\ta\tb\tc\n2\t1\tab\u0000cd\t3\n"},
+      {"name":"blank","rows":[["a","b","c"],["1","","3"]],"output":"1\ta\tb\tc\n2\t1\t\t3\n"},
+      {"name":"multiline-header","rows":[["heading\r\nline","b","c"],["1","2","3"]],"output":"1\theading\r\nline\tb\tc\n2\t1\t2\t3\n"},
+      {"name":"duplicate-records","rows":[["a","b","c"],["same","","001"],["same","","001"]],"output":"1\ta\tb\tc\n2\tsame\t\t001\n3\tsame\t\t001\n"},
+      {"name":"ragged","error":"visit"},
+      {"name":"open-quote","error":"visit"},
+      {"name":"invalid-utf8","error":"visit"},
+      {"name":"missing","error":"visit"}
+    ],
+    "present":[
+      {"name":"quoted","rows":[["Zoë","quoted, \r\nline","+005"],["東京","said \"yes\"",""]],"output":"1\tZoë\tquoted, \r\nline\t+005\n2\t東京\tsaid \"yes\"\t\n"},
+      {"name":"header-only","rows":[],"output":""},
+      {"name":"empty","rows":[],"output":""},
+      {"name":"nul","rows":[["1","ab\u0000cd","3"]],"output":"1\t1\tab\u0000cd\t3\n"},
+      {"name":"blank","rows":[["1","","3"]],"output":"1\t1\t\t3\n"},
+      {"name":"multiline-header","rows":[["1","2","3"]],"output":"1\t1\t2\t3\n"},
+      {"name":"duplicate-records","rows":[["same","","001"],["same","","001"]],"output":"1\tsame\t\t001\n2\tsame\t\t001\n"},
+      {"name":"ragged","error":"visit"},
+      {"name":"open-quote","error":"visit"},
+      {"name":"invalid-utf8","error":"visit"},
+      {"name":"missing","error":"visit"}
+    ]
+  },
+  "invalid_header":[{"name":"quoted","error":"select","exception":"invalid_argument"}]
+}

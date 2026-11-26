@@ -1,0 +1,32 @@
+{
+  "description":"Read local comma-separated data as positioned text rows with explicit header handling.",
+  "primary_family":"document_geographic",
+  "interface":{
+    "semantic_input":"A readable local CSV file in the tested comma dialect and the header argument absent or present.",
+    "semantic_output":"Text fields in file order, with one-based data row positions after the selected header handling.",
+    "parameters":{"header":"absent retains the first parsed record. present skips the first parsed record."}
+  },
+  "facets":{
+    "technical_hierarchy":["document_geographic","CSV record reading"],
+    "application":["tabular imports","structured record reports"],
+    "construction_role":["reader"],"abstraction":["local file to positioned row visitor"],
+    "implementation_form":["retained C++ adapter with extracted DuckDB CSV scanner"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_readers","DuckDB 1.5.6-1","C++17","writable temporary directory and symlink support"],
+    "resources":["Uses a temporary directory, a symlink to the input and a materialized query result. The retained DuckDB settings include one thread and a 64MB database memory setting. Process memory, input size ceilings and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply absent or present and a readable local CSV path. The retained adapter uses comma delimiters and double-quote escapes, and requires a writable temporary directory.","evidence":["original/adapter.cpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"Both modes preserved textual fields including quoted commas, doubled quotes, embedded CRLF and NUL, UTF-8 and the original spelling of numeric-looking fields. Row positions started at one after header handling.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"The tested standalone blank line was skipped, empty fields produced empty strings, and present skipped a full quoted multiline header. Tested ragged, unterminated and invalid UTF-8 inputs failed.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Input fixture hashes were preserved. The surrounding emitted programs preserved an existing destination or left an absent one absent on tested failures.","evidence":["standalone.json","integration.json"]},
+    "invariants":{"status":"observed","detail":"Duplicate parsed records retained separate positions. Repeating a successful visit to the same stable fixture reproduced all fields and positions.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"General scanner equivalence and complexity bounds remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached selector records the two exact reviewed argument values. Whole-input validity has no formal proof here.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"An unsupported header selector failed during producer creation. The tested missing and malformed files failed at visitation before delivering a row.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures the path and selected mode by value. Row fields are borrowed during the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent visits and input changes during visitation were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"Thread affinity was untested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter invokes DuckDB read_csv with fixed delimiter and quoting and keeps parsed fields as text. The signed scanner source and retained runtime are pinned.","evidence":["original/adapter.cpp","source.json"]},
+    "specification_question":{"status":"declared","detail":"Does the first parsed CSV record contain field names or data?","evidence":["spec.json"]}
+  }
+}

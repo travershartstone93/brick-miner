@@ -329,6 +329,7 @@ int main(int argc, char **argv) try {
       {"--qualify-zip-records", qualify_zip_records},
       {"--qualify-tree-records", qualify_tree_records},
       {"--qualify-json-records", qualify_json_records},
+      {"--qualify-csv-records", qualify_csv_records},
       {"--qualify-filter-records", qualify_filter_records},
       {"--qualify-report-fields", qualify_report_fields},
       {"--qualify-group-rows", qualify_group_rows},
@@ -362,7 +363,8 @@ int main(int argc, char **argv) try {
       "--binding-identity-fixture, --qualify-writer, --qualify-tsv-writer, "
       "--qualify-recursive-files "
       "--qualify-parent-paths, --qualify-archive-names, --qualify-zip-records, "
-      "--qualify-tree-records, --qualify-json-records, --qualify-filter-extension, "
+      "--qualify-tree-records, --qualify-json-records, --qualify-csv-records, "
+      "--qualify-filter-extension, "
       "--qualify-json-writer, --qualify-filter-records, --qualify-report-fields, "
       "--qualify-group-rows, --qualify-column, --qualify-select-group-row, "
       "--qualify-tab-records, --qualify-aggregate-groups, --qualify-annotate-group-measure "

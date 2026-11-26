@@ -550,11 +550,47 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
       ++kernels;
   }
   check(kernels == 1, "scoped reader lacks a unique pinned parent kernel");
-  check(scope["parameter"].isString() && scope["value"].isString() &&
+  check(scope["parameter"].isString() &&
             scope["argument_index"] == 1 && scope["argument_type"] == "const std::string&" &&
             raw["args"] == array({scope["parameter"]}) &&
-            spec["binding"] == key && spec["parameters"][scope["parameter"].asString()] == scope["value"],
+            spec["binding"] == key,
         "scoped file fixture differs from approved selector");
+  const auto parameter = scope["parameter"].asString();
+  auto exact_text = [](const J &value) {
+    return object({{"id", "exact_text"}, {"value", value}});
+  };
+  if (scope.isMember("values")) {
+    const auto modes = array({"absent", "present"});
+    check(key["binding_id"] == "read_csv_records" && parameter == "header" &&
+              !scope.isMember("value") && scope["values"] == modes &&
+              spec["parameters"][parameter] == modes &&
+              domain["any_of"] == array({exact_text(modes[0]), exact_text(modes[1])}) &&
+              !domain.isMember("all_of"),
+          "scoped CSV reader differs from the two reviewed header modes");
+    const auto integration = load(stage / "integration.json");
+    const auto standalone = load(stage / "standalone.json");
+    for (const auto &mode : modes) {
+      const auto name = mode.asString();
+      const auto &trial = integration[name];
+      const auto &operation = trial["spec"]["roles"][0]["requirement"]["operations"][0];
+      const auto &direct = spec["cases"][name];
+      check(direct.isArray() && !direct.empty() &&
+                standalone["cases"][name].size() == direct.size() &&
+                trial["spec"]["input_type"] == "text/csv" &&
+                operation["outcome"] == key["binding_id"] &&
+                operation["parameters"] == object({{"header", mode}}) &&
+                trial["baseline"] == trial["staged"] &&
+                trial["staged"]["execution"].size() == 2 * direct.size() &&
+                trial["removed"]["gaps"]["r"].asString().find("read_csv_records") !=
+                    std::string::npos,
+            "scoped CSV reader lacks paired direct and ordinary evidence for " + name);
+    }
+  } else {
+    check(scope["value"].isString() && spec["parameters"][parameter] == scope["value"] &&
+              domain["all_of"] == array({exact_text(scope["value"])}) &&
+              !domain.isMember("any_of"),
+          "scoped file fixture differs from approved exact selector");
+  }
   check(domain["schema"] == "unllm.scoped-file-evidence-domain/1" &&
             domain["binding_key"] == key && domain["call"] == binding["call"] &&
             domain["logical_id"] == binding["logical_id"] &&
@@ -566,8 +602,7 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
             domain["implementation_sha256"] == source["kernel_sha256"] &&
             domain["quantifier"] == "argument" &&
             domain["argument_index"] == scope["argument_index"] &&
-            domain["argument_type"] == scope["argument_type"] &&
-            domain["all_of"] == array({object({{"id", "exact_text"}, {"value", scope["value"]}})}),
+            domain["argument_type"] == scope["argument_type"],
         "sealed file scope differs from the exact reviewed binding or selector");
   check(contract["provider_id"] == key["component_id"] &&
             contract["capability_id"] == raw["effect"] &&

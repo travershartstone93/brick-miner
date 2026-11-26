@@ -3,6 +3,7 @@
 #include "pilot.hpp"
 #include <QScopeGuard>
 #include <QStandardPaths>
+#include <functional>
 #include <sstream>
 #include <sys/stat.h>
 
@@ -162,8 +163,9 @@ void verify_archive_materials(const Path &stage, const Path &bundle,
   write(stage / "source.json", source);
 }
 
-void verify_json_materials(const Path &stage, const Path &bundle,
-                           const Path &base, const J &src, const J &binding) {
+void verify_reader_materials(const Path &stage, const Path &bundle,
+                             const Path &base, const J &src, const J &binding,
+                             const Strings &members) {
   const Path arc = src["archive"].asString();
   auto recipe = arc.parent_path() / "PKGBUILD";
   auto ring = arch_keyring(stage);
@@ -181,16 +183,17 @@ void verify_json_materials(const Path &stage, const Path &bundle,
   save(stage / "arch-pkgbuild.txt", bytes(recipe));
   const auto provenance = load(bundle / readers_history / "source.json");
   const auto kernel = digest(bundle / runtime / readers_library);
-  const auto definition = provenance["definitions"]["yyjson_read_file"];
+  const auto symbol = src["symbols"][0].asString();
+  const auto definition = provenance["definitions"][symbol];
   check(provenance["source_id"] == src["upstream_source_id"] &&
             provenance["kernel_sha256"] == kernel &&
-            provenance["source_units"]["yyjson_read_file"] ==
-                "third_party/yyjson/yyjson.cpp" &&
+            provenance["source_units"][symbol] == members.front() &&
+            definition["name"].isString() &&
             run({"nm", "-D", "--defined-only",
                  bundle / runtime / readers_library})
                     .find(" " + definition["name"].asString() + "\n") !=
                 std::string::npos,
-        "retained yyjson implementation identity changed");
+        "retained reader implementation identity changed");
 
   auto packed_library = stage.parent_path() / "signed-libduckdb.so";
   run({"bsdtar", "-xOf", arc, "usr/lib/libduckdb.so"},
@@ -201,8 +204,6 @@ void verify_json_materials(const Path &stage, const Path &bundle,
   auto extracted = stage.parent_path() / "signed-debug";
   fs::create_directory(extracted);
   const Path prefix = "usr/src/debug/duckdb/duckdb";
-  const Strings members{"third_party/yyjson/yyjson.cpp",
-                        "third_party/yyjson/include/yyjson.hpp"};
   Strings command{"bsdtar", "-xf", debug["archive"].asString(), "-C",
                   extracted};
   for (const auto &name : members)
@@ -211,9 +212,12 @@ void verify_json_materials(const Path &stage, const Path &bundle,
   for (const auto &name : members) {
     auto data = bytes(extracted / prefix / name);
     auto retained = bundle / "qualifications/shared/upstream" / name;
-    check(sha(data) == provenance["headers"][name].asString() &&
+    const auto pin = sha(data);
+    check(pin == provenance["headers"][name].asString() &&
+              (!src.isMember("source_unit_sha256") ||
+               pin == src["source_unit_sha256"].asString()) &&
               data == bytes(retained),
-          "retained yyjson source differs from signed debug package");
+          "retained reader source differs from signed debug package");
     save(stage / "original" / Path(name).filename(), data);
   }
   fs::remove_all(extracted);
@@ -348,35 +352,41 @@ Strings invoke(const Path &exe, const Path &dir, const Path &bundle) {
   return cmd;
 }
 
+J probe_record_rows(const Path &exe, const Path &fixtures, const Path &bundle,
+                    const std::string &path, const std::string &selector) {
+  auto cmd = invoke(exe, fixtures, bundle);
+  append(cmd, {path, selector});
+  auto first = parse(run(cmd, {.seconds = 8, .probe_limits = true}));
+  check(first == parse(run(cmd, {.seconds = 8, .probe_limits = true})),
+        "different runtime or process result");
+  return first;
+}
+
+void check_record_rows(const J &test, const J &seen, const std::string &binding,
+                       bool repeats) {
+  J rows = array();
+  int pos = 0;
+  for (const auto &r : test["rows"])
+    rows.append(object({{"position", ++pos}, {"fields", r}}));
+  check(seen["rows"] == rows &&
+            seen["phase"].asString() == test.get("error", "").asString() &&
+            seen["exception"] ==
+                test.get("exception",
+                         test.isMember("error") ? J("runtime_error") : J()) &&
+            (!repeats || test.isMember("error") || seen["same_instance_repeat"] == true),
+        binding + " row observation differs for " +
+            test["name"].asString() + ": " + dump(seen));
+}
+
 J repeated_calls(const Path &exe, const Path &fixtures, const Path &bundle,
                  const J &spec, const Projection &projection) {
   const auto before = fixture_inventory(fixtures, projection.directory());
   J observed = array();
   auto probe = [&](const std::string &path, const std::string &fields) {
-    auto cmd = invoke(exe, fixtures, bundle);
-    // The sandbox binds the runtime and case directory separately. The
-    // recorded fixture inventory checks that neither invocation changed input.
-    append(cmd, {path, fields});
-    auto first = parse(run(cmd, {.seconds = 8, .probe_limits = true}));
-    check(first == parse(run(cmd, {.seconds = 8, .probe_limits = true})) &&
-              (projection.json() || first["libarchive"] == 3008009),
-          "different runtime or process result");
-    return first;
-  };
-  auto expected = [&](const J &c, J &seen) {
-    J rows = array();
-    int pos = 0;
-    for (const auto &r : c["rows"])
-      rows.append(object({{"position", ++pos}, {"fields", r}}));
-    check(seen["rows"] == rows &&
-              seen["phase"].asString() == c.get("error", "").asString() &&
-              seen["exception"] ==
-                  c.get("exception",
-                        c.isMember("error") ? J("runtime_error") : J()) &&
-              (!(projection.directory() || projection.json()) ||
-               c.isMember("error") || seen["same_instance_repeat"] == true),
-          projection.binding + " row observation differs for " +
-              c["name"].asString() + ": " + dump(seen));
+    auto seen = probe_record_rows(exe, fixtures, bundle, path, fields);
+    check(projection.json() || seen["libarchive"] == 3008009,
+          "different archive runtime");
+    return seen;
   };
   for (const auto &c : spec["cases"]) {
     auto name = c["name"].asString();
@@ -384,7 +394,9 @@ J repeated_calls(const Path &exe, const Path &fixtures, const Path &bundle,
                  : projection.json()    ? name
                                         : c["format"].asString();
     auto seen = probe(input, projection.fields);
-    expected(c, seen);
+    check_record_rows(c, seen, projection.binding, projection.directory() || projection.json());
+    // Preserve the explicit null field in historical projection receipts.
+    seen["exception"] = seen.get("exception", J());
     observed.append(object({{"name", c["name"]}, {"observation", seen}}));
   }
   if (projection.json()) {
@@ -392,7 +404,8 @@ J repeated_calls(const Path &exe, const Path &fixtures, const Path &bundle,
     for (const auto &c : spec["selector_controls"]) {
       auto observed_control =
           probe(c["input_case"].asString(), c["fields"].asString());
-      expected(c, observed_control);
+      check_record_rows(c, observed_control, projection.binding, true);
+      observed_control["exception"] = observed_control.get("exception", J());
       controls.append(
           object({{"name", c["name"]}, {"observation", observed_control}}));
     }
@@ -426,6 +439,72 @@ J repeated_calls(const Path &exe, const Path &fixtures, const Path &bundle,
                  {"invalid_projection", invalid}});
 }
 
+J file_record_trial(const Path &work, const Path &bundle, const Path &base,
+                    const J &row, const J &spec, const J &chain, const J &cases,
+                    bool directory,
+                    const std::function<void(const Path &, const J &)> &prepare,
+                    const std::string &label = "") {
+  auto report = object({{"spec", spec}, {"chain", chain}});
+  for (const std::string arm : {"baseline", "staged"}) {
+    auto dest = work / arm;
+    if (!label.empty())
+      dest /= label;
+    auto exe = work / ".test-programs" / (label.empty() ? arm : arm + "-" + label);
+    auto p = complete_file_plan(arm == "baseline" ? base : bundle, dest, spec, chain);
+    build_emission(p, dest, exe, "g++-15");
+    J observations = array();
+    for (const auto &c : cases) {
+      if (c.get("standalone_only", false).asBool())
+        continue;
+      for (const bool exists : {false, true}) {
+        auto dir =
+            dest / c["name"].asString() / (exists ? "existing" : "absent");
+        fs::create_directories(dir);
+        prepare(dir, c);
+        if (exists)
+          save(dir / "out", "sentinel");
+        auto before = fixture_inventory(dir, directory), after = before;
+        auto cmd = invoke(exe, dir, bundle);
+        append(cmd, {"in", "out"});
+        auto result = execute(cmd, {.seconds = 8, .probe_limits = true});
+        const bool fails = c.isMember("error");
+        if (!fails)
+          after["out"] = sha(c["output"].asString());
+        check(result.status == (fails ? 1 : 0) &&
+                  fixture_inventory(dir, directory) == after,
+              "unexpected CLI file record result for " + c["name"].asString() +
+                  " " + result.err);
+        observations.append(object({{"case", c["name"]},
+                                    {"exit", result.status},
+                                    {"destination_existed", exists},
+                                    {"before", before},
+                                    {"after", after}}));
+      }
+    }
+    report[arm] = object({{"execution", observations},
+                          {"program_sha256", digest(exe)},
+                          {"emitted_sha256", digest(dest / "component.hpp")}});
+  }
+  check(report["baseline"] == report["staged"],
+        "retained file record recipe differs between arms");
+  auto cut = work / "control-bundle";
+  if (!fs::exists(cut))
+    write_tree(cut, remove_binding(read_tree(bundle), row));
+  auto removed = work / "removed";
+  if (!label.empty())
+    removed /= label;
+  auto absent = plan(cut, spec, removed);
+  check(absent["providers"].isArray() && absent["providers"].empty() &&
+            absent["interpretation_errors"].empty() &&
+            absent["clarifications"].empty() &&
+            absent["gaps"]["r"].asString().find(row["id"].asString()) !=
+                std::string::npos,
+        "removal did not isolate the file record binding");
+  report["removed"] = object({{"gaps", absent["gaps"]},
+                              {"bundle_sha256", digest(cut / "SHA256SUMS")}});
+  return report;
+}
+
 J ordinary(const Path &work, const Path &stage, const Path &bundle,
            const Path &base, const J &row, const J &suite,
            const Projection &projection) {
@@ -443,69 +522,83 @@ J ordinary(const Path &work, const Path &stage, const Path &bundle,
   const auto spec =
       spec_for(projection.input_type, "text/plain",
                object({{"operations", ops}, {"uncovered", array()}}));
-  auto report = object({{"spec", spec},
-                        {"chain", projection.chain},
-                        {"recipe_sha256", digest(recipes)}});
-  for (const std::string arm : {"baseline", "staged"}) {
-    auto dest = work / arm, exe = work / ".test-programs" / arm;
-    auto p = complete_file_plan(arm == "baseline" ? base : bundle, dest, spec,
-                                projection.chain);
-    build_emission(p, dest, exe, "g++-15");
-    J observations = array();
-    for (const auto &c : suite["cases"]) {
-      if (c.get("standalone_only", false).asBool())
-        continue;
-      for (const bool exists : {false, true}) {
-        auto dir =
-            dest / c["name"].asString() / (exists ? "existing" : "absent");
-        fs::create_directories(dir);
-        if (projection.directory())
-          make_tree_input(dir, c);
-        else {
-          auto fixture = stage / "fixtures" /
-                         c[projection.json() ? "name" : "format"].asString();
-          if (fs::exists(fixture))
-            fs::copy_file(fixture, dir / "in");
-        }
-        if (exists)
-          save(dir / "out", "sentinel");
-        auto before = fixture_inventory(dir, projection.directory()),
-             after = before;
-        auto cmd = invoke(exe, dir, bundle);
-        append(cmd, {"in", "out"});
-        auto result = execute(cmd, {.seconds = 8, .probe_limits = true});
-        const bool fails = c.isMember("error");
-        if (!fails)
-          after["out"] = sha(c["output"].asString());
-        check(result.status == (fails ? 1 : 0) &&
-                  fixture_inventory(dir, projection.directory()) == after,
-              "unexpected CLI file record result for " + c["name"].asString() +
-                  " " + result.err);
-        observations.append(object({{"case", c["name"]},
-                                    {"exit", result.status},
-                                    {"destination_existed", exists},
-                                    {"before", before},
-                                    {"after", after}}));
-      }
+  auto prepare = [&](const Path &dir, const J &c) {
+    if (projection.directory()) {
+      make_tree_input(dir, c);
+      return;
     }
-    report[arm] = object({{"execution", observations},
-                          {"program_sha256", digest(exe)},
-                          {"emitted_sha256", digest(dest / "component.hpp")}});
-  }
-  check(report["baseline"] == report["staged"],
-        "retained file record recipe differs between arms");
-  auto cut = work / "control-bundle";
-  write_tree(cut, remove_binding(read_tree(bundle), row));
-  auto absent = plan(cut, spec, work / "removed");
-  check(absent["providers"].isArray() && absent["providers"].empty() &&
-            absent["interpretation_errors"].empty() &&
-            absent["clarifications"].empty() &&
-            absent["gaps"]["r"].asString().find(projection.binding) !=
-                std::string::npos,
-        "removal did not isolate the file record binding");
-  report["removed"] = object({{"gaps", absent["gaps"]},
-                              {"bundle_sha256", digest(cut / "SHA256SUMS")}});
+    const auto fixture = stage / "fixtures" /
+                         c[projection.json() ? "name" : "format"].asString();
+    if (fs::exists(fixture))
+      fs::copy_file(fixture, dir / "in");
+  };
+  auto report = file_record_trial(work, bundle, base, row, spec,
+                                  projection.chain, suite["cases"],
+                                  projection.directory(), prepare);
+  report["recipe_sha256"] = digest(recipes);
   return report;
+}
+
+auto pin_runtime_path(const Path &bundle) {
+  const auto prior = qgetenv("PKG_CONFIG_PATH");
+  const auto restore = [prior] {
+    if (prior.isNull())
+      qunsetenv("PKG_CONFIG_PATH");
+    else
+      qputenv("PKG_CONFIG_PATH", prior);
+  };
+  check(qputenv("PKG_CONFIG_PATH", (bundle / runtime / "pkgconfig").c_str()),
+        "failed to set pinned runtime package path");
+  return qScopeGuard(restore);
+}
+
+Path build_record_client(const Path &stage, const Path &scratch,
+                         const Path &bundle, const J &source, const J &tools,
+                         bool readers, bool directory) {
+  auto options = flags({"jsoncpp", readers ? "brick_shared_readers"
+                                           : "brick_shared_inputs"});
+  auto exe = scratch / "client";
+  Strings cmd{"g++-15",           "-std=c++17",         "-O1", "-I",
+              stage / "original", stage / "client.cpp", "-o",  exe};
+  append(cmd, options);
+  if (!readers)
+    cmd.push_back((bundle / runtime / "libarchive.so.13").string());
+  cmd.push_back("-Wl,-rpath-link," + (bundle / runtime).string());
+  run(cmd);
+  auto env = tools;
+  auto tool_names = Strings{"bsdtar", "gpgv", "ldd"};
+  if (readers)
+    tool_names.push_back("nm");
+  else if (!directory)
+    append(tool_names, {"tar", "unzip"});
+  for (const auto &name : tool_names)
+    env["tool_sha256"][name] =
+        digest(QStandardPaths::findExecutable(QString::fromStdString(name))
+                   .toStdString());
+  env["client_flags"] = string_array(options);
+  env["target"] = run({"g++-15", "-dumpmachine"});
+  env["runtime_files"] = source["runtime_files"];
+  std::istringstream link(
+      run({"ldd", exe},
+          {.environment = {{"LD_LIBRARY_PATH", (bundle / runtime).string()}}}));
+  for (std::string line; std::getline(link, line);) {
+    std::istringstream fields(line);
+    std::string name, arrow, path;
+    if (fields >> name >> arrow >> path && arrow == "=>")
+      env["resolved_client_libraries"][name] = object(
+          {{"path", fs::canonical(path).string()}, {"sha256", digest(path)}});
+  }
+  for (const auto &f : source["runtime_files"]) {
+    auto name = f["path"].asString();
+    if (readers ? (name == readers_library || name == "libduckdb.so")
+                : (name == library || name == "libarchive.so.13"))
+      check(env["resolved_client_libraries"][name]["sha256"] == f["sha256"] &&
+                env["resolved_client_libraries"][name]["path"] ==
+                    fs::canonical(bundle / runtime / name).string(),
+            "standalone client linked the wrong retained runtime");
+  }
+  write(stage / "environment.json", env);
+  return exe;
 }
 
 Path qualify_records(const Path &package, const std::string &pin,
@@ -551,7 +644,9 @@ Path qualify_records(const Path &package, const std::string &pin,
                 legacy["args"],
         "file record binding differs from retained declaration");
   if (projection.json())
-    verify_json_materials(stage, bundle, base, src, raw);
+    verify_reader_materials(stage, bundle, base, src, raw,
+                            {"third_party/yyjson/yyjson.cpp",
+                             "third_party/yyjson/include/yyjson.hpp"});
   else
     verify_archive_materials(stage, bundle, base, src, raw);
   const auto source = load(stage / "source.json");
@@ -581,58 +676,10 @@ Path qualify_records(const Path &package, const std::string &pin,
     make_zip_inputs(work, stage, spec);
   }
 
-  auto old_path = qgetenv("PKG_CONFIG_PATH");
-  const auto restore = qScopeGuard([&] {
-    if (old_path.isNull())
-      qunsetenv("PKG_CONFIG_PATH");
-    else
-      qputenv("PKG_CONFIG_PATH", old_path);
-  });
-  check(qputenv("PKG_CONFIG_PATH", (bundle / runtime / "pkgconfig").c_str()),
-        "failed to set pinned runtime package path");
-  auto options = flags({"jsoncpp", projection.json() ? "brick_shared_readers"
-                                                     : "brick_shared_inputs"});
-  auto exe = scratch / "client";
-  Strings cmd{"g++-15",           "-std=c++17",         "-O1", "-I",
-              stage / "original", stage / "client.cpp", "-o",  exe};
-  append(cmd, options);
-  if (!projection.json())
-    cmd.push_back((bundle / runtime / "libarchive.so.13").string());
-  cmd.push_back("-Wl,-rpath-link," + (bundle / runtime).string());
-  run(cmd);
-  auto tools = file_qualification_tools(), env = tools;
-  auto tool_names = Strings{"bsdtar", "gpgv", "ldd"};
-  if (projection.json())
-    tool_names.push_back("nm");
-  else if (!projection.directory())
-    append(tool_names, {"tar", "unzip"});
-  for (const auto &name : tool_names)
-    env["tool_sha256"][name] =
-        digest(QStandardPaths::findExecutable(QString::fromStdString(name))
-                   .toStdString());
-  env["client_flags"] = string_array(options);
-  env["target"] = run({"g++-15", "-dumpmachine"});
-  env["runtime_files"] = source["runtime_files"];
-  std::istringstream link(
-      run({"ldd", exe},
-          {.environment = {{"LD_LIBRARY_PATH", (bundle / runtime).string()}}}));
-  for (std::string line; std::getline(link, line);) {
-    std::istringstream fields(line);
-    std::string name, arrow, path;
-    if (fields >> name >> arrow >> path && arrow == "=>")
-      env["resolved_client_libraries"][name] = object(
-          {{"path", fs::canonical(path).string()}, {"sha256", digest(path)}});
-  }
-  for (const auto &f : source["runtime_files"]) {
-    auto name = f["path"].asString();
-    if (projection.json() ? (name == readers_library || name == "libduckdb.so")
-                          : (name == library || name == "libarchive.so.13"))
-      check(env["resolved_client_libraries"][name]["sha256"] == f["sha256"] &&
-                env["resolved_client_libraries"][name]["path"] ==
-                    fs::canonical(bundle / runtime / name).string(),
-            "standalone client linked the wrong retained runtime");
-  }
-  write(stage / "environment.json", env);
+  const auto restore = pin_runtime_path(bundle);
+  const auto tools = file_qualification_tools();
+  const auto exe = build_record_client(stage, scratch, bundle, source, tools,
+                                       projection.json(), projection.directory());
   write(stage / "standalone.json",
         repeated_calls(exe, fixtures, bundle, spec, projection));
   write(stage / "integration.json",
@@ -717,5 +764,149 @@ Path qualify_json_records(const Path &package, const std::string &pin,
              "op_4_derive_integer", "op_5_group_rows", "op_6_select_group_row",
              "op_7_order_records", "op_8_report_fields", "write_lines"})};
   return qualify_records(package, pin, registry, registry_pin, projection);
+}
+
+Path qualify_csv_records(const Path &package, const std::string &pin,
+                         const Path &registry, const std::string &registry_pin) {
+  verify(package, pin);
+  const std::string operation = "read_csv_records";
+  const auto src = sources()["retained-csv-records"];
+  const auto job = retained_binding_job(v5_root() / "sources.json", operation);
+  const auto modes = array({"absent", "present"});
+  const auto selector = object({{"parameter", "header"}, {"argument_index", 1},
+                                {"argument_type", "const std::string&"},
+                                {"values", modes}});
+  check(src["approval"] == "local-pilot" && src["method"] == "signed-local-package" &&
+            job["source"] == src["id"] && job["route"] == "api" &&
+            job["stream"] == "foundational" &&
+            job["tests"] == "v5/fixtures/csv-records.json" &&
+            job["selector"] == selector,
+        "no reviewed local CSV record job");
+  const auto priority = rank_supplied_usage(
+      project_file(runs, job["coverage_audit"].asString()),
+      job["coverage_sha256"].asString(),
+      project_file(runs, job["migration_snapshot"].asString() + "/ledger.sqlite")
+          .parent_path(),
+      job["ledger_sha256"].asString());
+  const auto work = fresh_run("v5-csv-records"), stage = work / ".stage",
+             scratch = work / ".test-programs", fixtures = stage / "fixtures",
+             bundle = package / "bundle", base = verified_base();
+  fs::create_directory(scratch);
+  save_file_registry(stage, src, registry, registry_pin);
+  check(retained_binding_job(stage / "sources.json", operation) == job,
+        "changed CSV reader job");
+  const auto defs = load(bundle / "providers/contracts.json");
+  const auto row = select_binding(defs["providers"], operation,
+                                  "miner_read_csv_records", "in:text/csv", "rows");
+  const auto record = file_binding_identity(row, bundle);
+  const auto selection = select_ranked_scope(package, pin, priority, job);
+  const auto &selected = selection["selected"];
+  const auto legacy = load(bundle / readers_history / "contracts.json")[operation];
+  check(selected["binding_id"] == operation &&
+            selected["binding_sha256"] == record["binding_sha256"] &&
+            selected["header_sha256"] == record["header_sha256"] &&
+            row["call"] == job["callable"] && row["args"] == array({"header"}) &&
+            row["from"] == legacy["from"] && row["to"] == legacy["to"] &&
+            legacy["args"] == object({{"header", "text"}}) &&
+            defs["outcomes"][operation]["parameters"] == legacy["args"],
+        "CSV qualification differs from ranked ledger or retained ABI");
+  write(stage / "priority.json", priority);
+  write(stage / "selection.json", selection);
+  verify_reader_materials(
+      stage, bundle, base, src, row,
+      {"src/execution/operator/csv_scanner/scanner/string_value_scanner.cpp"});
+  const auto source = load(stage / "source.json");
+  for (const auto &[from, to] : std::map<std::string, std::string>{
+           {"csv-records.json", "spec.json"},
+           {"csv-records-client.cpp", "client.cpp"},
+           {"csv-records-annotation.json", "annotation.json"}})
+    fs::copy_file(v5_root() / "fixtures" / from, stage / to);
+  const auto spec = load(stage / "spec.json");
+  check(spec["binding"] == record["key"] &&
+            spec["parameters"] == object({{"header", modes}}) &&
+            spec["cases"].getMemberNames() == Strings{"absent", "present"},
+        "CSV fixture differs from the reviewed header modes");
+  for (const auto &name : spec["inputs"].getMemberNames()) {
+    const auto &input = spec["inputs"][name];
+    if (input.isObject()) {
+      const auto hex = QByteArray::fromStdString(input["hex"].asString());
+      const auto data = QByteArray::fromHex(hex);
+      check(data.toHex() == hex, "noncanonical CSV fixture hex");
+      save(fixtures / name, data.toStdString());
+    } else if (input.isString()) {
+      save(fixtures / name, input.asString());
+    }
+  }
+  const auto before = tree_hashes(fixtures);
+  const auto restore = pin_runtime_path(bundle);
+  const auto tools = file_qualification_tools();
+  const auto exe = build_record_client(stage, scratch, bundle, source, tools, true, false);
+  auto observe = [&](const J &cases, const std::string &header) {
+    auto observations = array();
+    for (const auto &test : cases) {
+      const auto name = test["name"].asString();
+      check(spec["inputs"].isMember(name), "CSV test has no input declaration");
+      const auto seen = probe_record_rows(exe, fixtures, bundle, name, header);
+      check_record_rows(test, seen, operation, true);
+      observations.append(object({{"name", name}, {"observation", seen}}));
+    }
+    return observations;
+  };
+  auto direct = object();
+  for (const auto &mode : modes) {
+    const auto header = mode.asString();
+    direct[header] = observe(spec["cases"][header], header);
+  }
+  const auto invalid = observe(spec["invalid_header"], "auto");
+  check(tree_hashes(fixtures) == before, "CSV reader changed a fixture");
+  write(stage / "standalone.json",
+        object({{"processes_per_case", 2}, {"cases", direct},
+                {"input_sha256", before}, {"invalid_header", invalid}}));
+
+  auto integration = object();
+  auto conditions = array();
+  const auto chain = array({"op_0_read_csv_records", "op_1_report_fields", "write_lines"});
+  auto prepare = [&](const Path &dir, const J &test) {
+    const auto fixture = fixtures / test["name"].asString();
+    if (fs::exists(fixture))
+      fs::copy_file(fixture, dir / "in");
+  };
+  for (const auto &mode : modes) {
+    const auto header = mode.asString();
+    const auto ops = array(
+        {object({{"outcome", operation}, {"parameters", object({{"header", header}})}}),
+         object({{"outcome", "report_fields"},
+                 {"parameters", object({{"fields", "pos,0,1,2"}})}})});
+    const auto goal = spec_for(
+        "text/csv", "text/plain", object({{"operations", ops}, {"uncovered", array()}}));
+    integration[header] = file_record_trial(
+        work, bundle, base, row, goal, chain, spec["cases"][header], false, prepare, header);
+    conditions.append(object({{"id", "exact_text"}, {"value", header}}));
+  }
+  check(file_qualification_tools() == tools, "qualification tools changed");
+  write(stage / "integration.json", integration);
+  auto contract = file_contract(stage, package, record, src, stage / "sources.json");
+  contract["source"]["implementation_sha256"] = source["kernel_sha256"];
+  contract["qualification"]["scope"] =
+      "Detached local CSV byte and file-effect evidence for the absent and present header modes.";
+  validate(contract, load(package / "contract.schema.json"));
+  write(stage / "contract.json", contract);
+  write(stage / "domain.json",
+        object({{"schema", "unllm.scoped-file-evidence-domain/1"},
+                {"binding_key", record["key"]},
+                {"raw_binding_sha256", record["binding_sha256"]},
+                {"logical_id", record["logical_id"]},
+                {"implementation_sha256", source["kernel_sha256"]},
+                {"header_sha256", record["header_sha256"]},
+                {"contract_sha256", digest(stage / "contract.json")},
+                {"environment_sha256", digest(stage / "environment.json")},
+                {"call", row["call"]},
+                {"argument_index", selector["argument_index"]},
+                {"argument_type", selector["argument_type"]},
+                {"quantifier", "argument"},
+                {"any_of", conditions},
+                {"scope", "Each exact header mode has separate direct and file evidence. Input-domain behavior is bounded to the recorded cases."}}));
+  return finish_file_stage(work, package, pin, record["logical_id"].asString(),
+                           "unllm.scoped-file-evidence/1");
 }
 } // namespace v5
