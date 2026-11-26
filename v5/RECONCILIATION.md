@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The four telemetry zero-operation replies use the retained qualified JSON projection in their supplied constructions. H034 and H036 use the detached TSV registration. Independent state and ordering controls distinguish inclusive latch reset, warm-streak boundaries, per-sensor room history and array-order selection. The H034 filter-before-reset variant passed the saved suite and diverged on fresh input. [Telemetry replay and evidence](../replay-gaps/RESULTS.md#archived-telemetry-with-no-ordered-operations)
+
 The five build-scheduling zero-operation replies use the retained TSV reader, graph and membership operations and plain-text writer in their supplied constructions. Four new routes passed 20 fixtures and the pinned H086 transfer contributes five. The independent oracle distinguishes cycle members, path-length requirements, repeated modules and absent direct edges. [Build-scheduling replay and evidence](../replay-gaps/RESULTS.md#archived-build-scheduling-with-no-ordered-operations)
 
 The five SQLite parcel-dispatch replies reproduce the zero-operation stop on the pinned V5 parent. Their supplied constructions use retained correlated reads and keyed history. The saved fixtures alias scan ID to SQLite row ID. A fresh two-database comparison isolates insertion order from scan order and checks both against independent SQL. [Parcel-dispatch replay and evidence](../replay-gaps/RESULTS.md#archived-parcel-dispatch-with-no-ordered-operations)

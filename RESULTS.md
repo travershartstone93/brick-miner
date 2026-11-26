@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The four telemetry constructions reuse the scoped JSON projection and retained sensor-state and ordering operations. Interleaved readings expose a filter-before-reset streak variant that passed all five saved H034 fixtures. [Telemetry replay and reproduction](replay-gaps/RESULTS.md#archived-telemetry-with-no-ordered-operations)
+
 The five build-scheduling replies with zero operations have passing retained constructions. The audit reuses pinned H086 reachability evidence and checks cycle membership, direct-edge membership, distinct modules and exact path length on a fresh graph. [Build-scheduling replay and reproduction](replay-gaps/RESULTS.md#archived-build-scheduling-with-no-ordered-operations)
 
 The five parcel-dispatch zero-operation replies were replayed with retained SQLite row and history operations. The follow-up separates scan ID order from row insertion order with matching logical data in two fresh databases. [Parcel-dispatch replay and reproduction](replay-gaps/RESULTS.md#archived-parcel-dispatch-with-no-ordered-operations)

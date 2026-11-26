@@ -520,3 +520,31 @@ The four newly emitted programs passed all 20 original fixtures, byte for byte, 
 The two pinned runs took 96.18 and 114.79 wall seconds. Each contains five planner probes, 40 new archived fixture verdicts across the ordinary and altered programs, five reused H086 verdicts and 24 fresh executions. The clean repeat reproduces the plans, executable hashes, outputs and verdicts. Timed receipt hashes differ. All 120 recorded file hashes verified in each run. Both runs released their scratch executables. The primary report SHA-256 is `77ebec07db24b39e8ff66a90604579be52cc0de87124ef495023078f4129c555` and the repeat SHA-256 is `d934216c627b7c3c5469ad71e5b0a4f2b304dcd6ddf4f3afb9825d8b73677e7c`. Language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-scheduling-replay-XXZQnfDy/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-scheduling-replay-XXb5oaoC/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXpoVtEF/controls.json)
 
 Build with `make .build/unordered-scheduling-replay` and run `.build/unordered-scheduling-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## Archived telemetry with no ordered operations
+
+H031, H034, H036 and H040 correctly identify a JSON array as input. The pinned planner reproduces their zero-operation stop. The original menus omit the JSON row reader for each request. The later replay menus include it and still omit the latch for H031, the reset and ranking operations for H034, the history and filter operations for H036, and the final ordering operation for H040. These omissions refer to the manually supplied constructions. [Frequency report and menu pins](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-finance-replay-XXvu2pML/report.json)
+
+All four supplied recipes use the existing `["sensor", "room", "minute", "temp"]` projection. The harness verifies its detached reader qualification against the exact selector, callable, header and implementation hash. H034 and H036 use the earlier staged TSV registration. Removing that registration leaves their final `strings → out:text/tab-separated-values` port open. H031 and H040 use the ordinary plain-text and JSON sinks. [Supplied recipes](../shared/request-recipes.json) · [Scoped JSON-reader evidence](../v5/RECONCILIATION.md#h1b-telemetry-json-scalar-projection)
+
+| Request | Construction after projection |
+|---|---|
+| H031 | Run an initially armed latch per sensor, trigger at 8 or higher, rearm at 4 or lower and emit the key in reading order. |
+| H034 | Record each reading at or below 5 as a reset, number warm readings within each sensor's current streak and emit only the third reading. |
+| H036 | Associate each reading with its previous room for the same sensor and report only changes after the first reading. |
+| H040 | Select the last array entry per sensor, sort these selected temperatures descending and sort ties by sensor ID. |
+
+The independent C++ oracle uses per-sensor latch, counter, previous-room and last-reading state. The fresh 18-reading fixture includes interleaved sensor keys, exact threshold boundaries, decreasing timestamps, a repeated minute, movement into and out of empty room names and equal last-reading temperatures. A second input groups readings by sensor while preserving each sensor's own reading order. It changes the global order of emitted events and retains the same last-reading ranking. [Native replay and oracle](unordered-telemetry.cpp)
+
+All four supplied programs passed 20/20 saved fixtures, byte for byte. They also matched the independent oracle on both fresh inputs. H031 emits `A,C,B,A` in the interleaved order. H034 gives `A 20`, `B 13` and `A 5`. H036 reports four actual room changes, including a move out of an empty room. H040 reports `["A","B","D","C"]` in both orders, using sensor ID to break the tie between A and B.
+
+| Altered construction | Saved fixtures passed | Difference on the interleaved input |
+|---|---:|---|
+| H031, rearm strictly below 4 | 3/5 | Loses A's second alert after a temperature of 4. |
+| H034, discard temperatures at or below 5 before tracking resets | 5/5 | Emits B at minute 11 and drops A's second streak. |
+| H036, use the previous reading across all sensors | 2/5 | Reports room moves between unrelated sensors. |
+| H040, choose the greatest minute for each sensor | 5/5 | Reports `["C","A","B","D"]` by retaining C's older hot reading. |
+
+The two pinned runs took 91.37 and 86.92 wall seconds. Each contains six planner probes, 40 saved fixture verdicts and 16 fresh executions. The repeat reproduces the plans, program hashes, outputs and verdicts. Timed receipt hashes differ. All 98 recorded file hashes verified in each run. Both runs released their scratch executables. The primary report SHA-256 is `13e1d9667144ded4a2526a9fe78e1b12599c66ff41344914b14607e68c4ef1d6` and the repeat SHA-256 is `7c41fc28c688b127fcc8e96b596816140b7a23df60490008109342cca96942e3`. Language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-telemetry-replay-XXj6C6EH/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-unordered-telemetry-replay-XXMExuYj/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXn09xwN/controls.json)
+
+Build with `make .build/unordered-telemetry-replay` and run `.build/unordered-telemetry-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
