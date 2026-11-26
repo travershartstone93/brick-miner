@@ -227,3 +227,38 @@ native="$(realpath ../unllm-upgrade/build/native)"
   --ro-bind "$pinned/unllm_logic_worker" "$native/unllm_logic_worker" \
   -- .build/row-order-replay
 ```
+
+## Group order validation and the H004 minimum
+
+The ranked archive has eight `group_rows.group_order` failures. All eight saved replies match their original 104-card replies byte for byte. On the pinned 127-card V5 parent, the planner reproduced all eight errors. The second arm changes only `group_order` to a permitted value. The five saved `text` or `lexicographic` values become `asc`. The `first`, `source`, and `last` values become `encounter` for the syntax probe. In H090 this choice describes the order in which groups first appear, while the requested report needs the order of their last surviving rows. [Original ranking](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/ranked-gaps-5x2_hyp7/ranking.json) · [Request map](../row-ops/request-map.tsv)
+
+The one-field change produces zero complete roles. Seven requests next reject `select_group_row.order_by`. H083 rejects `ordered_column.column` because the saved value is the string `row_number`. These are later validation errors. The full controls keep each saved output MIME and replace the operations with the supplied recipes.
+
+| Request | Required construction beyond the group-order change |
+|---|---|
+| H001 | Select the last reading per SKU, then apply the quantity filter. |
+| H003 | Compute the drop between consecutive readings per SKU, then select and order positive drops. |
+| H004 | Compute the minimum across all readings in each aisle and count distinct SKUs. |
+| H005 | Count distinct aisles per SKU before filtering counts above one. |
+| H008 | Remove repeated aisle/quantity pairs, rank numeric quantities and keep the first two per aisle. |
+| H056 | Keep ZIP paths correlated with their exact payload bytes, then select the smallest path in each equal-payload group. |
+| H083 | Rank declarations within each pair by encounter order and emit source positions after the first. |
+| H090 | Select each pair's last row and order the surviving pairs by source position. |
+
+H004 needs both measures over the same aisle. The ordinary planner rejected a control that asks `aggregate_groups` for `min`. Its declared measures are `count`, `distinct`, and `sum`. The fixed construction first uses `annotate_group_measure(min)` to attach the aisle's minimum to every reading. It groups by aisle and that constant, counts distinct SKUs, and formats both measures from the resulting row. This keeps the minimum independent of which SKU observations contribute to the distinct count. [Fixed H004 operations](../shared/request-recipes.json)
+
+| H004 construction | Archived fixtures passed | Fresh aisle `A` (reported count, minimum) | Fresh aisle `Z` (reported count, minimum) |
+|---|---:|---|---|
+| Full recipe | 5/5 | `2, -3` | `2, -7` |
+| Count rows instead of distinct SKUs | 2/5 | `3, -3` | `4, -7` |
+| Keep only the first reading per aisle and SKU before computing the minimum | 3/5 | `2, 4` | `2, 2` |
+
+The new fixture mixes aisle and SKU order and places the lowest quantities in later readings for repeated SKUs. It also repeats an identical row. This separates an aisle's set of SKUs from its set of quantity observations. All three recipes produce executable programs. A separate set-and-minimum calculation matched the fixed output on the five archived inputs and the new fixture.
+
+The eight complete recipes passed all 40 independent fixture checks. H003, H005, and H056 reached `strings → out:text/tab-separated-values` on the parent and scored 0/15. The existing detached writer brought those identical recipes to 15/15. All five H056 results also reproduced on the exact saved ZIP files. This measures supplied constructions and their boundaries. Fresh selection from English remains unmeasured.
+
+The pinned run took 167.95 wall seconds and recorded 17 validation plans, 65 archived fixture verdicts and eight additional runs. All 43 plan and receipt hashes verified. The sealed report SHA-256 is `98f56631d8f5d01d08626de37185a7ddec55104a04b25e7d1dd36f22ec976858`. The C++ language audit inspected 862 files with zero violations. Cross-file and capability-gap checks passed. [Sealed report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-group-order-replay-XX3MOjcy/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXs0tGY1/controls.json)
+
+A full rerun of the default selector audit reproduced the previous plans, executable hashes, verdicts and outputs across all fifteen integrated arms. All 66 plan and receipt pins verified. Only timed receipts and regenerated fixture hashes were excluded from the report comparison. The regression report SHA-256 is `08ac293f82c366b8ba71be87ca1ca273c3761ccf1838463152d035bfdf33f9da`. [Selector regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-order-replay-XXfkccFW/report.json)
+
+Reproduce with the pinned command in the preceding section and append `--group-order` after `.build/row-order-replay`.

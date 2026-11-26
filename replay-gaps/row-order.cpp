@@ -1,4 +1,5 @@
 #include "row-trial.hpp"
+#include <algorithm>
 #include <iostream>
 
 using namespace miner;
@@ -8,7 +9,7 @@ struct Case {
   std::string id, input, order;
 };
 
-const std::vector<Case> cases{
+const std::vector<Case> selector_cases{
     {"H006", "stock.tsv", ""},
     {"H021", "scans.db", "4:num:asc"},
     {"H024", "scans.db", "1:text:asc"},
@@ -19,6 +20,12 @@ const std::vector<Case> cases{
     {"H084", "build.tsv", "0:text:asc"},
     {"H092", "bookings.json", "2:num:asc"},
     {"H095", "bookings.json", "5:num:asc,0:text:asc"},
+};
+const std::vector<Case> grouping_cases{
+    {"H004", "stock.tsv", "asc"},       {"H001", "stock.tsv", "asc"},
+    {"H003", "stock.tsv", "encounter"}, {"H005", "stock.tsv", "asc"},
+    {"H008", "stock.tsv", "asc"},       {"H056", "backup.zip", "asc"},
+    {"H083", "build.tsv", "encounter"}, {"H090", "build.tsv", "encounter"},
 };
 const Strings splits{"ordinary", "boundary", "empty", "transfer", "sparse"};
 const std::string tsv = "text/tab-separated-values";
@@ -74,6 +81,22 @@ std::pair<J, J> selector_controls(J order_only, const std::string &order) {
   return {order_only, all_selector_args};
 }
 
+J group_order_control(J saved, const std::string &order) {
+  for (auto &role : saved["roles"]) {
+    unsigned count = 0;
+    for (auto &op : role["requirement"]["operations"]) {
+      if (op["outcome"] != "group_rows")
+        continue;
+      ++count;
+      check(op["parameters"]["group_order"].isString(),
+            "missing saved group order");
+      op["parameters"]["group_order"] = order;
+    }
+    check(count == 1, "expected one rejected grouping per role");
+  }
+  return saved;
+}
+
 J fingerprint(const Path &path) {
   if (fs::is_regular_file(path))
     return J(hash(path));
@@ -106,16 +129,17 @@ J fixture_context(const Path &dir, const Path &historical, const Path &exe,
     const auto now = fingerprint(current);
     auto observation = object({{"historical", before}, {"generated", now}});
     const bool sqlite = previous.extension() == ".db";
+    const bool zip = previous.extension() == ".zip";
     if (sqlite) {
       const auto dump =
           run({"/usr/bin/sqlite3", "-readonly", previous, ".dump"});
       check(dump == run({"/usr/bin/sqlite3", "-readonly", current, ".dump"}),
             "SQLite schema or rows changed in " + c.id + " " + split);
       observation["sqlite_dump_sha256"] = sha(dump);
-    } else if (c.id != "H053") {
+    } else if (!zip) {
       check(before == now, "fixture drift in " + c.id + " " + split);
     }
-    if ((sqlite || c.id == "H053") && result["verified"] == true) {
+    if ((sqlite || zip) && result["verified"] == true) {
       const auto exact =
           extra_case(dir / "exact-historical-input" / split, exe, bundle,
                      bytes(previous), result["outputs"][split]);
@@ -128,7 +152,12 @@ J fixture_context(const Path &dir, const Path &historical, const Path &exe,
 }
 } // namespace
 
-int main() try {
+int main(int argc, char **argv) try {
+  const bool grouping = argc == 2 && std::string(argv[1]) == "--group-order";
+  check(argc == 1 || grouping, "usage: row-order-replay [--group-order]");
+  const auto &cases = grouping ? grouping_cases : selector_cases;
+  const std::string parameter =
+      grouping ? "group_rows.group_order" : "select_group_row.order_by";
   const auto parent = runs / "v5-queue-XXH5XMi9/stage/package";
   const auto parent_pin = hash(parent / "manifest.json");
   check(parent_pin ==
@@ -165,18 +194,18 @@ int main() try {
   Strings ids;
   for (const auto &c : cases)
     ids.push_back(c.id);
-  check(
-      load(
-          ranking_file)["validation_parameters"]["select_group_row.order_by"] ==
-          string_array(ids),
-      "incomplete archived validation cluster");
+  std::sort(ids.begin(), ids.end());
+  check(load(ranking_file)["validation_parameters"][parameter] ==
+            string_array(ids),
+        "incomplete archived validation cluster");
   const auto recipes_file = root / "shared/request-recipes.json";
   const auto recipe_pin = hash(recipes_file);
   check(recipe_pin ==
             "768676cbc34ef7db9d869520bd3d26d86123f49a3c9803901eb5653de3a6f49b",
         "changed supplied reference recipes");
   const auto recipes = load(recipes_file);
-  const auto work = fresh_run("v5-row-order-replay");
+  const auto work =
+      fresh_run(grouping ? "v5-group-order-replay" : "v5-row-order-replay");
   std::cout << work.string() << std::endl;
   const auto archive = runs / "english-audit-bcsgf8pi/replay-staged";
   const auto original =
@@ -193,7 +222,7 @@ int main() try {
                         {"tools", tools()}});
   std::vector<Path> programs;
   for (const auto &c : cases) {
-    std::cout << c.id << " selector parameters" << std::endl;
+    std::cout << c.id << " " << parameter << std::endl;
     const auto saved_file = archive / c.id / response;
     const auto saved_pin = hash(saved_file);
     check(saved_pin == hash(original / c.id / response),
@@ -201,24 +230,36 @@ int main() try {
     const auto old_result = archive / c.id / "run/result.json";
     const auto previous = load(old_result)["interpretation_errors"];
     const auto saved = load(saved_file);
-    const auto [order_only, params_only] = selector_controls(saved, c.order);
     const auto dir = work / "parameters" / c.id;
     auto entry = object({{"archived_sha256", saved_pin},
                          {"archived_result_sha256", hash(old_result)},
                          {"historical_errors", previous}});
     entry["archived"] = plans(base, dir / "archived", saved);
-    entry["order_only"] = plans(base, dir / "order-only", order_only);
-    entry["selector_only"] = plans(base, dir / "selector-only", params_only);
+    if (grouping) {
+      entry["order_only"] =
+          plans(base, dir / "order-only", group_order_control(saved, c.order));
+    } else {
+      const auto [order_only, params_only] = selector_controls(saved, c.order);
+      entry["order_only"] = plans(base, dir / "order-only", order_only);
+      entry["selector_only"] = plans(base, dir / "selector-only", params_only);
+    }
     const auto &measurements = entry;
     for (unsigned i = 0; i < saved["roles"].size(); ++i) {
       const auto id = saved["roles"][i]["id"].asString();
       const auto first = previous[id].asString();
-      check(first.starts_with("select_group_row.order_by expects ") &&
+      check(first.starts_with(parameter + " expects ") &&
                 measurements["archived"][i]["validation"]["r"].asString() ==
-                    first &&
-                measurements["order_only"][i]["validation"]["r"]
-                    .asString()
-                    .starts_with("select_group_row.result_order expects ") &&
+                    first,
+            "archived validation changed for " + c.id + " " + id);
+      const auto &order = measurements["order_only"][i];
+      const auto next = order["validation"]["r"].asString();
+      if (grouping) {
+        check(!next.starts_with(parameter + " expects ") &&
+                  order["complete_roles"].asUInt() == 0,
+              "unexpected group-order repair result for " + c.id + " " + id);
+        continue;
+      }
+      check(next.starts_with("select_group_row.result_order expects ") &&
                 !measurements["selector_only"][i]["validation"]["r"]
                      .asString()
                      .starts_with("select_group_row.") &&
@@ -281,6 +322,62 @@ int main() try {
                   array({array({"strings", "out:text/tab-separated-values"})}),
               "fixed TSV route stopped before the sink");
       check(blocked["roles"].size() == recipe.size(), "missing TSV role");
+    }
+    if (c.id == "H004") {
+      auto single_aggregate = fixed;
+      single_aggregate["roles"][0]["requirement"]["operations"] =
+          operations(array(
+              {array({"group_rows",
+                      object({{"keys", "1"}, {"group_order", "asc"}})}),
+               array({"aggregate_groups", object({{"measure", "min"},
+                                                  {"value_column", 2},
+                                                  {"result_order", "group"}})}),
+               array({"report_fields", object({{"fields", "0,1"}})})}));
+      const auto rejected =
+          plans(base, work / "parameters/H004/aggregate-min", single_aggregate);
+      check(rejected[0]["validation"]["r"].asString().starts_with(
+                "aggregate_groups.measure expects "),
+            "the single aggregate unexpectedly admitted minimum");
+      report["requests"][c.id]["aggregate_min"] = rejected;
+
+      auto row_count = fixed;
+      auto &aggregate = row_count["roles"][0]["requirement"]["operations"][2];
+      check(aggregate["outcome"] == "aggregate_groups" &&
+                aggregate["parameters"]["measure"] == "distinct",
+            "changed H004 distinct-count recipe");
+      aggregate["parameters"]["measure"] = "count";
+      auto early_dedup = fixed;
+      auto &dedup_ops = early_dedup["roles"][0]["requirement"]["operations"];
+      auto prefix = operations(array(
+          {array({"group_rows",
+                  object({{"keys", "1,0"}, {"group_order", "encounter"}})}),
+           array({"select_group_row", object({{"which", "first"},
+                                              {"order_by", ""},
+                                              {"result_order", "group"}})})}));
+      for (const auto &op : dedup_ops)
+        prefix.append(op);
+      dedup_ops = prefix;
+      for (const auto &[arm, spec] :
+           {std::pair{"count-rows", row_count},
+            std::pair{"dedup-before-min", early_dedup}}) {
+        const auto variant = replay(c, arm, base, spec);
+        check(variant["roles"].size() == 1 && complete(variant["roles"]["0"]),
+              "H004 mutation did not construct");
+      }
+      const std::string stock = "Q\tZ\t10\nQ\tA\t11\nP\tZ\t2\nQ\tA\t-"
+                                "3\nR\tA\t4\nQ\tZ\t-7\nQ\tZ\t-7\n";
+      for (const auto &[arm, expected] :
+           {std::pair{"fixed", "A\t2\t-3\nZ\t2\t-7\n"},
+            std::pair{"count-rows", "A\t3\t-3\nZ\t4\t-7\n"},
+            std::pair{"dedup-before-min", "A\t2\t4\nZ\t2\t2\n"}}) {
+        const auto dir = work / arm / c.id;
+        const auto tested =
+            extra_case(dir / "distinct-and-min", dir / "run/project/converter",
+                       base, stock, array({expected}));
+        check(tested["passed"] == true,
+              "unexpected H004 distinct/minimum behavior");
+        report["requests"][c.id]["distinct_and_min"][arm] = tested;
+      }
     }
     if (c.id != "H032")
       continue;

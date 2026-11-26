@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b group-order audit covers eight later validation stops and 40 passing fixed fixtures. H004's single aggregate rejects `min`. The retained minimum annotation and distinct-count operations cover the two-measure report, including a fresh repeated-SKU witness. [Group order and H004 controls](../replay-gaps/RESULTS.md#group-order-validation-and-the-h004-minimum)
+
 The H1b validation replay covers all ten archived `select_group_row.order_by` failures. Correcting the selector still leaves every saved construction incomplete. The fixed paths pass all 50 fixtures with retained operations and the scoped TSV registration where required. [Grouped row validation and controls](../replay-gaps/RESULTS.md#grouped-row-selection-validation-ten-requests)
 
 The H1b booking replay resolved H096's archived graph-to-text stop with retained JSON rows, grouped state counts and the text writer. Both fixed field projections passed all archived cases. Evidence covers the two supplied constructions on this generation. [Booking-state replay and controls](../replay-gaps/RESULTS.md#prerequisite-graphs-and-booking-states-h096)
