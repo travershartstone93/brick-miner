@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The four URI-list replays exercise reversal, first-three distinct HTTPS selection, adjacent deduplication and last-occurrence order on the retained scalar and correlated readers. The fresh mixed-ending witness preserves URI spelling and distinguishes the archived comment and duplicate-order errors. [URI-list replay and evidence](../replay-gaps/RESULTS.md#uri-list-requests-with-uncovered-prose)
+
 The four archive replays exercise five supplied roles on the retained ZIP readers and writers. Exact saved archives reproduce 25 output artifacts. The fresh ZIP distinguishes stable basename order, distinct folders, empty regular files and both H057 destinations. [ZIP replay and evidence](../replay-gaps/RESULTS.md#zip-requests-with-uncovered-prose)
 
 The six directory replays exercise seven supplied roles on the retained reader and writers. Their fresh oracle covers exact byte identity, filename case and suffixes, hidden directory membership, shallow exclusions and all maximum-depth ties. The earlier H070 evidence already covers the seventh directory request in the prose-obligation cohort. [Directory replay and evidence](../replay-gaps/RESULTS.md#directory-requests-with-uncovered-prose)

@@ -664,3 +664,30 @@ The two pinned runs took 67.11 and 122.29 wall seconds. Each contains 40 saved f
 The shared ZIP builder reproduces the earlier size-chain fixture bytes, plans, executable hashes and output verdicts. Timed receipt hashes differ. The C++ language, cross-file and capability-gap checks passed. [ZIP size-chain regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-zip-chain-replay-XXrmJuQ1/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXbtKlKI/controls.json)
 
 Build with `make .build/residual-zip-replay` and run `.build/residual-zip-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
+
+## URI-list requests with uncovered prose
+
+H071, H072, H074 and H078 are the four URI-list cases from the prose-obligation ranking. The supplied H071 and H074 roles use the implicit per-line GLib reader. H072 and H078 use the correlated reader to retain the original URI alongside the supplied grouping or scheme key. The harness matches the scalar reader binding, header and GLib bytes to the earlier reader qualification. It also verifies the correlated input kernel and uriparser against their retained source pins. [Prose-obligation ranking](#replies-with-uncovered-prose-and-no-typed-gap) · [Scalar reader evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-uri-reader-XXLemjgN/stage/manifest.json)
+
+| Request | Construction after reading past comments and blank lines |
+|---|---|
+| H071 | Reverse all URI entries, including exact duplicates. |
+| H072 | Select the ASCII case-insensitive HTTPS scheme, deduplicate exact original URI strings and keep the first three. |
+| H074 | Collapse consecutive identical URI strings and preserve any later repeat. |
+| H078 | Select the last occurrence of each exact URI and sort survivors by their original positions. |
+
+A separate C++ oracle reads the lines without normalizing URIs. The mixed input contains ten URIs after skipping comments and blank lines. It includes LF and CRLF, a comment between identical adjacent URIs, a final opaque URI without a terminator, fragments, and case differences in schemes, hosts and percent escapes. The second input contains only comments and blank lines. JSON comparisons check decoded strings and separately verify the original saved serialization bytes. [Native replay and oracle](residual-uri.cpp)
+
+The four supplied programs passed all 20 saved fixtures and matched the independent oracle on both fresh inputs. H071 reverses all ten URIs. H072 preserves the mixed-case URI and both spellings `%2f` and `%2F` in its shortlist. H074 returns eight entries, preserving the nonadjacent repeat. H078 returns seven survivors in last-position order. The alternative H078 construction uses the scalar reader, reversal, stable exact deduplication and reversal again. Its outputs match the correlated grouping route byte for byte on all five saved and both fresh inputs.
+
+| Altered or archived construction | Saved fixtures passed | Difference on the mixed input |
+|---|---:|---|
+| H071, replay the saved positive `#` prefix filter | 1/5 | Selects no entries after the reader drops comments. |
+| H072, match a literal lowercase HTTPS prefix | 2/5 | Drops the mixed-case URI and admits a later bookmark. |
+| H072, limit before exact deduplication | 4/5 | Returns two bookmarks from the first three HTTPS entries. |
+| H074, deduplicate across the entire input | 3/5 | Drops the later nonadjacent duplicate. |
+| H078, replay the saved deduplication before reversal | 3/5 | Orders survivors by their first positions. |
+
+The two pinned runs took 138.72 and 122.14 wall seconds. Each contains 50 saved fixture verdicts and 20 fresh executions. The repeat reproduces the plans, program hashes, outputs and verdicts. Timed receipt hashes differ. All 81 file hashes verified in each run, and both released their scratch executables. The primary report SHA-256 is `15dda75f1b9ec6f40dead0e5c304ce6693f92bb14d423a1574323ecab5b6ec70` and the repeat SHA-256 is `235b9ebac28990e32a81a75ceefec2896ee64fef70c472f35e111d7efd7a8bba`. The C++ language, cross-file and capability-gap checks passed. [Sealed primary report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-uri-replay-XXNy7n6G/report.json) · [Sealed repeat](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-residual-uri-replay-XXRYQm09/report.json) · [Gap regression](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XXXqg8LT/controls.json)
+
+Build with `make .build/residual-uri-replay` and run `.build/residual-uri-replay` with the corpus volume mounted. For the exact tool pins, substitute this executable in the [read-only replay command](#grouped-row-selection-validation-ten-requests) and include `--tmpfs /tmp`.
