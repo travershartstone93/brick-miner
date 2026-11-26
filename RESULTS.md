@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H076 and H088 each passed 5/5 with fixed operations on retained providers. In H076 the typed URI reader removed the row-stream gap and the full route required the staged TSV sink. In H088 the saved route already used the TSV row reader, and keeping rows through the graph work resolved the paired report. [Row-boundary replay and reproduction](replay-gaps/RESULTS.md#two-strings-to-rows-stops-h076-h088)
+
 The miner qualified the historical TSV sink on the V5 parent and replayed eight saved interpretations with exact binding removal. The registration closed ten output-role gaps and recovered 11 fixture passes. The corrected H029 control passed all five fixtures with the sink. [TSV qualification and reproduction](v5/RECONCILIATION.md#h1b-tsv-sink-registration)
 
 The retained JSON reader passed direct checks for the exact H035 telemetry projection, including numeric spelling and partial visitation on a late record error. The ordinary H035 program passed 22/22 executions on each bundle. Removing the reader blocked the recipe. [Telemetry qualification and reproduction](v5/RECONCILIATION.md#h1b-telemetry-json-scalar-projection)

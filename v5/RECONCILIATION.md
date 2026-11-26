@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+The H1b row-boundary controls replay H076 and H088. Both fixed constructions passed on retained operations, with the previously staged TSV writer for H076. [Row-boundary controls](../replay-gaps/RESULTS.md#two-strings-to-rows-stops-h076-h088)
+
 The latest detached backfill qualifies the historical TSV sink registration on the V5 parent. [TSV writer and paired replay](#h1b-tsv-sink-registration)
 
 The latest detached backfill qualifies the JSON object reader for the exact four-field telemetry selector used by H035. [Telemetry reader qualification](#h1b-telemetry-json-scalar-projection)

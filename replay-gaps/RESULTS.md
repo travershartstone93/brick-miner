@@ -95,3 +95,32 @@ Reproduce from the miner checkout with the corpus volume mounted.
 make .build/path-replay
 .build/path-replay
 ```
+
+## Two strings-to-rows stops (H076, H088)
+
+The ranking grouped these two archived requests under the same `strings → rows` stop. Their duties differ. H076 needs the exact URI base before the first hash and the distinct original URI count per base. H088 needs two reports. The first finds direct self-edges. The second finds each reciprocal pair of distinct modules once, with the smaller name first. [Ranked stops](../row-ops/english-construction.tsv) · [Fixed author recipes](../shared/request-recipes.json)
+
+The saved answers are byte-identical to the originals from the 104-card prompt. The later replay menus include `uri_records` for H076 and `graph_witnesses` for H088. H076's replay menu omitted `filter_records`. H088's omitted `unique_lines` and `sort_lines`. The current experiment supplies fixed operations to the replay runner and measures construction and output with the editor disabled. It preserves each archived input and output MIME and verifies the five checker input hashes in every arm. Fresh selection from English remains unmeasured.
+
+The replay uses the V5 parent executable bundle at `436db92629463daee559de2cbbc1c81519e12306d5bf01cc6d2883f3140e779c` and the same bundle with the previously staged TSV writer at `b2f8a40d44b1589779fc82fcfa23995df5cb2b2432167e9383f6f22e9c828d54`. Disposable bundles remove one exact binding at a time, with the raw row and resulting manifest hash in the report. [TSV qualification](../v5/RECONCILIATION.md#h1b-tsv-sink-registration)
+
+### H076, distinct URI variants
+
+The archived route reads URI-list strings, runs several string filters and then asks to group rows. Replacing just that prefix with `uri_records(fields="base,original")` removes the `strings → rows` gap. The old grouping and counting tail still requires `row_groups → strings` and `integers → strings`, even with the staged TSV writer. Both reader-only variants score 0/5. The fixed recipe groups on the exact base, counts distinct original URIs, filters at two and projects the ordered base. It scores 0/5 without the TSV writer and 5/5 with it. Removing `uri_records` blocks that fixed route.
+
+Counting occurrences instead of distinct originals constructed a program and passed 2/5. In a separate CRLF witness with a comment, repeated copies of `file:///duplicate#one` and two distinct variants of `https://HoSt/Keep?q=1`, the fixed program emitted only the HTTPS base with its original case and query. The occurrence-count program also emitted the duplicate-only file URI.
+
+### H088, direct self-dependencies and reciprocal pairs
+
+Both archived roles already use `tab_records` to read TSV into rows. The reciprocal report projects one column to strings before selecting a second column. Keeping just one projection removes the typed hole and passes only the empty fixture. Both roles still carry the saved uncovered obligations. The fixed self-edge report compares both columns before projecting the module name. The fixed reciprocal report uses two-edge witnesses, tests the return to the source, applies strict lexical orientation, and then formats and deduplicates the pair. Both reports pass together on 5/5 fixtures.
+
+Removing `tab_records` exposes `in:text/tab-separated-values → rows` in both roles and leaves neither complete. Removing `graph_witnesses` leaves the self-edge plan complete and blocks the reciprocal role. Omitting the lexical condition constructs both reports but scores 2/5. A separate input with duplicate edges, a direct self-edge, a reciprocal pair and a one-way two-edge path produced exactly `s` and `a\tb` in the two fixed outputs. Dropping the lexical condition added the reversed pair and included the self-edge in the reciprocal report.
+
+The sealed report contains 14 arms, 70 original fixture verdicts, and four runs on the two additional witnesses. It pins all 14 raw run receipts and all 14 emission reports. The summed pipeline time was 271.98 seconds. The detached replay used existing readers, relational operators and the previously qualified TSV writer. [Sealed report](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-boundary-replay-XXyWAX5Y/report.json)
+
+```sh
+make .build/row-boundary-replay
+.build/row-boundary-replay
+```
+
+A separate clean repeat reproduced all fixture verdicts, emitted plans and output bytes for both fixed recipes and H088's one-projection control. The repeat recorded raw receipt and program digests before releasing its three executables. The full-run report hash is `028580028f66b07a45370c97b7297e380e56b97d6ca44afe74870bfe49d7a64c`. The C++ language audit inspected 852 files with zero violations. Cross-file and capability-gap regressions passed. [Repeat evidence](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-row-boundary-repeat-JA5OrxId/verified.sha256) · [Gap regressions](/run/media/whisper/UNLLM_CORPUS/unllm/experiments/brick-miner/v5-gap-controls-XX2CHE4c/controls.json)
