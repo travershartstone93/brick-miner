@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+The H009 inventory and H042 publishing replays close the 32-reply zero-operation cohort. Their supplied constructions use retained readers and the staged TSV registration. The combined report verifies 160 saved fixture passes across the 32 supplied requests. [Cohort replay and reproduction](replay-gaps/RESULTS.md#inventory-and-publishing-close-the-zero-operation-cohort)
+
 The four telemetry constructions reuse the scoped JSON projection and retained sensor-state and ordering operations. Interleaved readings expose a filter-before-reset streak variant that passed all five saved H034 fixtures. [Telemetry replay and reproduction](replay-gaps/RESULTS.md#archived-telemetry-with-no-ordered-operations)
 
 The five build-scheduling replies with zero operations have passing retained constructions. The audit reuses pinned H086 reachability evidence and checks cycle membership, direct-edge membership, distinct modules and exact path length on a fresh graph. [Build-scheduling replay and reproduction](replay-gaps/RESULTS.md#archived-build-scheduling-with-no-ordered-operations)
