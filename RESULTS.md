@@ -2,6 +2,8 @@
 
 The V5 stage contains ten qualified row providers and one qualified class. The latest H1b batch verified sorting, reversal, first-occurrence deduplication and adjacent deduplication over 121 bounded inputs, with ordinary program and removal controls. Seven of the active catalog's 105 row bindings have matching staged qualification evidence. The [current handoff](v5/RECONCILIATION.md#h1b-retained-sequence-operations) records the package pin, qualifications and reproduction commands. The [XXH32 handoff](v5/RECONCILIATION.md#h1-documented-xxh32-api-and-h1b-historical-requalification) records an additional staged construction and its independent transfer.
 
+The migration ledger's highest-use pending binding is `write_lines`, selected in 13 of the 100 archived interpretations. A detached fixture exercised the sorter and writer on their shared component x09. Three ordinary file checks passed. Sorting retains its staged qualification and the writer awaits independent qualification. [H1b usage ranking and identity experiment](v5/RECONCILIATION.md#h1b-migration-priority-from-actual-replay-use)
+
 The [replay gap ranking](replay-gaps/RESULTS.md) covers all 100 archived interpretations on the 127-card bundle. Eight requests exposed a missing TSV output conversion. Registering the existing writer closed ten output holes and gained eleven fixture passes. Zero additional requests passed all five fixtures.
 
 The [shared-needs ledger](SHARED-NEEDS.md) tracks the cumulative reader and row-operation batches, their Arch sources, and the end-user requests exercised by each brick. Reproduce the staged bundle with `./mine-project shared`.
