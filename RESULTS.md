@@ -1,5 +1,7 @@
 # Brick-mining pilot, 23 November 2026
 
+H080 completed the audits of the 13 disconnected archived chains. The retained URI route passed all five fixtures. A fresh input caught a lowercase-only filter that passes the archived suite and verified exact URI spelling, fragment presence, deduplication and sorting. [URI fragment export and reproduction](replay-gaps/RESULTS.md#disconnected-uri-fragment-export-h080)
+
 H030's retained SQLite row and count operations passed all five fixtures with the staged TSV writer. The independent query and fresh database distinguish counting scans from counting parcels and preserve the zero-delivered condition. [SQLite count and reproduction](replay-gaps/RESULTS.md#disconnected-sqlite-depot-counts-h030)
 
 H063's directory count passed all five fixtures with the retained `top` projection and staged TSV writer. Independent counting matched every saved tree and a fresh tree with hidden files, empty files and nested-only children. [Directory count and reproduction](replay-gaps/RESULTS.md#disconnected-directory-count-h063)

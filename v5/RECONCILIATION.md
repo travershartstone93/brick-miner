@@ -1,5 +1,7 @@
 # V5 reconciliation and handoff
 
+H080 closes the audit of the 13 archived no-chain requests. The retained URI projection and existing string operations produced the expected original URI array on the archived and mixed-case inputs. The fresh controls distinguish folded scheme matching, fragment presence, exact spelling, deduplication and bytewise order. [H080 replay and controls](../replay-gaps/RESULTS.md#disconnected-uri-fragment-export-h080)
+
 The H030 SQLite-chain audit reuses the retained depot and state projection with both counts computed per depot. It verifies five exact saved databases, the staged TSV writer and a fresh scan-order and count witness. [H030 diagnostics and controls](../replay-gaps/RESULTS.md#disconnected-sqlite-depot-counts-h030)
 
 The H063 directory-chain audit covers the retained `top` projection. The ordinary recipe counts every regular file under the corresponding immediate child, excludes root files and uses the staged TSV writer. It passed five archived fixtures and exact-tree comparisons. [H063 diagnostics and fresh tree](../replay-gaps/RESULTS.md#disconnected-directory-count-h063)
