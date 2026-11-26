@@ -542,20 +542,53 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
   const auto spec = load(stage / "spec.json");
   const auto domain = load(stage / "domain.json");
   unsigned kernels = 0;
+  bool sqlite_runtime = false;
   for (const auto &file : source["runtime_files"]) {
     check(digest(project_file(bundle / runtime, file["path"].asString())) ==
               file["sha256"].asString(),
           "scoped reader runtime differs from the parent");
     if (file["sha256"] == source["kernel_sha256"])
       ++kernels;
+    sqlite_runtime |= file["path"] == "libsqlite3.so.0";
   }
   check(kernels == 1, "scoped reader lacks a unique pinned parent kernel");
-  check(scope["parameter"].isString() &&
-            scope["argument_index"] == 1 && scope["argument_type"] == "const std::string&" &&
-            raw["args"] == array({scope["parameter"]}) &&
-            spec["binding"] == key,
+  check(spec["binding"] == key,
         "scoped file fixture differs from approved selector");
-  const auto parameter = scope["parameter"].asString();
+  const bool tuple = scope.isMember("parameters");
+  if (tuple) {
+    const auto &parameters = scope["parameters"];
+    check(key["binding_id"] == "sqlite_records" &&
+              source["source_id"] == "retained-sqlite-records" && sqlite_runtime &&
+              scope.size() == 1 && spec["parameters"] == parameters &&
+              domain["quantifier"] == "arguments" &&
+              domain["all_of"] == file_argument_scope(raw["args"], parameters) &&
+              !domain.isMember("any_of") && !domain.isMember("argument_index") &&
+              !domain.isMember("argument_type"),
+          "scoped SQLite reader differs from the exact reviewed selector tuple");
+    const auto integration = load(stage / "integration.json");
+    const auto standalone = load(stage / "standalone.json");
+    const auto &goal = integration["spec"];
+    const auto &operation = goal["roles"][0]["requirement"]["operations"][0];
+    const auto &cases = spec["cases"];
+    check(cases.isArray() && !cases.empty() && standalone["cases"].size() == cases.size() &&
+              goal["input_type"] == "application/vnd.sqlite3" &&
+              operation["outcome"] == key["binding_id"] &&
+              operation["parameters"] == parameters &&
+              integration["baseline"] == integration["staged"] &&
+              integration["staged"]["execution"].size() == 2 * cases.size() &&
+              integration["removed"]["gaps"]["r"].asString().find("sqlite_records") !=
+                  std::string::npos,
+          "scoped SQLite reader lacks direct and ordinary evidence for the selector tuple");
+  } else {
+    check(scope["parameter"].isString() &&
+              scope["argument_index"] == 1 && scope["argument_type"] == "const std::string&" &&
+              raw["args"] == array({scope["parameter"]}) &&
+              domain["quantifier"] == "argument" &&
+              domain["argument_index"] == scope["argument_index"] &&
+              domain["argument_type"] == scope["argument_type"],
+          "scoped file fixture differs from approved selector");
+  }
+  const auto parameter = scope.get("parameter", "").asString();
   auto exact_text = [](const J &value) {
     return object({{"id", "exact_text"}, {"value", value}});
   };
@@ -585,7 +618,7 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
                     std::string::npos,
             "scoped CSV reader lacks paired direct and ordinary evidence for " + name);
     }
-  } else {
+  } else if (!tuple) {
     check(scope["value"].isString() && spec["parameters"][parameter] == scope["value"] &&
               domain["all_of"] == array({exact_text(scope["value"])}) &&
               !domain.isMember("any_of"),
@@ -599,10 +632,7 @@ J file_predecessor(const Path &stage, const Path &package, const J &manifest,
             domain["header_sha256"] == binding["header_sha256"] &&
             domain["contract_sha256"] == files["contract.json"] &&
             domain["environment_sha256"] == files["environment.json"] &&
-            domain["implementation_sha256"] == source["kernel_sha256"] &&
-            domain["quantifier"] == "argument" &&
-            domain["argument_index"] == scope["argument_index"] &&
-            domain["argument_type"] == scope["argument_type"],
+            domain["implementation_sha256"] == source["kernel_sha256"],
         "sealed file scope differs from the exact reviewed binding or selector");
   check(contract["provider_id"] == key["component_id"] &&
             contract["capability_id"] == raw["effect"] &&

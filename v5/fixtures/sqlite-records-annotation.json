@@ -1,0 +1,32 @@
+{
+  "description":"Read the selected scan columns from a local SQLite database in sequence order.",
+  "primary_family":"files_storage",
+  "interface":{
+    "semantic_input":"A readable local SQLite database with the scans table, selected parcel, depot, state, minute and seq columns, and supported scalar values.",
+    "semantic_output":"One-based rows of text fields in projection order from the explicitly ordered query.",
+    "parameters":{"table":"scans","fields":"parcel,depot,state,minute,seq","order_by":"seq:asc"}
+  },
+  "facets":{
+    "technical_hierarchy":["files_storage","read-only SQLite records"],
+    "application":["scan histories","tabular database reports"],
+    "construction_role":["reader"],"abstraction":["local database to positioned row visitor"],
+    "implementation_form":["retained C++ adapter calling the SQLite C API"],
+    "platform":["tested Linux x86_64"],"dependencies":["brick_shared_inputs","SQLite 3.53.3-1","C++17"],
+    "resources":["The reader steps a SQLite statement and materializes one row per callback. SQLite may sort before yielding rows. Size ceilings, peak process memory and throughput are unmeasured."]
+  },
+  "claims":{
+    "preconditions":{"status":"declared","detail":"Supply the exact reviewed table, projection and ordering tuple and a readable local database. Selected columns must exist and provide text or numeric values.","evidence":["original/adapter.cpp","spec.json"]},
+    "postconditions":{"status":"observed","detail":"The exact tuple produced rows in the expected sequence and projected field order. Tested integers and real values converted to text. Text spelling, UTF-8 and embedded NUL were preserved.","evidence":["standalone.json","integration.json"]},
+    "refinements":{"status":"observed","detail":"Tested integer and text sequence columns used their SQLite value ordering. Selected fields broke tied sequence values with binary collation. Quoted names and alternate sort and projection selectors were exercised as controls.","evidence":["standalone.json","integration.json"]},
+    "effects":{"status":"observed","detail":"Read-only input files and case directory file inventories retained their bytes across tested successes and failures. The emitted reports preserved existing destinations and left absent destinations absent on tested errors.","evidence":["standalone.json","integration.json","original/adapter.cpp"]},
+    "invariants":{"status":"observed","detail":"Identical projected rows retained separate positions. Successful repeat visits to stable fixtures started at one and returned identical results.","evidence":["standalone.json","client.cpp"]},
+    "mathematical_properties":{"status":"unknown","detail":"General ordering equivalence and complexity bounds remain open.","evidence":[]},
+    "formal_predicates":{"status":"unknown","detail":"The detached domain records the three exact selector arguments together. Database validity and concurrency have no formal proof here.","evidence":[]},
+    "state_protocol":{"status":"observed","detail":"Invalid selector forms failed before visitation. SQL preparation failures emitted no rows. A late selected NULL or BLOB stopped the direct visitor after an already delivered valid prefix.","evidence":["standalone.json","client.cpp"]},
+    "ownership":{"status":"declared","detail":"The producer captures the input path and generated statement by value. The SQLite connection and statement are scoped to a visit. Row fields are borrowed during the callback.","evidence":["original/adapter.cpp","original/provider_types.hpp"]},
+    "concurrency":{"status":"unknown","detail":"Concurrent writes, active WAL files and concurrent visits were untested.","evidence":[]},
+    "thread_affinity":{"status":"unknown","detail":"No thread-affinity claim was tested.","evidence":[]},
+    "upstream_usage":{"status":"declared","detail":"The adapter opens SQLite with SQLITE_OPEN_READONLY and uses sqlite3_step to consume ordered query results. The signed Arch runtime and header are pinned.","evidence":["source.json","original/adapter.cpp"]},
+    "specification_question":{"status":"declared","detail":"Which table, output columns and sort keys should the database reader use? This evidence covers the exact scan projection and sequence order.","evidence":["spec.json"]}
+  }
+}

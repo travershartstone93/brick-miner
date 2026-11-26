@@ -3,6 +3,7 @@
 #include "pilot.hpp"
 #include <QScopeGuard>
 #include <QStandardPaths>
+#include <algorithm>
 #include <functional>
 #include <sstream>
 #include <sys/stat.h>
@@ -103,6 +104,23 @@ void retain_adapter(const Path &stage, const Path &bundle, const Path &origin,
                 stage / "original" / binding["header"].asString());
 }
 
+J file_argument_scope(const J &arguments, const J &parameters) {
+  check(arguments.isArray() && parameters.isObject() &&
+            arguments.size() == parameters.size(),
+        "file selector tuple differs from binding arity");
+  auto predicates = array();
+  for (Json::ArrayIndex i = 0; i < arguments.size(); ++i) {
+    const auto parameter = arguments[i].asString();
+    check(parameters[parameter].isString(),
+          "file selector argument is missing or non-text: " + parameter);
+    predicates.append(object({{"id", "exact_text"}, {"parameter", parameter},
+                               {"argument_index", static_cast<int>(i) + 1},
+                               {"argument_type", "const std::string&"},
+                               {"value", parameters[parameter]}}));
+  }
+  return predicates;
+}
+
 namespace {
 void verify_archive_materials(const Path &stage, const Path &bundle,
                               const Path &base, const J &src,
@@ -161,6 +179,64 @@ void verify_archive_materials(const Path &stage, const Path &bundle,
         "archived libarchive header changed");
   save(stage / "original/archive.h", header);
   write(stage / "source.json", source);
+}
+
+void verify_sqlite_materials(const Path &stage, const Path &bundle,
+                             const Path &base, const J &src, const J &row) {
+  const Path archive = src["archive"].asString();
+  const auto recipe = archive.parent_path() / "sqlite.PKGBUILD";
+  const auto ring = arch_keyring(stage);
+  const auto build = signed_build_info(src, recipe, ring);
+  const auto info = package_info(src, "sqlite");
+  check(info.find("\nlicense = LicenseRef-Sqlite\n") != std::string::npos,
+        "signed SQLite license changed");
+  save(stage / "arch-pkginfo.txt", info);
+  save(stage / "arch-pkgbuild.txt", bytes(recipe));
+
+  const auto provenance = load(bundle / history / "source.json");
+  const auto kernel = digest(bundle / runtime / library);
+  const auto soname = "libsqlite3.so.0";
+  const auto runtime_pin = digest(bundle / runtime / soname);
+  const auto sealed = provenance["archives"][archive.filename().string()];
+  const auto &definition = provenance["definitions"]["sqlite3_step"];
+  check(sealed["signer"] == src["signer"] && sealed["sha256"] == src["sha256"] &&
+            sealed["recipe_sha256"] == src["recipe_sha256"] &&
+            provenance["kernel_sha256"] == kernel &&
+            provenance["runtime_sha256"][soname] == runtime_pin &&
+            sha(archive_member(src, src["runtime_member"].asString())) == runtime_pin &&
+            definition["soname"] == soname &&
+            definition["header"] == "sqlite3.h" &&
+            run({"nm", "-D", "--undefined-only", bundle / runtime / library})
+                    .find(" U sqlite3_step\n") != std::string::npos &&
+            run({"nm", "-D", "--defined-only", bundle / runtime / soname})
+                    .find(" T sqlite3_step\n") != std::string::npos,
+        "retained SQLite linkage or signed runtime differs");
+  retain_adapter(stage, bundle, history, src, row, provenance,
+                 "shared/inputs/adapter.cpp");
+  for (const auto *path : {"usr/include/sqlite3.h",
+                           "usr/share/licenses/sqlite/license.txt"}) {
+    const auto data = archive_member(src, path);
+    check(sha(data) == provenance["headers"][path].asString() &&
+              data == bytes(bundle / "qualifications/shared/upstream/formats" / path),
+          "signed SQLite header or notice differs");
+    const auto dest = Path(path).filename() == "sqlite3.h"
+                          ? stage / "original/sqlite3.h"
+                          : stage / "notices/sqlite-license.txt";
+    save(dest, data);
+  }
+  write(stage / "source.json",
+        object({{"binding", row},
+                {"source_id", src["id"]},
+                {"kernel_sha256", kernel},
+                {"arch_signature_sha256", src["signature_sha256"]},
+                {"arch_signer", src["signer"]},
+                {"arch_keyring_sha256", digest(ring)},
+                {"arch_buildinfo_sha256", sha(build)},
+                {"sqlite_entrypoint", definition},
+                {"runtime_files",
+                 runtime_files(bundle, base,
+                               {library, soname, "libarchive.so.13", "liburiparser.so.1",
+                                "libduckdb.so", "pkgconfig/brick_shared_inputs.pc"})}}));
 }
 
 void verify_reader_materials(const Path &stage, const Path &bundle,
@@ -554,7 +630,8 @@ auto pin_runtime_path(const Path &bundle) {
 
 Path build_record_client(const Path &stage, const Path &scratch,
                          const Path &bundle, const J &source, const J &tools,
-                         bool readers, bool directory) {
+                         bool readers, bool directory,
+                         const Strings &extra_libraries = {}) {
   auto options = flags({"jsoncpp", readers ? "brick_shared_readers"
                                            : "brick_shared_inputs"});
   auto exe = scratch / "client";
@@ -563,11 +640,13 @@ Path build_record_client(const Path &stage, const Path &scratch,
   append(cmd, options);
   if (!readers)
     cmd.push_back((bundle / runtime / "libarchive.so.13").string());
+  for (const auto &name : extra_libraries)
+    cmd.push_back((bundle / runtime / name).string());
   cmd.push_back("-Wl,-rpath-link," + (bundle / runtime).string());
   run(cmd);
   auto env = tools;
   auto tool_names = Strings{"bsdtar", "gpgv", "ldd"};
-  if (readers)
+  if (readers || !extra_libraries.empty())
     tool_names.push_back("nm");
   else if (!directory)
     append(tool_names, {"tar", "unzip"});
@@ -590,8 +669,10 @@ Path build_record_client(const Path &stage, const Path &scratch,
   }
   for (const auto &f : source["runtime_files"]) {
     auto name = f["path"].asString();
-    if (readers ? (name == readers_library || name == "libduckdb.so")
-                : (name == library || name == "libarchive.so.13"))
+    const bool required = readers ? (name == readers_library || name == "libduckdb.so")
+                                  : (name == library || name == "libarchive.so.13");
+    if (required || std::find(extra_libraries.begin(), extra_libraries.end(), name) !=
+                        extra_libraries.end())
       check(env["resolved_client_libraries"][name]["sha256"] == f["sha256"] &&
                 env["resolved_client_libraries"][name]["path"] ==
                     fs::canonical(bundle / runtime / name).string(),
@@ -906,6 +987,141 @@ Path qualify_csv_records(const Path &package, const std::string &pin,
                 {"quantifier", "argument"},
                 {"any_of", conditions},
                 {"scope", "Each exact header mode has separate direct and file evidence. Input-domain behavior is bounded to the recorded cases."}}));
+  return finish_file_stage(work, package, pin, record["logical_id"].asString(),
+                           "unllm.scoped-file-evidence/1");
+}
+
+Path qualify_sqlite_records(const Path &package, const std::string &pin,
+                            const Path &registry, const std::string &registry_pin) {
+  verify(package, pin);
+  const std::string operation = "sqlite_records";
+  const std::string mime = "application/vnd.sqlite3";
+  const auto src = sources()["retained-sqlite-records"];
+  const auto job = retained_binding_job(v5_root() / "sources.json", operation);
+  const auto arguments = array({"table", "fields", "order_by"});
+  const auto parameters = object({{"table", "scans"},
+                                  {"fields", "parcel,depot,state,minute,seq"},
+                                  {"order_by", "seq:asc"}});
+  check(src["approval"] == "local-pilot" && src["method"] == "signed-local-package" &&
+            job["source"] == src["id"] && job["route"] == "api" &&
+            job["stream"] == "foundational" &&
+            job["tests"] == "v5/fixtures/sqlite-records.json" &&
+            job["parameter"] == parameters,
+        "no reviewed local SQLite record job");
+  const auto priority = rank_supplied_usage(
+      project_file(runs, job["coverage_audit"].asString()),
+      job["coverage_sha256"].asString(),
+      project_file(runs, job["migration_snapshot"].asString() + "/ledger.sqlite")
+          .parent_path(),
+      job["ledger_sha256"].asString());
+  const auto work = fresh_run("v5-sqlite-records"), stage = work / ".stage",
+             scratch = work / ".test-programs", fixtures = stage / "fixtures",
+             bundle = package / "bundle", base = verified_base();
+  fs::create_directory(scratch);
+  fs::create_directories(fixtures);
+  save_file_registry(stage, src, registry, registry_pin);
+  check(retained_binding_job(stage / "sources.json", operation) == job,
+        "changed SQLite reader job");
+  const auto defs = load(bundle / "providers/contracts.json");
+  const auto row = select_binding(defs["providers"], operation,
+                                  "miner_sqlite_records", "in:" + mime, "rows");
+  const auto record = file_binding_identity(row, bundle);
+  const auto selection = select_ranked_scope(package, pin, priority, job);
+  const auto &selected = selection["selected"];
+  const auto legacy = load(bundle / history / "contracts.json")[operation];
+  check(selected["binding_id"] == operation &&
+            selected["binding_sha256"] == record["binding_sha256"] &&
+            selected["header_sha256"] == record["header_sha256"] &&
+            row["call"] == job["callable"] && row["args"] == arguments &&
+            row["from"] == legacy["from"] && row["to"] == legacy["to"] &&
+            legacy["args"] == object({{"table", "text"}, {"fields", "text"},
+                                     {"order_by", "text"}}) &&
+            defs["outcomes"][operation]["parameters"] == legacy["args"],
+        "SQLite qualification differs from ranked ledger or retained ABI");
+  write(stage / "priority.json", priority);
+  write(stage / "selection.json", selection);
+  verify_sqlite_materials(stage, bundle, base, src, row);
+  const auto source = load(stage / "source.json");
+  for (const auto &[from, to] : std::map<std::string, std::string>{
+           {"sqlite-records.json", "spec.json"},
+           {"sqlite-records-client.cpp", "client.cpp"},
+           {"sqlite-records-annotation.json", "annotation.json"}})
+    fs::copy_file(v5_root() / "fixtures" / from, stage / to);
+  const auto spec = load(stage / "spec.json");
+  check(spec["binding"] == record["key"] && spec["parameters"] == parameters,
+        "SQLite fixture differs from the reviewed selectors");
+
+  const auto restore = pin_runtime_path(bundle);
+  const auto tools = file_qualification_tools();
+  const auto exe = build_record_client(stage, scratch, bundle, source, tools,
+                                       false, false, {"libsqlite3.so.0"});
+  for (const auto &name : spec["inputs"].getMemberNames()) {
+    const auto &input = spec["inputs"][name];
+    if (input.isNull())
+      continue;
+    if (input["sql"].isString()) {
+      auto cmd = invoke(exe, fixtures, bundle);
+      append(cmd, {"--make", name, input["sql"].asString()});
+      run(cmd, {.seconds = 8, .probe_limits = true});
+    } else {
+      check(input["bytes"].isString(), "SQLite fixture has no input bytes");
+      save(fixtures / name, input["bytes"].asString());
+    }
+    fs::permissions(fixtures / name, fs::perms::owner_read | fs::perms::group_read |
+                                         fs::perms::others_read);
+  }
+  const auto before = tree_hashes(fixtures);
+  auto observe = [&](const J &test, const std::string &input, const J &params) {
+    check(spec["inputs"].isMember(input), "SQLite test has no input declaration");
+    const auto seen = probe_record_rows(exe, fixtures, bundle, input, dump(params));
+    check_record_rows(test, seen, operation, true);
+    return object({{"name", test["name"]}, {"observation", seen}});
+  };
+  auto direct = array(), controls = array();
+  for (const auto &test : spec["cases"])
+    direct.append(observe(test, test["name"].asString(), parameters));
+  for (const auto &test : spec["selector_controls"])
+    controls.append(observe(test, test["input_case"].asString(), test["params"]));
+  check(tree_hashes(fixtures) == before, "SQLite reader changed the fixture inventory");
+  write(stage / "standalone.json",
+        object({{"processes_per_case", 2}, {"cases", direct},
+                {"input_sha256", before}, {"selector_controls", controls}}));
+
+  const auto chain = array({"op_0_sqlite_records", "op_1_report_fields", "write_lines"});
+  const auto ops = array(
+      {object({{"outcome", operation}, {"parameters", parameters}}),
+       object({{"outcome", "report_fields"},
+               {"parameters", object({{"fields", "pos,0,1,2,3,4"}})}})});
+  const auto goal = spec_for(
+      mime, "text/plain", object({{"operations", ops}, {"uncovered", array()}}));
+  auto prepare = [&](const Path &dir, const J &test) {
+    const auto fixture = fixtures / test["name"].asString();
+    if (fs::exists(fixture))
+      fs::copy_file(fixture, dir / "in");
+  };
+  write(stage / "integration.json",
+        file_record_trial(work, bundle, base, row, goal, chain, spec["cases"], false, prepare));
+  check(file_qualification_tools() == tools, "qualification tools changed");
+
+  auto contract = file_contract(stage, package, record, src, stage / "sources.json");
+  contract["source"]["implementation_sha256"] = source["kernel_sha256"];
+  contract["qualification"]["scope"] =
+      "Detached local evidence for the exact scans table, five selected columns and seq:asc.";
+  validate(contract, load(package / "contract.schema.json"));
+  write(stage / "contract.json", contract);
+  write(stage / "domain.json",
+        object({{"schema", "unllm.scoped-file-evidence-domain/1"},
+                {"binding_key", record["key"]},
+                {"raw_binding_sha256", record["binding_sha256"]},
+                {"logical_id", record["logical_id"]},
+                {"implementation_sha256", source["kernel_sha256"]},
+                {"header_sha256", record["header_sha256"]},
+                {"contract_sha256", digest(stage / "contract.json")},
+                {"environment_sha256", digest(stage / "environment.json")},
+                {"call", row["call"]},
+                {"quantifier", "arguments"},
+                {"all_of", file_argument_scope(arguments, parameters)},
+                {"scope", "The three selector predicates apply together. Input-domain behavior is bounded to the recorded cases."}}));
   return finish_file_stage(work, package, pin, record["logical_id"].asString(),
                            "unllm.scoped-file-evidence/1");
 }

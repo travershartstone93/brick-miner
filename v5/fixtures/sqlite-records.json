@@ -1,0 +1,37 @@
+{
+  "binding":{"component_id":"miner_sqlite_records","binding_id":"sqlite_records","from":"in:application/vnd.sqlite3","to":"rows"},
+  "parameters":{"table":"scans","fields":"parcel,depot,state,minute,seq","order_by":"seq:asc"},
+  "inputs":{
+    "ordered":{"sql":"CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT,state TEXT,minute,unused TEXT);INSERT INTO scans VALUES(10,'z','west','lost',2.25,NULL),(2,'a','N','out',-1,NULL),(2,'A','E','done',7,NULL),(2,'a','N','out',-1,NULL),(1,'é','south',CAST(X'7069636b006564' AS TEXT),0,NULL);"},
+    "text-sort":{"sql":"CREATE TABLE scans(seq TEXT,parcel TEXT,depot TEXT,state TEXT,minute TEXT);INSERT INTO scans VALUES('10','ten','A','ok','001'),('2','two','A','ok','-0'),('02','padded','A','ok','+03');"},
+    "empty":{"sql":"CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT,state TEXT,minute,unused TEXT);"},
+    "missing-table":{"sql":"CREATE TABLE other(seq INTEGER);"},
+    "missing-selected-column":{"sql":"CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT,minute);INSERT INTO scans VALUES(1,'safe','N',0);"},
+    "late-null":{"sql":"CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT,state TEXT,minute,unused TEXT);INSERT INTO scans VALUES(1,'ok','N','valid',0,NULL),(2,'broken','N',NULL,1,NULL);"},
+    "late-blob":{"sql":"CREATE TABLE scans(seq INTEGER,parcel TEXT,depot TEXT,state TEXT,minute,unused TEXT);INSERT INTO scans VALUES(1,'ok','N','valid',0,NULL),(2,'broken','N',X'410042',1,NULL);"},
+    "not-database":{"bytes":"ordinary text\n"},
+    "missing":null,
+    "quoted-identifiers":{"sql":"CREATE TABLE \"field\"\" log\"(item TEXT,\"place \"\"id\"\"\" TEXT,n INTEGER);INSERT INTO \"field\"\" log\" VALUES('owl','A',0),('tern','C',2),('wren','B',2);"}
+  },
+  "cases":[
+    {"name":"ordered","rows":[["é","south","pick\u0000ed","0","1"],["A","E","done","7","2"],["a","N","out","-1","2"],["a","N","out","-1","2"],["z","west","lost","2.25","10"]],"output":"1\té\tsouth\tpick\u0000ed\t0\t1\n2\tA\tE\tdone\t7\t2\n3\ta\tN\tout\t-1\t2\n4\ta\tN\tout\t-1\t2\n5\tz\twest\tlost\t2.25\t10\n"},
+    {"name":"text-sort","rows":[["padded","A","ok","+03","02"],["ten","A","ok","001","10"],["two","A","ok","-0","2"]],"output":"1\tpadded\tA\tok\t+03\t02\n2\tten\tA\tok\t001\t10\n3\ttwo\tA\tok\t-0\t2\n"},
+    {"name":"empty","rows":[],"output":""},
+    {"name":"missing-table","error":"visit"},
+    {"name":"missing-selected-column","error":"visit"},
+    {"name":"not-database","error":"visit"},
+    {"name":"missing","error":"visit"},
+    {"name":"late-null","error":"visit","exception":"invalid_argument","rows":[["ok","N","valid","0","1"]]},
+    {"name":"late-blob","error":"visit","exception":"invalid_argument","rows":[["ok","N","valid","0","1"]]}
+  ],
+  "selector_controls":[
+    {"name":"descending-source-order","input_case":"ordered","params":{"table":"scans","fields":"parcel,depot,state,minute,seq","order_by":"seq:desc,depot:desc"},"rows":[["z","west","lost","2.25","10"],["a","N","out","-1","2"],["a","N","out","-1","2"],["A","E","done","7","2"],["é","south","pick\u0000ed","0","1"]]},
+    {"name":"reordered-projection","input_case":"ordered","params":{"table":"scans","fields":"seq,depot,parcel","order_by":"seq:asc"},"rows":[["1","south","é"],["2","E","A"],["2","N","a"],["2","N","a"],["10","west","z"]]},
+    {"name":"quoted-identifiers","input_case":"quoted-identifiers","params":{"table":"field\" log","fields":"item,place \"id\",n","order_by":"n:desc,place \"id\":asc"},"rows":[["wren","B","2"],["tern","C","2"],["owl","A","0"]]},
+    {"name":"missing-order-column","input_case":"ordered","params":{"table":"scans","fields":"parcel,depot,state,minute,seq","order_by":"ghost:asc"},"error":"visit"},
+    {"name":"empty-projection-piece","input_case":"ordered","params":{"table":"scans","fields":"parcel,,seq","order_by":"seq:asc"},"error":"select","exception":"invalid_argument"},
+    {"name":"malformed-order","input_case":"ordered","params":{"table":"scans","fields":"parcel,depot,state,minute,seq","order_by":"seq"},"error":"select","exception":"invalid_argument"},
+    {"name":"invalid-order-direction","input_case":"ordered","params":{"table":"scans","fields":"parcel,depot,state,minute,seq","order_by":"seq:down"},"error":"select","exception":"invalid_argument"},
+    {"name":"nul-in-table-name","input_case":"ordered","params":{"table":"scans\u0000other","fields":"parcel,depot,state,minute,seq","order_by":"seq:asc"},"error":"select","exception":"invalid_argument"}
+  ]
+}
